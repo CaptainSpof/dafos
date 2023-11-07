@@ -35,6 +35,7 @@ in
       cfg.extra-substituters;
 
     environment.systemPackages = with pkgs; [
+      dafos.bump
       dafos.nixos-revision
       (dafos.nixos-hosts.override {
         hosts = inputs.self.nixosConfigurations;
