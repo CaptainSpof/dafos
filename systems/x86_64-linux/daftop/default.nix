@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib.${namespace}) enabled disabled;
+  inherit (lib.${namespace}) enabled;
 in
 {
   imports = [ ./hardware.nix ];
@@ -49,7 +49,7 @@ in
       desktop = enabled;
       development = {
         enable = true;
-        podman = disabled;
+        podman = enabled;
       };
     };
 

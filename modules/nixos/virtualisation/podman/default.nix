@@ -5,6 +5,7 @@
   namespace,
   ...
 }:
+
 let
   inherit (lib) mkIf;
   inherit (lib.${namespace}) mkBoolOpt;
@@ -24,6 +25,7 @@ in
     boot.enableContainers = false;
 
     environment.systemPackages = with pkgs; [
+      compose2nix
       podman-compose
       podman-desktop
     ];
