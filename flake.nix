@@ -115,7 +115,10 @@
       flake = false;
     };
 
-    darkly.url = "github:Bali10050/Darkly";
+    darkly = {
+      url = "github:Bali10050/Darkly";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Git Hooks
     git-hooks-nix.url = "github:cachix/git-hooks.nix";
