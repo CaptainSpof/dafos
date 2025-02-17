@@ -1,6 +1,8 @@
 keys:
   - &admin_daf age1rafskpaqudsd8vnvcdryt5uqn5lxs4wx22n355h64qv7yg2ya4esr4e7kw
   - &user_daf_daftop age1xv0yq7ppjmvsvmc5na3ha5eue44syvuc024n7ynhufnje8nmzvlqps77zs
+  - &user_daf_dafoltop age1yexg74nkdw9xh9yhsk6fwn462jzehdfayp4qhrwlml40gcv6hp6sr8afse
+  - &root_dafoltop age1ekfdvtw4949t3jclxnthtj8k68vhhhqs4g5x0j2h43nrdfgu5yrsjulhqu
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
@@ -16,3 +18,5 @@ creation_rules:
       - age:
           - *admin_daf
           - *user_daf_daftop
+          - *user_daf_dafoltop
+          - *root_dafoltop

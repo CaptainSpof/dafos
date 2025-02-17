@@ -42,27 +42,27 @@
 
   settings = {
     global.excludes = [
+      "*.conf"
       "*.editorconfig"
       "*.envrc"
-      "*.gitconfig"
-      "*.git-blame-ignore-revs"
-      "*.gitignore"
-      "*.gitattributes"
-      "*.luacheckrc"
-      "*CODEOWNERS"
-      "*LICENSE"
-      "*flake.lock"
-      "*.svg"
-      "*.png"
       "*.gif"
+      "*.git-blame-ignore-revs"
+      "*.gitattributes"
+      "*.gitconfig"
+      "*.gitignore"
       "*.ico"
-      # TODO: formatters?
-      "*Makefile"
-      "*makefile"
+      "*.kdl"
+      "*.luacheckrc"
+      "*.png"
+      "*.rasi"
+      "*.svg"
       "*.xml"
       "*.zsh"
-      "*.rasi"
-      "*.kdl"
+      "*CODEOWNERS"
+      "*LICENSE"
+      "*Makefile"
+      "*flake.lock"
+      "*makefile"
 
       # TODO: exceptions
       # WARN no formatter for path: homes/x86_64-linux/nixos@CORE-PW00LM92/git/windows-compat-config
