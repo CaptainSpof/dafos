@@ -17,5 +17,5 @@ in
     enable = mkBoolOpt false "Whether or not to enable teamspeak.";
   };
 
-  config = mkIf cfg.enable { home.packages = [ pkgs.teamspeak5_client ]; };
+  config = mkIf cfg.enable { home.packages = [ pkgs.teamspeak6-client ]; };
 }

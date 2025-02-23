@@ -59,14 +59,21 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    socle = {
+      url = "github:dvdjv/socle";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Comma
     comma = {
       url = "github:nix-community/comma";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-gaming.url = "github:fufexan/nix-gaming";
-    nix-gaming.inputs.nixpkgs.follows = "nixpkgs";
+    nix-gaming = {
+      url = "github:fufexan/nix-gaming";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Nuenv
     nuenv.url = "github:DeterminateSystems/nuenv";
@@ -167,6 +174,7 @@
         permittedInsecurePackages = [
           "aspnetcore-runtime-6.0.36"
           "dotnet-sdk-6.0.428"
+          "olm-3.2.16"
         ];
       };
 
@@ -186,9 +194,9 @@
       systems.modules.nixos = with inputs; [
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
-        vault-service.nixosModules.nixos-vault-service
-        sops-nix.nixosModules.sops
         nix-gaming.nixosModules.platformOptimizations
+        sops-nix.nixosModules.sops
+        vault-service.nixosModules.nixos-vault-service
       ];
 
       templates = {

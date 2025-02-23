@@ -23,34 +23,36 @@ in
   options.${namespace}.programs.graphical.browsers.firefox = with types; {
     enable = mkBoolOpt false "Whether or not to enable firefox.";
 
-    extensions = mkOpt (listOf package) (with pkgs.nur.repos.rycee.firefox-addons; [
-      absolute-enable-right-click
-      auto-tab-discard
-      bitwarden
-      # consent-o-matic
-      darkreader
-      dearrow
-      downthemall
-      enhancer-for-youtube
-      firefox-color
-      flagfox
-      french-language-pack
-      fx_cast
-      languagetool
-      org-capture # TODO: setup
-      plasma-integration
-      reddit-enhancement-suite
-      refined-github
-      return-youtube-dislikes
-      simple-tab-groups
-      sponsorblock
-      stylus
-      tridactyl
-      ublock-origin
-      user-agent-string-switcher
-      view-image
-      violentmonkey
-    ]) "Extensions to install";
+    extensions = {
+      packages = mkOpt (listOf package) (with pkgs.nur.repos.rycee.firefox-addons; [
+        absolute-enable-right-click
+        auto-tab-discard
+        bitwarden
+        # consent-o-matic
+        darkreader
+        dearrow
+        downthemall
+        enhancer-for-youtube
+        firefox-color
+        flagfox
+        french-language-pack
+        fx_cast
+        languagetool
+        org-capture # TODO: setup
+        plasma-integration
+        reddit-enhancement-suite
+        refined-github
+        return-youtube-dislikes
+        simple-tab-groups
+        sponsorblock
+        stylus
+        tridactyl
+        ublock-origin
+        user-agent-string-switcher
+        view-image
+        violentmonkey
+      ]) "Extensions to install";
+    };
 
     extraConfig = mkOpt str "" "Extra configuration for the user profile JS file.";
 
@@ -100,12 +102,6 @@ in
           installation_mode = "force_installed";
           install_url = "https://addons.mozilla.org/firefox/downloads/file/4159211/adaptive_tab_bar_colour-2.1.4.xpi";
         };
-
-        "bento" = {
-          installation_mode = "force_installed";
-          install_url = "https://addons.mozilla.org/firefox/downloads/file/3787567/bento-1.7.xpi";
-        };
-
       };
       Preferences = { };
     } "Policies to apply to firefox";

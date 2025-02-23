@@ -29,8 +29,8 @@ in
     };
 
     sops.secrets = {
-      "khanelinix_khaneliman_ssh_key" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/dafos/daf/default.yaml";
+      "daf_daftop_ssh_key" = {
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafos/daftop/daf/default.yaml";
       };
     };
   };
