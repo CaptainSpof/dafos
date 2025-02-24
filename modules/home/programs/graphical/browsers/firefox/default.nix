@@ -242,7 +242,7 @@ in
           "${firefoxPath}/native-messaging-hosts".source = pkgs.symlinkJoin {
             name = "native-messaging-hosts";
             paths = [
-              "${pkgs.plasma-browser-integration}/lib/mozilla/native-messaging-hosts"
+              "${pkgs.kdePackages.plasma-browser-integration}/lib/mozilla/native-messaging-hosts"
               "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts"
             ];
 
@@ -274,7 +274,7 @@ in
       package = cfg.package.override (orig: {
         nativeMessagingHosts = (orig.nativeMessagingHosts or [ ]) ++ [
           pkgs.tridactyl-native
-          pkgs.plasma-browser-integration
+          pkgs.kdePackages.plasma-browser-integration
           pkgs.fx-cast-bridge
         ];
       });

@@ -27,6 +27,6 @@ in
       ];
     };
 
-    environment.systemPackages = with pkgs; [ skanpage ];
+    environment.systemPackages = with pkgs.kdePackages; [ skanpage ];
   };
 }

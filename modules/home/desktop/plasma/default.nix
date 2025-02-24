@@ -21,6 +21,7 @@ let
     kdePackages.ksystemlog
     kdePackages.kweather
     kdePackages.merkuro
+    kdePackages.itinerary
     # Themes
     dafos.kde-warm-eyes
     dafos.leaf-kde
