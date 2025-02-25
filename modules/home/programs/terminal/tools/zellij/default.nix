@@ -20,6 +20,8 @@ in
   config = mkIf cfg.enable {
     programs.zellij = {
       enable = true;
+      enableFishIntegration = false; # HACK: We want to control how to enable zellij
+
       package = pkgs.zellij;
 
       settings = {
