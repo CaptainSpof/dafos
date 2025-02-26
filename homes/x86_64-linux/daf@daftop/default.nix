@@ -46,7 +46,7 @@ in
       };
 
       terminal = {
-        emulators.wezterm.frontEnd = "WebGpu";
+        emulators.wezterm.wayland.enable = true;
         tools = {
           ssh = enabled;
         };

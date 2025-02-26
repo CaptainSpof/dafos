@@ -69,11 +69,12 @@ in
           enable_wayland = ${if cfg.wayland.enable then "true" else "false"},
           front_end = "${cfg.frontEnd}",
           scrollback_lines = 10000,
+          max_fps = 120,
 
           -- term window settings
-          window_background_opacity = 0.70,
-          window_decorations = 'RESIZE',
-          -- window_padding = { left = 12, right = 12, top = 12, bottom = 12, },
+          window_background_opacity = 0.75,
+          window_decorations = "NONE",
+          window_padding = { left = 10, right = 10, top = 10, bottom = 10, },
         }
       '';
     };

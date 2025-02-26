@@ -33,10 +33,7 @@ in
 
     hardware = {
       cpu.amd = enabled;
-      gpu = {
-        amd.enable = true;
-        amd.opencl.enable = false;
-      };
+      gpu.amd.enable = true;
     };
 
     security = {
