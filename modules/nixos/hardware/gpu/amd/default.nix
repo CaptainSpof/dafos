@@ -29,6 +29,7 @@ in
     environment.systemPackages = with pkgs; [
       amdgpu_top
       nvtopPackages.amd
+      lact
     ];
 
     environment.variables = {

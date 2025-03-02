@@ -107,6 +107,8 @@ in
 
     # network tools that are helpful and nice to have
     environment.systemPackages = with pkgs; [
+      dig
+      inetutils
       mtr
       tcpdump
       traceroute
