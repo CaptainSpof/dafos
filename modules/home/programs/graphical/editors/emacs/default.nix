@@ -16,7 +16,7 @@ in
   options.${namespace}.programs.graphical.editors.emacs = {
     enable = mkBoolOpt false "Whether or not to enable emacs.";
     latex.enable = mkBoolOpt false "Whether or not to enable latex support for emacs.";
-    package = mkOpt types.package pkgs.emacs-pgtk "The emacs package to be used.";
+    package = mkOpt types.package pkgs.emacs-unstable-pgtk "The emacs package to be used.";
   };
 
   config = mkIf cfg.enable {

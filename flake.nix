@@ -173,6 +173,8 @@
         allowUnfree = true;
         permittedInsecurePackages = [
           "aspnetcore-runtime-6.0.36"
+          "emacs-unstable-pgtk-30.1"
+          "emacs-unstable-pgtk-with-packages-30.1"
           "dotnet-sdk-6.0.428"
           "olm-3.2.16"
         ];
