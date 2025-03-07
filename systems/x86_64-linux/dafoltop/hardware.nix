@@ -11,6 +11,22 @@ let
   inherit (lib) getExe;
 
   freeboxHostname = "Freebox-Server.local";
+  freeboxCifsOptions = [
+    "sec=none"
+    "uid=daf"
+    "gid=yahrr"
+    "file_mode=0770"
+    "dir_mode=0770"
+    "vers=3"
+    "nounix"
+    "x-systemd.automount"
+    "noauto"
+    "x-systemd.requires=wait-freebox-available.service"
+    "x-systemd.after=wait-freebox-available.service"
+    # "x-systemd.idle-timeout=60"
+    # "x-systemd.device-timeout=30s"
+    # "x-systemd.mount-timeout=30s"
+  ];
 in
 {
   imports = with nixos-hardware.nixosModules; [
@@ -60,22 +76,16 @@ in
       fsType = "ext4";
     };
 
+    "/mnt/audio" = {
+      device = "//${freeboxHostname}/Freebox/Audio";
+      fsType = "cifs";
+      options = freeboxCifsOptions;
+    };
+
     "/mnt/videos" = {
       device = "//${freeboxHostname}/Freebox/Vidéos";
       fsType = "cifs";
-      options = [
-        "guest"
-        "uid=1000"
-        "vers=3"
-        "nounix"
-        "x-systemd.automount"
-        "noauto"
-        "x-systemd.requires=wait-freebox-available.service"
-        "x-systemd.after=wait-freebox-available.service"
-        "x-systemd.idle-timeout=60"
-        "x-systemd.device-timeout=30s"
-        "x-systemd.mount-timeout=30s"
-      ];
+      options = freeboxCifsOptions;
     };
   };
 
