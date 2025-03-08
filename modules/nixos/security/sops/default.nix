@@ -14,7 +14,9 @@ in
   options.${namespace}.security.sops = with lib.types; {
     enable = mkBoolOpt false "Whether to enable sops.";
     defaultSopsFile = mkOpt path null "Default sops file.";
-    sshKeyPaths = mkOpt (listOf path) [ "/etc/ssh/ssh_host_ed25519_key" ] "SSH Key paths to use.";
+    sshKeyPaths = mkOpt (listOf path) [
+      "${config.home.homeDirectory}/.ssh/daf@dafoltop.pem"
+    ] "SSH Key paths to use.";
   };
 
   config = lib.mkIf cfg.enable {
@@ -29,8 +31,8 @@ in
     };
 
     sops.secrets = {
-      "daf_daftop_ssh_key" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/dafos/daftop/daf/default.yaml";
+      "daftop_daf_ssh_key" = {
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafos/daf/default.yaml";
       };
     };
   };

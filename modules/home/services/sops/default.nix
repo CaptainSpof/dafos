@@ -14,7 +14,7 @@ let
 in
 {
   options.${namespace}.services.sops = with types; {
-    enable = mkBoolOpt false "Whether to enable sops.";
+    enable = mkBoolOpt true "Whether to enable sops.";
     defaultSopsFile = mkOpt path null "Default sops file.";
     sshKeyPaths = mkOpt (listOf path) [ ] "SSH Key paths to use.";
   };
@@ -33,7 +33,7 @@ in
       age = {
         generateKey = true;
         keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
-        sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@daftop" ] ++ cfg.sshKeyPaths;
+        sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafoltop" ] ++ cfg.sshKeyPaths;
       };
     };
   };
