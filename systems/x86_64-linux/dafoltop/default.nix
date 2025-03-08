@@ -42,6 +42,7 @@ in
     };
 
     services = {
+      audiobookshelf = enabled;
       home-assistant = enabled;
       mealie = enabled;
       # tandoor = enabled;
