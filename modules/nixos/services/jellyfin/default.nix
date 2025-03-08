@@ -19,6 +19,8 @@ in
   };
 
   config = mkIf cfg.enable {
+
+    users.groups.yahrr.members = [ "jellyfin" ];
     services.jellyfin = {
       enable = true;
       user = username;

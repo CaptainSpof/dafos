@@ -16,8 +16,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    users.groups.yahrr.members = [ "prowlarr" ];
     services.prowlarr = {
       enable = true;
+      # port = 9696; # For reference
       openFirewall = true;
     };
   };

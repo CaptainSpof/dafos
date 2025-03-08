@@ -17,6 +17,7 @@ in
   };
 
   config = mkIf cfg.enable {
+    users.groups.yahrr.members = [ "sonarr" ];
     services.sonarr = {
       enable = true;
       user = username;
