@@ -43,11 +43,13 @@ in
 
     services = {
       audiobookshelf = enabled;
+      bar-assistant = enabled;
       home-assistant = enabled;
       mealie = enabled;
       # tandoor = enabled;
       syncthing = enabled;
       printing = disabled;
+      stirling-pdf = enabled;
     };
 
     suites = {

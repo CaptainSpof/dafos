@@ -8,10 +8,32 @@
 }:
 
 let
-  inherit (lib) mkIf types;
+  inherit (lib) mkIf types mkForce;
   inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.home-assistant;
+
+  customPythonPackages = pkgs.python313Packages.override {
+    overrides = _self: super: {
+      pytapo = super.pytapo.overrideAttrs (_oldAttrs: {
+        version = "3.3.41";
+        src = pkgs.fetchPypi {
+          pname = "pytapo";
+          version = "3.3.41";
+          hash = "sha256-ViWXXC8I8e/Q8wTwcI0W8EWObbIq9gXiZ0TVoFs781A=";
+        };
+        propagatedBuildInputs = with pkgs.python313Packages; [
+          aiohttp
+          pycryptodome
+          requests
+          python-kasa
+          rtp
+          urllib3
+        ];
+      });
+    };
+  };
+
 in
 {
   options.${namespace}.services.home-assistant = {
@@ -21,7 +43,7 @@ in
         "/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20230803143100-if00"
         "The serial port to use with ZHA.";
     serialPortZigbee2Mqtt =
-      mkOpt types.str "tcp://192.168.0.46:6638"
+      mkOpt types.str "tcp://192.168.0.100:6638"
         "The serial port to use with Zigbee2mqtt.";
   };
 
@@ -34,9 +56,15 @@ in
       home-assistant-cli
     ];
 
-    systemd.services.zigbee2mqtt = {
-      partOf = [ "home-assistant.service" ];
-      requiredBy = [ "home-assistant.service" ];
+    # systemd.services.partOf = {
+    #   zigbee2mqtt = [ "home-assistant.service" ];
+    #   requiredBy = [ "home-assistant.service" ];
+    # };
+
+    systemd.services.zigbee2mqtt.serviceConfig = {
+      # WatchdogSec = "30s";
+      Restart = mkForce "always";
+      # RestartSec = "10s";
     };
 
     services = {
@@ -49,6 +77,12 @@ in
             settings.allow_anonymous = true;
           }
         ];
+      };
+
+      esphome = {
+        enable = true;
+        address = "0.0.0.0";
+        port = 6052;
       };
 
       zigbee2mqtt = {
@@ -75,11 +109,11 @@ in
         enable = true;
 
         extraComponents = [
-          "apple_tv"
+          # "apple_tv"
           "backup"
           "bluetooth"
           "bluetooth_adapters"
-          "bluetooth_tracker"
+          # "bluetooth_tracker"
           "broadlink"
           "camera"
           "cast"
@@ -90,6 +124,7 @@ in
           "google_translate"
           "ibeacon"
           "ipp"
+          "isal"
           "improv_ble"
           "ld2410_ble"
           "local_calendar"
@@ -101,7 +136,6 @@ in
           "netatmo"
           "onvif"
           "openai_conversation"
-          "pocketcasts"
           "radarr"
           "roborock"
           "samsungtv"
@@ -113,7 +147,6 @@ in
           "telegram"
           "telegram_bot"
           "tplink"
-          "tradfri"
           "tuya"
           "wled"
           "yeelight"
@@ -123,8 +156,6 @@ in
         extraPackages =
           ps: with ps; [
             isal
-            # pytapo
-            btsocket
           ];
 
         customComponents = with pkgs.home-assistant-custom-components; [
@@ -136,42 +167,20 @@ in
           samsungtv-smart
           smartir
           spook
-          pkgs.dafos.hass-divoom
+          # pkgs.dafos.hass-divoom
           (pkgs.buildHomeAssistantComponent {
             owner = "JurajNyiri";
             domain = "tapo";
-            version = "main";
+            version = "6.1.3";
             src = inputs.hass-tapo-control;
             dontConfigure = true;
             dontBuild = true;
             doCheck = false;
-            propagatedBuildInputs = with pkgs.python312Packages; [
-              (buildPythonPackage rec {
-                pname = "pytapo";
-                version = "3.3.37";
-                pyproject = true;
 
-                disabled = pythonOlder "3.7";
-
-                src = fetchPypi {
-                  inherit pname version;
-                  hash = "sha256-InDbfWzRb+Q+E6feeatHIliq83g83oUfo3Yze/BAJdM=";
-                };
-
-                build-system = [ setuptools ];
-
-                dependencies = with pkgs.python312Packages; [
-                  pycryptodome
-                  requests
-                  rtp
-                  urllib3
-                ];
-
-                pythonImportsCheck = [ "pytapo" ];
-
-                # Tests require actual hardware
-                doCheck = false;
-              })
+            propagatedBuildInputs = [
+              customPythonPackages.pytapo
+              pkgs.python313Packages.aiohttp
+              pkgs.python313Packages.requests
             ];
           })
         ];
@@ -188,6 +197,7 @@ in
           mini-media-player
           multiple-entity-row
           mushroom
+          pkgs.dafos.custom-brand-icons
           pkgs.dafos.lovelace-auto-entities
           pkgs.dafos.lovelace-fold-entity-row
           pkgs.dafos.lovelace-layout-card
@@ -199,9 +209,16 @@ in
         ];
 
         config = {
-          # Includes dependencies for a basic setup
-          # https://www.home-assistant.io/integrations/default_config/
           default_config = { };
+
+          http = {
+            trusted_proxies = [ "127.0.0.1" ];
+            use_x_forwarded_for = true;
+            server_host = [
+              "0.0.0.0"
+              "::"
+            ];
+          };
 
           bluetooth = { };
           smartir = { };
@@ -219,8 +236,6 @@ in
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
 
-          zha.zigpy_config.device = cfg.serialPort;
-
           binary_sensor = import ./sensors/binary_sensors.nix;
           input_boolean = import ./sensors/input_booleans.nix;
           sensor = [
@@ -237,23 +252,37 @@ in
               ];
             }
           ] ++ (import ./sensors/sensors.nix);
+
+          zha.zigpy_config.device = cfg.serialPort;
         };
       };
+    };
+
+    # Zigbee2mqtt: enable watchdog
+    environment.sessionVariables = {
+      Z2M_WATCHDOG = [
+        "0.5"
+        "3"
+        "6"
+        "15"
+        "30"
+      ];
     };
 
     networking.firewall = {
       allowedTCPPorts = [
         80
         443
+        8090
         8123
       ];
     };
 
     systemd.tmpfiles.rules = [
       "d /var/lib/hass 0775 hass hass -"
+      "d /var/lib/hass/pixelart 0775 hass hass -"
       "d /var/lib/hass/scripts 0775 hass hass -"
       "d /var/lib/hass/custom_templates 0775 hass hass -"
     ];
-
   };
 }
