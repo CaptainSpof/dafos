@@ -107,8 +107,8 @@ in
     } "Policies to apply to firefox";
 
     search = mkOpt attrs {
-      default = "Google";
-      privateDefault = "DuckDuckGo";
+      default = "google";
+      privateDefault = "ddg";
       force = true;
 
       engines = {

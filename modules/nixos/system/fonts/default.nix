@@ -32,7 +32,7 @@ in
         departure-mono
         google-fonts
         julia-mono
-        maple-mono-NF
+        maple-mono.NF
         mononoki
         noto-fonts
         noto-fonts-emoji
