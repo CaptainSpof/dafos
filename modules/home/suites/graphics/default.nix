@@ -25,7 +25,9 @@ in
     home.packages =
       with pkgs;
       lib.optionals cfg.drawing.enable [ krita ]
-      ++ lib.optionals cfg.vector.enable [ inkscape-with-extensions ]
+      ++ lib.optionals cfg.vector.enable [
+        (inkscape-with-extensions.override { inkscapeExtensions = [ inkscape-extensions.silhouette ]; })
+      ]
       ++ lib.optionals cfg.graphics3d.enable [ blender ]
       ++ lib.optionals cfg.raster.enable [ gimp ];
   };
