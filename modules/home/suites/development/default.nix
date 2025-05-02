@@ -73,7 +73,7 @@ in
             k9s.enable = cfg.kubernetes.enable;
             lazydocker.enable = cfg.docker.enable;
             lazygit = enabled;
-            node = enabled;
+            node = disabled;
             python = enabled;
             tealdeer = enabled;
           };
