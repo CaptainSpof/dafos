@@ -7,7 +7,12 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf optionalString getExe;
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    optionalString
+    getExe
+    ;
   inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.programs.terminal.shells.zsh;
@@ -27,7 +32,7 @@ in
         enableCompletion = true;
         syntaxHighlighting.enable = true;
 
-        initExtra =
+        initContent =
           ''
             # Fix an issue with tmux.
             export KEYTIMEOUT=1
