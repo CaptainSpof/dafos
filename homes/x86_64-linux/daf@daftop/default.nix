@@ -31,7 +31,7 @@ in
         browsers = {
           firefox = {
             enable = true;
-            package = pkgs.firefox-beta;
+            package = inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
             gpuAcceleration = true;
             hardwareDecoding = true;
             settings = {
@@ -43,6 +43,7 @@ in
             };
           };
         };
+        instant-messengers.teamspeak = enabled;
       };
 
       terminal = {
@@ -78,11 +79,12 @@ in
         enable = true;
         drawing = enabled;
         graphics3d = enabled;
+        upscaling = enabled;
         vector = enabled;
       };
 
       music = enabled;
-      office = disabled;
+      office = enabled;
       social = enabled;
       video = enabled;
     };
