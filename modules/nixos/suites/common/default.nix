@@ -36,7 +36,6 @@ in
         terminal = {
           tools = {
             bandwhich = enabled;
-            flake = enabled;
             nix-ld = enabled;
           };
         };

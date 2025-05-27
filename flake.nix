@@ -2,14 +2,14 @@
   description = "Here lies my shipwrecks. I mean fleet of hosts.";
 
   inputs = {
-    # NixPkgs (nixos-24.05)
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
+    # NixPkgs (nixos-25.05)
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
 
     # NixPkgs (nixos-unstable)
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # NixPkgs Master
-    nixpkgs-master.url = "github:nixos/nixpkgs/master";
+    nixpkgs-master.url = "github:nixos/nixpkgs";
 
     # Home Manager
     home-manager = {
@@ -21,12 +21,6 @@
     nur = {
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Flake Compat
-    flake-compat = {
-      url = "github:nix-community/flake-compat";
-      flake = false;
     };
 
     # Flake Utils
@@ -44,12 +38,6 @@
     # Snowfall Lib
     snowfall-lib = {
       url = "github:snowfallorg/lib";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Snowfall Flake
-    snowfall-flake = {
-      url = "github:snowfallorg/flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -181,7 +169,6 @@
         emacs-overlay.overlays.default
         nuenv.overlays.default
         nur.overlays.default
-        snowfall-flake.overlays.default
       ];
 
       homes.modules = with inputs; [

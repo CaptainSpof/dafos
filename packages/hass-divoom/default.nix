@@ -6,7 +6,7 @@
 }:
 
 let
-  pythonWithBluetooth = pkgs.python3.overrideAttrs (old: rec {
+  pythonWithBluetooth = pkgs.python.overrideAttrs (old: {
     buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.bluez.dev ];
     configureFlags = (old.configureFlags or [ ]) ++ [ "--enable-bluez" ];
     extraMakeFlags = (old.extraMakeFlags or [ ]) ++ [

@@ -3,7 +3,7 @@ on:
   repository_dispatch:
   workflow_dispatch: # allows manual triggering
   schedule:
-    - cron: '0 0 * * *' # runs at 00:00
+    - cron: "0 0 * * *" # runs at 00:00
 jobs:
   updateLockfile:
     runs-on: ubuntu-latest

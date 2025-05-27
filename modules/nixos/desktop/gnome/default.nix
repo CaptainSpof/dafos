@@ -15,7 +15,7 @@ let
     mkDefault
     types
     ;
-  inherit (lib.${namespace}) enabled mkOpt mkBoolOpt;
+  inherit (lib.${namespace}) mkOpt mkBoolOpt;
   inherit (lib.home-manager.hm.gvariant) mkTuple;
 
   cfg = config.${namespace}.desktop.gnome;
@@ -69,9 +69,6 @@ in
   config = mkIf cfg.enable {
     dafos = {
       system.xkb.enable = true;
-      desktop.addons = {
-        gtk = enabled;
-      };
     };
 
     environment.systemPackages =

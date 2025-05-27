@@ -1,4 +1,10 @@
-{ lib, makeDesktopItem, symlinkJoin, namespace, ... }:
+{
+  lib,
+  makeDesktopItem,
+  symlinkJoin,
+  namespace,
+  ...
+}:
 
 let
   inherit (lib.${namespace}) override-meta;
@@ -7,7 +13,11 @@ let
     name = "Steam (Pipewire)";
     desktopName = "Steam (Pipewire)";
     genericName = "Application for managing and playing games on Steam.";
-    categories = [ "Network" "FileTransfer" "Game" ];
+    categories = [
+      "Network"
+      "FileTransfer"
+      "Game"
+    ];
     type = "Application";
     icon = "steam";
     exec = "steam -pipewire";
@@ -17,7 +27,11 @@ let
     name = "Steam (Pipewire & Gamepad UI)";
     desktopName = "Steam (Pipewire & Gamepad UI)";
     genericName = "Application for managing and playing games on Steam.";
-    categories = [ "Network" "FileTransfer" "Game" ];
+    categories = [
+      "Network"
+      "FileTransfer"
+      "Game"
+    ];
     type = "Application";
     icon = "steam";
     exec = "steam -pipewire -gamepadui";
@@ -32,7 +46,10 @@ let
 
   package = symlinkJoin {
     name = "steam-desktop-items";
-    paths = [ steam-pipewire steam-pipewire-gamepadui ];
+    paths = [
+      steam-pipewire
+      steam-pipewire-gamepadui
+    ];
   };
 in
 override-meta new-meta package

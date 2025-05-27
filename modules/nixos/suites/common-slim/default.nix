@@ -30,10 +30,6 @@ in
         nh.enable = true;
       };
 
-      programs.terminal.tools = {
-        flake = enabled;
-      };
-
       hardware = {
         storage = enabled;
       };

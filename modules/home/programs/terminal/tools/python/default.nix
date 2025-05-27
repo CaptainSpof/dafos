@@ -19,7 +19,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      (python3.withPackages (
+      (python.withPackages (
         ps: with ps; [
           pip
           pyqt5
