@@ -77,7 +77,7 @@ in
     environment.systemPackages =
       with pkgs;
       [
-        (hiPrio dafos.xdg-open-with-portal)
+        (hiPrio xdg-open-with-portal)
         wl-clipboard
         gnome.gnome-tweaks
         gnome.nautilus-python
