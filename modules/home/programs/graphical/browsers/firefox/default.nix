@@ -28,7 +28,7 @@ in
         absolute-enable-right-click
         auto-tab-discard
         bitwarden
-        # consent-o-matic
+        consent-o-matic
         darkreader
         dearrow
         downthemall
@@ -107,8 +107,8 @@ in
     } "Policies to apply to firefox";
 
     search = mkOpt attrs {
-      default = "google";
-      privateDefault = "ddg";
+      default = "qwant";
+      privateDefault = "qwant";
       force = true;
 
       engines = {
