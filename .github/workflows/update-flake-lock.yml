@@ -13,7 +13,7 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v30
       - name: Update flake.lock
-        uses: DeterminateSystems/update-flake-lock@v24
+        uses: DeterminateSystems/update-flake-lock@v27
         with:
           token: ${{ secrets.UPDATE_NIX_FLAKE_LOCK }}
           pr-title: "chore(flake.lock): bump"
