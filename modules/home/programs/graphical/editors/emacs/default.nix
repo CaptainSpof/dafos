@@ -69,6 +69,7 @@ in
           nuspell
           poppler
           sqlite
+          vips
         ]
         ++ lib.optionals cfg.latex.enable [ texlive.combined.sheme-full ];
 

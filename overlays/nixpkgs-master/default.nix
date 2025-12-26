@@ -3,12 +3,7 @@
 _final: _prev:
 
 {
-  inherit (channels.nixpkgs-master)
-    cnijfilter2
-    home-assistant
-    rocmPackages_6
-    tandoor-recipes
-    wezterm
-    xdg-desktop-portal
+    inherit (channels.nixpkgs-master)
+        sunshine
     ;
 }

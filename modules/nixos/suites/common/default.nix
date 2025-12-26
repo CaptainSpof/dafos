@@ -18,9 +18,11 @@ in
   };
 
   config = mkIf cfg.enable {
+    programs.localsend.enable = true;
     environment.systemPackages = with pkgs; [
       appimage-run
       cifs-utils
+      gcc
       dafos.list-iommu
       powertop
       ripgrep

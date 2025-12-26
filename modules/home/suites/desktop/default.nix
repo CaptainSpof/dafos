@@ -8,7 +8,7 @@
 
 let
   inherit (lib) mkIf;
-  inherit (lib.${namespace}) mkBoolOpt enabled;
+  inherit (lib.${namespace}) mkBoolOpt enabled disabled;
 
   cfg = config.${namespace}.suites.desktop;
 in
@@ -18,10 +18,19 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ smile ];
+    home.packages = with pkgs; [
+      smile # emoji picker
+      kdePackages.arianna # ebook reader
+      dconf-editor
+      gsettings-desktop-schemas
+      gsettings-qt
+    ];
 
     dafos = {
       desktop = {
+        niri = enabled;
+        noctalia-shell = disabled;
+        dms = enabled;
         plasma = {
           enable = true;
           config = enabled;
@@ -33,6 +42,11 @@ in
         };
         addons = {
           wallpapers = enabled;
+        };
+      };
+      programs = {
+        graphical = {
+          launchers.vicinae = disabled;
         };
       };
     };

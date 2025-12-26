@@ -26,6 +26,8 @@ in
 
   config = mkIf cfg.enable {
     programs = {
+      atuin.daemon.enable = true;
+      atuin.enableZshIntegration = true;
       zsh = {
         enable = true;
         autosuggestion.enable = true;

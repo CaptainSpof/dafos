@@ -25,10 +25,10 @@ in
     home.packages =
       with pkgs;
       [
-        proton-caller
         protontricks
         protonup-ng
         protonup-qt
+        protonplus
       ]
       ++ lib.optionals cfg.bottles.enable [ bottles ]
       ++ lib.optionals cfg.ftl.enable [ slipstream ]

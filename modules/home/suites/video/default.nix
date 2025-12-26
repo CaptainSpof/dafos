@@ -28,10 +28,11 @@ in
       [
         vlc
         yt-dlp
+        # stremio
         freetube
       ]
       ++ lib.optionals cfg.jellyfin.enable [ jellyfin-media-player ]
-      ++ lib.optionals cfg.mpv.enable [ mpv ]
+      ++ lib.optionals cfg.mpv.enable [ mpv haruna ]
       ++ lib.optionals cfg.editing.enable [ kdenlive ];
 
     dafos = {

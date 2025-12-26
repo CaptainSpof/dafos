@@ -174,9 +174,9 @@ in
             (deflayer bépow
               _     _     _     _     _     _     _     _     _     _     _     _     _    _
               @grv  _     _     _     _     _     _     _     _     _     _     @mc=  _    _
-              _     _     _     _     _    'w     _     _     _     _     _     à     è
+              _     _     _     _     _     _     _     _     _     _     _     _     _
               @cap  @numa _     @lCi  @lMe  _     _     @cht  @chs  _     @ars; _     _
-              _     @<ars 'z     _     _    _     _     _     @chq  @chg  _     _     @rbspc
+              _     @<ars _     _     _     _     _     _     @chq  @chg  _     _     @rbspc
               _     _     _                   @rSspc               @rAbspc  _
             )
 

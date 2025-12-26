@@ -103,8 +103,9 @@ let
             "org.kde.plasma.volume"
           ];
           hidden = [
-            "org.kde.plasma.keyboardlayout"
             "org.kde.kdeconnect"
+            "org.kde.merkuro.contact.applet"
+            "org.kde.plasma.keyboardlayout"
           ];
           configs = {
             battery.showPercentage = true;

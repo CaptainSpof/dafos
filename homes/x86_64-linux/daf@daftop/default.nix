@@ -20,9 +20,9 @@ in
     desktop = {
       plasma = {
         touchScreen = false;
-        themeSwitcher = true;
+        themeSwitcher = false;
         desktop.digitalClock.position.horizontal = 1200;
-        extraPackages = [ inputs.kwin-effects-forceblur.packages.${pkgs.system}.default ];
+        extraPackages = [ inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default ];
       };
     };
 
@@ -32,6 +32,7 @@ in
           firefox = {
             enable = true;
             package = inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
+            # package = pkgs.firefox-beta;
             gpuAcceleration = true;
             hardwareDecoding = true;
             settings = {
@@ -60,9 +61,7 @@ in
       sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@daftop.pem" ];
     };
 
-    system = {
-      xdg = enabled;
-    };
+    system.xdg = enabled;
 
     suites = {
       common = enabled;
@@ -88,5 +87,13 @@ in
       social = enabled;
       video = enabled;
     };
+    
   };
+
+  home.packages = with pkgs; [
+    libation
+    calibre
+    # rustdesk
+    uget
+  ];
 }

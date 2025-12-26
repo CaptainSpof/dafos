@@ -42,6 +42,12 @@ in
       "https://nix-gaming.cachix.org" = {
         key = "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4=";
       };
+      "https://niri.cachix.org" = {
+        key = "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964=";
+      };
+      "https://vicinae.cachix.org" = {
+        key = "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=";
+      };
     } "Extra substituters to configure.";
   };
 
@@ -58,7 +64,7 @@ in
       nix-prefetch-git
       nix-output-monitor
       flake-checker
-      inputs.yaml2nix.packages.${pkgs.system}.yaml2nix
+      yaml2nix
     ];
 
     programs.nh = mkIf cfg.nh.enable {
@@ -74,13 +80,14 @@ in
         users = [
           "root"
           config.${namespace}.user.name
-        ] ++ optional config.services.hydra.enable "hydra";
+        ]
+        ++ optional config.services.hydra.enable "hydra";
       in
       {
         inherit (cfg) package;
 
         settings = {
-          experimental-features = "nix-command flakes";
+          experimental-features = "nix-command flakes pipe-operators";
           http-connections = 50;
           warn-dirty = false;
           log-lines = 50;
@@ -91,10 +98,12 @@ in
 
           substituters = [
             cfg.default-substituter.url
-          ] ++ (mapAttrsToList (name: _value: name) cfg.extra-substituters);
+          ]
+          ++ (mapAttrsToList (name: _value: name) cfg.extra-substituters);
           trusted-public-keys = [
             cfg.default-substituter.key
-          ] ++ (mapAttrsToList (_name: value: value.key) cfg.extra-substituters);
+          ]
+          ++ (mapAttrsToList (_name: value: value.key) cfg.extra-substituters);
         };
 
         gc = mkIf (!cfg.nh.enable) {

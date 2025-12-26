@@ -33,6 +33,11 @@ in
           layouts = [
             {
               layout = "fr";
+              variant = "ergol";
+              displayName = "er";
+            }
+            {
+              layout = "fr";
               variant = "bepo";
               displayName = "bé";
             }
@@ -40,11 +45,6 @@ in
               layout = "fr";
               variant = "us";
               displayName = "fr";
-            }
-            {
-              layout = "fr";
-              variant = "ergol";
-              displayName = "er";
             }
           ];
           numlockOnStartup = "on";

@@ -41,15 +41,15 @@ in
 
       workspace = {
         clickItemTo = "open";
-        colorScheme = "Gruvbox";
+        colorScheme = "WarmEyes";
         cursor.theme = "breeze_cursors";
         soundTheme = "ocean";
         tooltipDelay = 5;
         theme = "breeze-dark";
-        iconTheme = "Papirus";
+        iconTheme = "breeze";
         wallpaperSlideShow = mkIf cfg.wallpaper.enable {
-          path = "${home}/Pictures/wallpapers/";
-          interval = 300;
+          path = "${home}/Pictures/Wallpapers/";
+          interval = 600;
         };
         wallpaperFillMode = "stretch";
         windowDecorations = {

@@ -20,8 +20,13 @@ in
 
     home.sessionVariables = {
       NIXOS_OZONE_WL = "1";
+      ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     };
 
-    xdg.configFile."electron-flags.conf".source = ./electron-flags.conf;
+    xdg.configFile."electron-flags.conf".text = ''
+      --enable-features=UseOzonePlatform,WaylandWindowDecorations
+      --ozone-platform=wayland
+      --ozone-platform-hint=wayland
+    '';
   };
 }

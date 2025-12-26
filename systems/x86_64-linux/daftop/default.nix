@@ -25,6 +25,7 @@ in
 
     display-managers = {
       enable = true;
+      defaultSession = "niri";
       autoLogin = {
         enable = true;
         user = config.${namespace}.user.name;
@@ -40,7 +41,7 @@ in
       sudo-rs = enabled;
     };
 
-    services.syncthing = enabled;
+    # services.syncthing = enabled;
 
     suites = {
       desktop = enabled;
@@ -76,6 +77,8 @@ in
     };
 
     services."systemd-networkd".environment.SYSTEMD_LOG_LEVEL = "debug";
+
+    services.orca.enable = true;
   };
 
   # This value determines the NixOS release from which the default

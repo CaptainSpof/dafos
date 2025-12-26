@@ -15,17 +15,14 @@ let
     "sec=none"
     "uid=daf"
     "gid=yahrr"
-    "file_mode=0770"
-    "dir_mode=0770"
+    "file_mode=0775"
+    "dir_mode=0775"
     "vers=3"
     "nounix"
     "x-systemd.automount"
     "noauto"
     "x-systemd.requires=wait-freebox-available.service"
     "x-systemd.after=wait-freebox-available.service"
-    # "x-systemd.idle-timeout=60"
-    # "x-systemd.device-timeout=30s"
-    # "x-systemd.mount-timeout=30s"
   ];
 in
 {

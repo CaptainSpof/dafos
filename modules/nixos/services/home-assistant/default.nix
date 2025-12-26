@@ -61,11 +61,11 @@ in
     #   requiredBy = [ "home-assistant.service" ];
     # };
 
-    systemd.services.zigbee2mqtt.serviceConfig = {
-      # WatchdogSec = "30s";
-      Restart = mkForce "always";
-      # RestartSec = "10s";
-    };
+    # systemd.services.zigbee2mqtt.serviceConfig = {
+    #   # WatchdogSec = "30s";
+    #   Restart = mkForce "always";
+    #   # RestartSec = "10s";
+    # };
 
     services = {
       mosquitto = {
@@ -88,7 +88,7 @@ in
       zigbee2mqtt = {
         enable = true;
         settings = {
-          homeassistant = config.services.home-assistant.enable;
+          # homeassistant = true;
           availability = true;
           advanced.transmit_power = 20;
           permit_join = false;
@@ -121,6 +121,7 @@ in
           "forked_daapd"
           "freebox"
           "google"
+          "google_tasks"
           "google_translate"
           "ibeacon"
           "ipp"
@@ -167,7 +168,6 @@ in
           samsungtv-smart
           smartir
           spook
-          # pkgs.dafos.hass-divoom
           (pkgs.buildHomeAssistantComponent {
             owner = "JurajNyiri";
             domain = "tapo";

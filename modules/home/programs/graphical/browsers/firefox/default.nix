@@ -16,45 +16,18 @@ let
   inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
   cfg = config.${namespace}.programs.graphical.browsers.firefox;
-
   firefoxPath = ".mozilla/firefox/${config.${namespace}.user.name}";
+
 in
 {
-  options.${namespace}.programs.graphical.browsers.firefox = with types; {
-    enable = mkBoolOpt false "Whether or not to enable firefox.";
+  imports = lib.snowfall.fs.get-non-default-nix-files ./.;
 
-    extensions = {
-      packages = mkOpt (listOf package) (with pkgs.nur.repos.rycee.firefox-addons; [
-        absolute-enable-right-click
-        auto-tab-discard
-        bitwarden
-        consent-o-matic
-        darkreader
-        dearrow
-        downthemall
-        enhancer-for-youtube
-        firefox-color
-        flagfox
-        french-language-pack
-        fx_cast
-        languagetool
-        org-capture # TODO: setup
-        plasma-integration
-        reddit-enhancement-suite
-        refined-github
-        return-youtube-dislikes
-        simple-tab-groups
-        sponsorblock
-        stylus
-        tridactyl
-        ublock-origin
-        user-agent-string-switcher
-        view-image
-        violentmonkey
-      ]) "Extensions to install";
-    };
+  options.${namespace}.programs.graphical.browsers.firefox = with types; {
+    enable = mkBoolOpt true "Whether or not to enable firefox.";
 
     extraConfig = mkOpt str "" "Extra configuration for the user profile JS file.";
+    gpuAcceleration = mkBoolOpt false "Enable GPU acceleration.";
+    hardwareDecoding = mkBoolOpt false "Enable hardware video decoding.";
 
     package = mkOpt types.package pkgs.firefox "The firefox package to be used.";
 
@@ -64,7 +37,7 @@ in
       DisableFormHistory = true;
       DisablePocket = true;
       DisableTelemetry = true;
-      DisplayBookmarksToolbar = true;
+      DisplayBookmarksToolbar = false;
       DontCheckDefaultBrowser = true;
       FirefoxHome = {
         Pocket = false;
@@ -87,149 +60,10 @@ in
         "wikipedia@search.mozilla.org".installation_mode = "blocked";
 
         "tridactyl".installation_mode = "force_installed";
-
-        "frankerfacez@frankerfacez.com" = {
-          installation_mode = "force_installed";
-          install_url = "https://cdn.frankerfacez.com/script/frankerfacez-4.0-an+fx.xpi";
-        };
-
-        "magnolia_limited_permissions@12.34" = {
-          installation_mode = "force_installed";
-          install_url = "https://gitlab.com/magnolia1234/bpc-uploads/-/raw/master/bypass_paywalls_clean-3.2.3.0-custom.xpi";
-        };
-
-        "ATBC@EasonWong" = {
-          installation_mode = "force_installed";
-          install_url = "https://addons.mozilla.org/firefox/downloads/file/4159211/adaptive_tab_bar_colour-2.1.4.xpi";
-        };
       };
       Preferences = { };
     } "Policies to apply to firefox";
 
-    search = mkOpt attrs {
-      default = "qwant";
-      privateDefault = "qwant";
-      force = true;
-
-      engines = {
-
-        "Nix Issues" = {
-          icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-          definedAliases = [
-            "ni"
-            "@ni"
-          ];
-          urls = [
-            {
-              template = "https://github.com/NixOS/nixpkgs/issues";
-              params = [
-                {
-                  name = "q";
-                  value = "{searchTerms}";
-                }
-              ];
-            }
-          ];
-        };
-
-        "Nix Packages" = {
-          icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-          definedAliases = [
-            "n"
-            "@n"
-          ];
-          urls = [
-            {
-              template = "https://search.nixos.org/packages";
-              params = [
-                {
-                  name = "type";
-                  value = "packages";
-                }
-                {
-                  name = "channel";
-                  value = "unstable";
-                }
-                {
-                  name = "query";
-                  value = "{searchTerms}";
-                }
-              ];
-            }
-          ];
-        };
-
-        "NixOS Options" = {
-          icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-          definedAliases = [
-            "no"
-            "@no"
-          ];
-          urls = [
-            {
-              template = "https://search.nixos.org/options";
-              params = [
-                {
-                  name = "channel";
-                  value = "unstable";
-                }
-                {
-                  name = "query";
-                  value = "{searchTerms}";
-                }
-              ];
-            }
-          ];
-        };
-
-        "GitHub" = {
-          icon = "https://github.com/favicon.ico";
-          updateInterval = 24 * 60 * 60 * 1000;
-          definedAliases = [
-            "gh"
-            "@gh"
-          ];
-
-          urls = [
-            {
-              template = "https://github.com/search";
-              params = [
-                {
-                  name = "q";
-                  value = "{searchTerms}";
-                }
-              ];
-            }
-          ];
-        };
-
-        "Home Manager Options" = {
-          icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-          definedAliases = [
-            "hm"
-            "@hm"
-          ];
-          urls = [
-            {
-              template = "https://home-manager-options.extranix.com";
-              params = [
-                {
-                  name = "query";
-                  value = "{searchTerms}";
-                }
-                {
-                  name = "release";
-                  value = "master";
-                }
-              ];
-            }
-          ];
-        };
-      };
-    } "Search configuration";
-
-    gpuAcceleration = mkBoolOpt false "Enable GPU acceleration.";
-    hardwareDecoding = mkBoolOpt false "Enable hardware video decoding.";
     settings = mkOpt attrs { } "Settings to apply to the profile.";
     userChrome = mkOpt str "" "Extra configuration for the user chrome CSS file.";
   };
@@ -248,11 +82,6 @@ in
 
             recursive = true;
           };
-          # "${firefoxPath}/chrome/" = {
-          #   source = lib.cleanSourceWith { src = lib.cleanSource ./chrome/.; };
-
-          #   recursive = true;
-          # };
         }
       ];
     };
@@ -264,23 +93,37 @@ in
 
     home.packages = with pkgs; [
       fx-cast-bridge
+      pywalfox-native
     ];
+
+    home.sessionVariables = {
+      MOZ_USE_XINPUT2 = "1";
+    };
 
     programs.firefox = {
       enable = true;
 
+      package = cfg.package;
+      # package = cfg.package.override (orig: {
+      #   nativeMessagingHosts = (orig.nativeMessagingHosts or [ ]) ++ [
+      #     pkgs.tridactyl-native
+      #     pkgs.kdePackages.plasma-browser-integration
+      #     pkgs.fx-cast-bridge
+      #   ];
+      # });
+
+      nativeMessagingHosts = [
+        pkgs.tridactyl-native
+        pkgs.kdePackages.plasma-browser-integration
+        pkgs.fx-cast-bridge
+        pkgs.uget-integrator
+        pkgs.pywalfox-native
+      ];
+
       inherit (cfg) policies;
 
-      package = cfg.package.override (orig: {
-        nativeMessagingHosts = (orig.nativeMessagingHosts or [ ]) ++ [
-          pkgs.tridactyl-native
-          pkgs.kdePackages.plasma-browser-integration
-          pkgs.fx-cast-bridge
-        ];
-      });
-
       profiles.${config.${namespace}.user.name} = {
-        inherit (cfg) extraConfig extensions search;
+        inherit (cfg) extraConfig;
         inherit (config.${namespace}.user) name;
 
         id = 0;
@@ -290,6 +133,7 @@ in
           {
             "accessibility.typeaheadfind.enablesound" = false;
             "accessibility.typeaheadfind.flashBar" = 0;
+
             "browser.aboutConfig.showWarning" = false;
             "browser.aboutwelcome.enabled" = false;
             "browser.bookmarks.autoExportHTML" = true;
@@ -357,7 +201,10 @@ in
                 "popupwindow_ettoolong-browser-action"
                 "sponsorblocker_ajay_app-browser-action"
                 "ublock0_raymondhill_net-browser-action"
+                "adnauseam_rednoise_org-browser-action"
                 "dearrow_ajay_app-browser-action"
+                "_3c6bf0cc-3ae2-42fb-9993-0d33104fdcaf_-browser-action"
+                "newtaboverride_agenedia_com-browser-action"
               ];
 
               dirtyAreaCache = [
@@ -372,16 +219,20 @@ in
               newElementCount = 2;
             };
 
-            "sidebar.verticalTabs" = true;
+            "browser.ctrlTab.sortByRecentlyUsed" = true;
             "browser.tabs.inTitlebar" = 0;
-            "browser.theme.content-theme" = 0;
+            "browser.theme.content-theme" = 0; # follow system theme (2)
             "browser.theme.toolbar-theme" = 0;
+
             "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
+            "extensions.autoDisableScopes" = 0;
 
             "font.name.monospace.x-western" = "MonaspiceKr Nerd Font";
             "font.name.sans-serif.x-western" = "MonaspiceNe Nerd Font";
             "font.name.serif.x-western" = "MonaspiceNe Nerd Font";
             "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+            "svg.context-properties.content.enabled" = true;
+            "userChrome.theme-material" = true;
 
             "devtools.chrome.enabled" = true;
             "devtools.debugger.remote-enabled" = true;
@@ -396,7 +247,7 @@ in
             "geo.provider.use_corelocation" = false;
             "geo.provider.use_geoclue" = false;
             "geo.provider.use_gpsd" = false;
-            "intl.accept_languages" = "en-US,en";
+            "intl.accept_languages" = "en-US,en,fr";
 
             "media.eme.enabled" = true;
             "media.videocontrols.picture-in-picture.video-toggle.enabled" = false;
@@ -428,6 +279,25 @@ in
 
             "signon.autofillForms" = false;
             "signon.rememberSignons" = false;
+
+            # Sidebar
+            "sidebar.revamp" = true;
+            "sidebar.verticalTabs" = true;
+            # "sidebar.visibility" = "expand-on-hover";
+            "browser.tabs.groups.smart.userEnabled" = false;
+
+            "apz.overscroll.enabled" = true; # DEFAULT NON-LINUX
+            "general.smoothScroll" = true; # DEFAULT
+            "general.smoothScroll.msdPhysics.continuousMotionMaxDeltaMS" = 12;
+            # "general.smoothScroll.msdPhysics.enabled" = true;
+            "general.smoothScroll.msdPhysics.motionBeginSpringConstant" = 600;
+            "general.smoothScroll.msdPhysics.regularSpringConstant" = 650;
+            "general.smoothScroll.msdPhysics.slowdownMinDeltaMS" = 25;
+            "general.smoothScroll.msdPhysics.slowdownMinDeltaRatio" = "2";
+            "general.smoothScroll.msdPhysics.slowdownSpringConstant" = 250;
+            "general.smoothScroll.currentVelocityWeighting" = "1";
+            "general.smoothScroll.stopDecelerationWeighting" = "1";
+            "mousewheel.default.delta_multiplier_y" = 300; # 250-400; adjust this number to your liking
           }
           (optionalAttrs cfg.gpuAcceleration {
             "dom.webgpu.enabled" = true;
@@ -447,7 +317,7 @@ in
           })
         ];
 
-        inherit (cfg) userChrome;
+        # inherit (cfg) userChrome;
       };
     };
   };

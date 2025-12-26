@@ -97,9 +97,9 @@ in
           # systemd
           sys = "sudo systemctl";
           sysu = "systemctl --user";
-          j = "journalctl";
-          jb = "journalctl -b";
-          ju = "journalctl -u";
+          j = "journalctl | lnav";
+          jb = "journalctl -b | lnav";
+          ju = "journalctl -u | lnav";
 
           # misc
           q = "exit";
@@ -135,10 +135,10 @@ in
             name = "colored-man-pages";
             src = pkgs.fishPlugins.colored-man-pages;
           }
-          {
-            name = "async-prompt";
-            inherit (pkgs.fishPlugins.async-prompt) src;
-          }
+          # {
+          #   name = "async-prompt";
+          #   inherit (pkgs.fishPlugins.async-prompt) src;
+          # }
         ];
       };
     };

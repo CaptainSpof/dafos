@@ -27,18 +27,27 @@ in
       findutils
       fzf
       killall
+      lnav
       lsof
       pciutils
       procs
+      ttyper
       unrar
       unzip
       wget
-      ydotool
       xclip
       xdotool
       xorg.xprop
       xorg.xwininfo
+      ydotool
+      brave
     ];
+
+    # nps.stacks.calibre.enable = true;
+    nps.stacks.ephemera.enable = true;
+    # nps.stacks.homeassistant.enable = true;
+    # nps.stacks.calibre.containers.calibre.enable = false;
+    # nps.stacks.calibre.containers.calibre-downloader.enable = true;
 
     dafos = {
       programs = {
@@ -53,7 +62,7 @@ in
 
         terminal = {
           emulators = {
-            alacritty = disabled;
+            alacritty = enabled;
             kitty = enabled;
             wezterm = enabled;
           };
@@ -83,9 +92,11 @@ in
         };
       };
       services = {
-        espanso = enabled;
+        espanso = disabled;
       };
     };
+
+    programs.zen-browser.enable = true;
 
     programs.readline = {
       enable = true;

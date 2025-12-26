@@ -50,7 +50,7 @@ in
             format = "[󱦟 $duration ]($style)";
           };
 
-          fill.symbol = " ";
+          fill.symbol = "·";
           line_break = {
             disabled = true;
           };

@@ -9,14 +9,15 @@ keybinds clear-defaults=true {
 
         bind "Alt +" "Alt =" { Resize "Increase"; }
         bind "Alt -" { Resize "Decrease"; }
-
+ 
         bind "Alt n" { NewPane; }
+        bind "Alt p" { ToggleFloatingPanes; SwitchToMode "normal"; }
     }
     shared_among "pane" "tab" "resize" "move" "search" "session" {
         bind "Alt b" { SwitchToMode "tmux"; }
         bind "Alt g" { SwitchToMode "locked"; }
         bind "Alt h" { SwitchToMode "move"; }
-        bind "Alt p" { SwitchToMode "pane"; }
+        // bind "Alt p" { SwitchToMode "pane"; }
         bind "Alt q" { Quit; }
         bind "Ctrl r" { SwitchToMode "resize"; }
         bind "Ctrl s" { SwitchToMode "scroll"; }
@@ -184,6 +185,7 @@ copy_command "wl-copy"
 copy_clipboard "primary"
 mirror_session true
 session_serialization true
+show_startup_tips false
 
 plugins {
     session-manager { path "session-manager"; }

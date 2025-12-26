@@ -22,13 +22,14 @@ in
     services.espanso = {
       enable = true;
       package = pkgs.espanso-wayland;
+      waylandSupport = true;
 
       configs = {
         default = {
           search_shortcut = "ALT+SHIFT+SPACE";
           keyboard_layout = {
             layout = "fr";
-            variant = "bepo";
+            variant = "ergol";
           };
           backend = "inject";
           inject_delay = 5;

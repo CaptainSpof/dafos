@@ -33,9 +33,10 @@ in
         google-fonts
         julia-mono
         maple-mono.NF
+        iosevka-comfy.comfy
         mononoki
         noto-fonts
-        noto-fonts-emoji
+        noto-fonts-color-emoji
         roboto
         roboto-mono
         sarasa-gothic

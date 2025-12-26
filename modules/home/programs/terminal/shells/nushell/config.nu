@@ -15,36 +15,36 @@ let fish_completer = {|spans|
 
 # Default to carapace, with optional command-specific overrides to fish completions.
 # via <https://www.nushell.sh/cookbook/external_completers.html#putting-it-all-together>
-let external_completers = {|spans|
+# let external_completers = {|spans|
 
-    # Workaround for lack of alias completion (via manual: <https://www.nushell.sh/cookbook/external_completers.html#alias-completions>)
-    # TODO(<https://github.com/nushell/nushell/issues/8483>): remove
-    let expanded_alias = (scope aliases | where name == $spans.0 | get -i 0 | get -i expansion)
-    let spans = (if $expanded_alias != null  {
-        $spans | skip 1 | prepend ($expanded_alias | split words)
-    } else { $spans })
+#     # Workaround for lack of alias completion (via manual: <https://www.nushell.sh/cookbook/external_completers.html#alias-completions>)
+#     # TODO(<https://github.com/nushell/nushell/issues/8483>): remove
+#     let expanded_alias = (scope aliases | where name == $spans.0 | get -i 0 | get -i expansion)
+#     let spans = (if $expanded_alias != null  {
+#         $spans | skip 1 | prepend ($expanded_alias | split words)
+#     } else { $spans })
 
-    {
-        # carapace completions are incorrect for nu
-        nu: $fish_completer
-        # fish completes commits and branch names in a nicer way
-        git: $fish_completer
-    } | get -i $spans.0 | default $carapace_completer | do $in $spans
+#     {
+#         # carapace completions are incorrect for nu
+#         nu: $fish_completer
+#         # fish completes commits and branch names in a nicer way
+#         git: $fish_completer
+#     } | get -i $spans.0 | default $carapace_completer | do $in $spans
 
-}
+# }
 
-def "history fzf" [] {
-  commandline (
-    history
-      | each { |it| $it.command }
-      | uniq
-      | reverse
-      | str join (char -i 0)
-      | fzf --read0 --layout=reverse --height=40% -q (commandline)
-      | decode utf-8
-      | str trim
-  )
-}
+# def "history fzf" [] {
+#   commandline (
+#     history
+#       | each { |it| $it.command }
+#       | uniq
+#       | reverse
+#       | str join (char -i 0)
+#       | fzf --read0 --layout=reverse --height=40% -q (commandline)
+#       | decode utf-8
+#       | str trim
+#   )
+# }
 
 let dark_theme = {
   separator: "#a89984"
@@ -133,10 +133,10 @@ $env.config = {
   completions: {
     case_sensitive: false
     algorithm: "fuzzy"
-    external: {
-      enable: true,
-      completer: $external_completers
-    }
+    # external: {
+    #   enable: true,
+    #   completer: $external_completers
+    # }
   }
   color_config: $dark_theme
 }

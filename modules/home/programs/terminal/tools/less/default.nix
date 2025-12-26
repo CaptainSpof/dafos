@@ -19,13 +19,13 @@ in
   config = mkIf cfg.enable {
     programs.less = {
       enable = true;
-      keys = ''
-        c   next-tag
-        C   prev-tag
-        t   forw-line
-        s   back-line
-        T   forw-scroll
-        S   back-scroll
+      config = ''
+        l   next-tag
+        L   prev-tag
+        r   forw-line
+        t   back-line
+        R   forw-scroll
+        T   back-scroll
       '';
     };
   };

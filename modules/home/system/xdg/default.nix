@@ -2,6 +2,7 @@
   config,
   lib,
   namespace,
+  pkgs,
   ...
 }:
 
@@ -167,8 +168,10 @@ in
       sessionVariables = {
         TERMINAL = cfg.terminal;
         EDITOR = cfg.editor;
+        XDG_MENU_PREFIX = "plasma-";
       };
     };
+
 
     xdg = {
       enable = true;

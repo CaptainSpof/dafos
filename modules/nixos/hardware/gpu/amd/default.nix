@@ -32,6 +32,8 @@ in
       lact
     ];
 
+    services.lact.enable = true;
+
     environment.variables = {
       # VAAPI and VDPAU config for accelerated video.
       # See https://wiki.archlinux.org/index.php/Hardware_video_acceleration
@@ -42,18 +44,20 @@ in
     # enables AMDVLK & OpenCL support
     hardware = {
       amdgpu = {
-        amdvlk = {
-          inherit (cfg.amdvlk) enable;
-          package = pkgs.amdvlk;
+        # amdvlk = {
+        #   inherit (cfg.amdvlk) enable;
+        #   package = pkgs.amdvlk;
 
-          support32Bit = {
-            enable = true;
-          };
-        };
+        #   support32Bit = {
+        #     enable = true;
+        #   };
+        # };
         inherit (cfg) opencl;
       };
 
       graphics = {
+        enable = true;
+        enable32Bit = true;
         extraPackages = with pkgs; [
           # mesa
           mesa

@@ -21,7 +21,7 @@ in
     services.xserver = {
       xkb = {
         layout = "fr";
-        variant = "bepo";
+        variant = "ergol";
         options = "caps:escape";
       };
     };

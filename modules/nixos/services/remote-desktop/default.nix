@@ -20,6 +20,12 @@ in
   config = mkIf cfg.enable {
     networking.firewall.allowedTCPPorts = [ 3389 ];
 
+    services.xrdp = {
+      enable = true;
+      defaultWindowManager = "startplasma-x11";
+      openFirewall = true;
+    };
+
     environment.systemPackages = with pkgs; [
       kdePackages.krdc
       kdePackages.krfb

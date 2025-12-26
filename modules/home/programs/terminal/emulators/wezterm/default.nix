@@ -15,16 +15,16 @@ in
 {
   options.${namespace}.programs.terminal.emulators.wezterm = {
     enable = mkBoolOpt false "Whether or not to enable wezterm.";
-    wayland.enable = mkBoolOpt false "Whether or not to enable wayland in wezterm.";
+    wayland.enable = mkBoolOpt true "Whether or not to enable wayland in wezterm.";
 
-    frontEnd = mkOpt types.str "OpenGL" "The front end to use.";
+    frontEnd = mkOpt types.str "WebGpu" "The front end to use.";
   };
 
   config = mkIf cfg.enable {
     programs.wezterm = {
       enable = true;
-
-      extraConfig = ''
+ 
+     extraConfig = ''
         local wezterm = require("wezterm")
         return {
 
@@ -45,7 +45,7 @@ in
           default_cursor_style = "BlinkingUnderline",
 
           -- Color scheme
-          color_scheme = 'Gruvbox Material (Gogh)',
+          color_scheme = 'Kanagawa (Gogh)',
 
           -- Font
           font_size = 14.0,
@@ -69,12 +69,17 @@ in
           enable_wayland = ${if cfg.wayland.enable then "true" else "false"},
           front_end = "${cfg.frontEnd}",
           scrollback_lines = 10000,
-          max_fps = 120,
 
           -- term window settings
-          window_background_opacity = 0.75,
+          adjust_window_size_when_changing_font_size = false,
+          inactive_pane_hsb = {
+            saturation = 1.0,
+            brightness = 0.8
+          },
+          window_background_opacity = 0.95,
+          window_close_confirmation = "NeverPrompt",
           window_decorations = "NONE",
-          window_padding = { left = 10, right = 10, top = 10, bottom = 10, },
+          window_padding = { left = 12, right = 12, top = 12, bottom = 12, },
         }
       '';
     };

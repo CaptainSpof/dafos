@@ -47,9 +47,9 @@ in
         ]
         ++ lib.optionals cfg.postman.enable [ postman ];
 
-      shellAliases = {
-        prefetch-sri = "nix store prefetch-file $1";
-      };
+      # shellAliases = {
+      #   prefetch-sri = "nix store prefetch-file $1";
+      # };
     };
 
     dafos = {
@@ -74,7 +74,7 @@ in
             lazydocker.enable = cfg.docker.enable;
             lazygit = enabled;
             node = disabled;
-            python = enabled;
+            python = disabled;
             tealdeer = enabled;
           };
         };

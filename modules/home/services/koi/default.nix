@@ -60,7 +60,7 @@ in
         light = "Gruvbox-Light";
       };
       IconTheme = {
-        enabled = true;
+        enabled = false;
         dark = "Papirus-Dark";
         light = "Papirus";
       };

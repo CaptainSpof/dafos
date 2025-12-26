@@ -28,6 +28,7 @@ in
       desktop = {
         gnome = disabled;
         plasma = enabled;
+        niri = enabled;
       };
     };
   };

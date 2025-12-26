@@ -15,13 +15,21 @@ let
 
   defaultPackages = with pkgs; [
     # Apps
+    kdePackages.accounts-qt
+    # kdePackages.itinerary
+    kdePackages.kaccounts-integration
+    kdePackages.kaccounts-providers
     kdePackages.kalk
     kdePackages.kcolorchooser
+    kdePackages.kdesu
     kdePackages.koi
     kdePackages.ksystemlog
     kdePackages.kweather
     kdePackages.merkuro
-    kdePackages.itinerary
+    kdePackages.plasma-nm
+    kdePackages.partitionmanager
+    kdePackages.signon-kwallet-extension
+    kdePackages.signond
     # Themes
     dafos.kde-warm-eyes
     dafos.leaf-kde
@@ -29,7 +37,7 @@ let
     gruvbox-gtk-theme
     kde-gruvbox
     papirus-icon-theme
-    inputs.darkly.packages.${pkgs.system}.darkly-qt6
+    inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt6
     # Utils
     kdotool
     wl-clipboard
@@ -47,15 +55,26 @@ in
 
   config = mkIf cfg.enable {
     dafos = {
-      desktop.addons = {
-        electron-support = enabled;
-      };
+      desktop.addons.electron-support = enabled;
       services.koi.enable = cfg.themeSwitcher;
     };
 
     programs.plasma.enable = true;
 
-    qt.enable = true;
+    home.sessionVariables = {
+      QT_QPA_PLATFORMTHEME = "qt6ct";
+      QT_QPA_PLATFORMTHEME_QT6 = "qt6ct";
+      QT_STYLE_OVERRIDE = "qt6ct";
+    };
+
+    qt = {
+      enable = true;
+      style.package = [
+        inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt5
+        inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt6
+      ];
+      # platformTheme.name = "kde6";
+    };
 
     home.packages =
       with pkgs;

@@ -17,6 +17,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable sddm.";
     autoLogin.enable = mkBoolOpt false "Whether or not to enable autoLogin";
     autoLogin.user = mkOpt str "" "The user to auto login with.";
+    defaultSession = mkOpt str "" "The default session to use.";
   };
 
   config = mkIf cfg.enable {
@@ -26,6 +27,8 @@ in
 
     services = {
       displayManager = {
+        # inherit (cfg) defaultSession;
+        defaultSession = "niri";
         autoLogin = {
           inherit (cfg.autoLogin) enable user;
         };

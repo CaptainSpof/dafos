@@ -25,7 +25,7 @@ let
 
   format-policy =
     name: file:
-    pkgs.runCommandNoCC "formatted-vault-policy"
+    pkgs.runCommand "formatted-vault-policy"
       {
         inherit file;
         buildInputs = [ package ];
