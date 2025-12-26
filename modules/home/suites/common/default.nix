@@ -43,12 +43,6 @@ in
       brave
     ];
 
-    # nps.stacks.calibre.enable = true;
-    nps.stacks.ephemera.enable = true;
-    # nps.stacks.homeassistant.enable = true;
-    # nps.stacks.calibre.containers.calibre.enable = false;
-    # nps.stacks.calibre.containers.calibre-downloader.enable = true;
-
     dafos = {
       programs = {
         graphical = {

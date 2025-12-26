@@ -26,7 +26,9 @@ in
           enable = false;
           lockOnResume = false;
         };
-        extraPackages = [ inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+        extraPackages = [
+          inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default
+        ];
         config.powerdevil.autoSuspend.action = "nothing";
         panels = {
           topPanel = {
@@ -80,7 +82,10 @@ in
         aws.enable = true;
       };
 
-      games = enabled;
+      games = {
+        enable = true;
+        lutris = enabled;
+      };
 
       graphics = {
         enable = true;

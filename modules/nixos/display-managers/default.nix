@@ -27,8 +27,7 @@ in
 
     services = {
       displayManager = {
-        # inherit (cfg) defaultSession;
-        defaultSession = "niri";
+        inherit (cfg) defaultSession;
         autoLogin = {
           inherit (cfg.autoLogin) enable user;
         };

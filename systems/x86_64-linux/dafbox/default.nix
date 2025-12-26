@@ -25,6 +25,7 @@ in
 
     display-managers = {
       enable = true;
+      defaultSession = "plasma";
       autoLogin = {
         enable = true;
         user = config.${namespace}.user.name;
@@ -37,6 +38,7 @@ in
     };
 
     services.syncthing = enabled;
+    services.sunshine = enabled;
 
     suites = {
       desktop = enabled;
