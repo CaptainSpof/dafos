@@ -106,6 +106,7 @@ let
             "org.kde.kdeconnect"
             "org.kde.merkuro.contact.applet"
             "org.kde.plasma.keyboardlayout"
+            "org.kde.plasma.kweather_1x4"
           ];
           configs = {
             battery.showPercentage = true;

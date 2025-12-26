@@ -46,7 +46,7 @@ in
         soundTheme = "ocean";
         tooltipDelay = 5;
         theme = "breeze-dark";
-        iconTheme = "breeze";
+        iconTheme = "papirus-dark";
         wallpaperSlideShow = mkIf cfg.wallpaper.enable {
           path = "${home}/Pictures/Wallpapers/";
           interval = 600;
