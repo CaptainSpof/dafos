@@ -13,10 +13,10 @@ git-hooks-nix.lib.${pkgs.stdenv.hostPlatform.system}.run {
     clang-tidy.enable = true;
     luacheck.enable = true;
     pre-commit-hook-ensure-sops.enable = true;
-    # treefmt = {
-    #   enable = true;
-    #   settings.fail-on-change = false;
-    #   packageOverrides.treefmt = inputs.treefmt-nix.lib.mkWrapper pkgs ../../treefmt.nix;
-    # };
+    treefmt = {
+      enable = true;
+      settings.fail-on-change = false;
+      packageOverrides.treefmt = inputs.treefmt-nix.lib.mkWrapper pkgs ../../treefmt.nix;
+    };
   };
 }
