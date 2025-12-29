@@ -19,8 +19,6 @@ in
       networkmanager = {
         enable = true;
 
-        wifi.backend = "iwd";
-
         connectionConfig = {
           "connection.mdns" = "2";
         };
