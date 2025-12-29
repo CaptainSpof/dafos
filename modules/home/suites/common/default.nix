@@ -17,6 +17,20 @@ in
   };
 
   config = mkIf cfg.enable {
+    sops = {
+      secrets."github-access-token-flake-update" = {
+        sopsFile = lib.snowfall.fs.get-file "secrets/daf/github.yaml";
+      };
+      templates."nix-access-tokens" = {
+        content = ''
+          access-tokens = github.com=${config.sops.placeholder."github-access-token-flake-update"}
+        '';
+      };
+    };
+
+    nix.extraOptions = ''
+      !include ${config.sops.templates."nix-access-tokens".path}
+    '';
 
     home.packages = with pkgs; [
       coreutils
