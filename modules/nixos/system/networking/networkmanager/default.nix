@@ -16,12 +16,10 @@ in
     dafos.user.extraGroups = [ "networkmanager" ];
 
     networking = {
-      wireless.iwd.enable = true;
       networkmanager = {
         enable = true;
 
-        # wifi.backend = "iwd";
-        # dhcp = "internal";
+        wifi.backend = "iwd";
 
         connectionConfig = {
           "connection.mdns" = "2";

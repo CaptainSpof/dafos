@@ -22,22 +22,27 @@ in
       # and allows you to ping connected hosts by hostname
       domains = [ "~." ];
       dnsovertls = "true";
-      # fallbackDns = [
-      #   "8.8.8.8"
-      #   "100.100.100.100"
-      #   # TODO: add local DNS?
-      # ]; # Additional upstream DNS servers
-    };
 
-    environment.etc = {
-      "systemd/resolved.conf".text = ''
-        [Resolve]
-        DNS=100.122.98.115
-        Domains=~plop
-
-        DNS=100.70.68.47:8123  # HASS
-        Domains=hass.plop
+      extraConfig = lib.mkIf config.services.avahi.enable ''
+        MulticastDNS=no
       '';
+
+      fallbackDns = [
+        "8.8.8.8"
+        "1.1.1.1"
+        "100.100.100.100"
+      ];
     };
+
+    # environment.etc = {
+    #   "systemd/resolved.conf".text = ''
+    #     [Resolve]
+    #     DNS=100.122.98.115
+    #     Domains=~plop
+
+    #     DNS=100.70.68.47:8123  # HASS
+    #     Domains=hass.plop
+    #   '';
+    # };
   };
 }
