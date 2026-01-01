@@ -98,8 +98,14 @@ in
           sys = "sudo systemctl";
           sysu = "systemctl --user";
           j = "journalctl | lnav";
-          jb = "journalctl -b | lnav";
-          ju = "journalctl -u | lnav";
+          jb = {
+            expansion = "journalctl -b % | lnav";
+            setCursor = true;
+          };
+          ju = {
+            expansion = "journalctl -u % | lnav";
+            setCursor = true;
+          };
 
           # misc
           q = "exit";
