@@ -9,7 +9,6 @@
 let
   inherit (lib) mkIf mkForce;
   inherit (lib.${namespace}) mkBoolOpt;
-  inherit (config.${namespace}.programs.graphical.launchers) vicinae;
 
   cfg = config.${namespace}.desktop.niri;
   firefox-pkg = config.${namespace}.programs.graphical.browsers.firefox.package;
@@ -263,16 +262,18 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = [
+        pkgs.kdePackages.xdg-desktop-portal-kde
         pkgs.xdg-desktop-portal-gtk
         pkgs.xdg-desktop-portal-gnome
         pkgs.xdg-desktop-portal-wlr
       ];
       configPackages = [
+        pkgs.kdePackages.xdg-desktop-portal-kde
         pkgs.xdg-desktop-portal-gtk
         pkgs.xdg-desktop-portal-gnome
         pkgs.xdg-desktop-portal-wlr
       ];
-      config.common.default = "gtk";
+      config.common.default = "kde";
     };
 
     home.packages = with pkgs; [

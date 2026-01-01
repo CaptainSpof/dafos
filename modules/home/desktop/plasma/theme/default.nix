@@ -41,7 +41,7 @@ in
 
       workspace = {
         clickItemTo = "open";
-        colorScheme = "WarmEyes";
+        colorScheme = "DankMatugenDark";
         cursor.theme = "breeze_cursors";
         soundTheme = "ocean";
         tooltipDelay = 5;

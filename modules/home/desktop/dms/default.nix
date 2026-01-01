@@ -179,7 +179,6 @@ in
       [templates.custom_qt6ct]
       input_path = "${templatePath}"
       output_path = "${targetOutputPath}"
-
     '';
 
     systemd.user.services.qt6ct-reload = {

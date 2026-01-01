@@ -64,7 +64,6 @@ in
     home.sessionVariables = {
       QT_QPA_PLATFORMTHEME = "qt6ct";
       QT_QPA_PLATFORMTHEME_QT6 = "qt6ct";
-      QT_STYLE_OVERRIDE = "qt6ct";
     };
 
     qt = {
