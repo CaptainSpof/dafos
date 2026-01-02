@@ -40,7 +40,6 @@ in
 
     environment.systemPackages = with pkgs; [
       tailscale
-      tailscale-systray
     ];
 
     networking = {

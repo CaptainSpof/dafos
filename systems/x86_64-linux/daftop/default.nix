@@ -65,16 +65,6 @@ in
   };
 
   systemd = {
-    network.networks = {
-      # wired interfaces e.g. ethernet
-      "30-network-defaults-wired" = {
-        matchConfig.Name = "en* | eth* | usb*";
-        networkConfig = {
-          DHCP = "ipv4";
-          MulticastDNS = true;
-        };
-      };
-    };
 
     services."systemd-networkd".environment.SYSTEMD_LOG_LEVEL = "debug";
 
