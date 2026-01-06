@@ -2,6 +2,8 @@
   config,
   lib,
   namespace,
+  pkgs,
+  inputs,
   ...
 }:
 
@@ -65,5 +67,29 @@ in
         };
       };
     };
+
+    qt = {
+      enable = true;
+      style.package = [
+        inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt5
+        inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt6
+      ];
+      # platformTheme.name = "kde6";
+    };
+
+    home.sessionVariables = {
+      QT_QPA_PLATFORMTHEME = "qt6ct";
+      QT_QPA_PLATFORMTHEME_QT6 = "qt6ct";
+    };
+
+    home.packages = with pkgs; [
+      dafos.kde-warm-eyes
+      dafos.leaf-kde
+      dafos.plasma-applet-netspeed-widget
+      gruvbox-gtk-theme
+      kde-gruvbox
+      papirus-icon-theme
+      inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt6
+    ];
   };
 }

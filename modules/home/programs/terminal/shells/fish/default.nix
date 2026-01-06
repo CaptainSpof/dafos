@@ -97,7 +97,10 @@ in
           # systemd
           sys = "sudo systemctl";
           sysu = "systemctl --user";
-          j = "journalctl | lnav";
+          j = {
+            expansion = "journalctl % | lnav";
+            setCursor = true;
+          };
           jb = {
             expansion = "journalctl -b % | lnav";
             setCursor = true;

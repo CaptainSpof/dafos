@@ -49,12 +49,12 @@ in
       unrar
       unzip
       wget
+      wl-clipboard
       xclip
       xdotool
       xorg.xprop
       xorg.xwininfo
       ydotool
-      brave
     ];
 
     dafos = {

@@ -3,7 +3,6 @@
   lib,
   namespace,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -16,31 +15,23 @@ let
   defaultPackages = with pkgs; [
     # Apps
     kdePackages.accounts-qt
-    # kdePackages.itinerary
     kdePackages.kaccounts-integration
     kdePackages.kaccounts-providers
+    kdePackages.kdesu
+    kdePackages.plasma-nm
+    kdePackages.signon-kwallet-extension
+    kdePackages.signond
+    # Utils
+    kdotool
+  ];
+  fullPackages = with pkgs; [
+    # kdePackages.itinerary
     kdePackages.kalk
     kdePackages.kcolorchooser
-    kdePackages.kdesu
-    kdePackages.koi
     kdePackages.ksystemlog
     kdePackages.kweather
     kdePackages.merkuro
-    kdePackages.plasma-nm
     kdePackages.partitionmanager
-    kdePackages.signon-kwallet-extension
-    kdePackages.signond
-    # Themes
-    dafos.kde-warm-eyes
-    dafos.leaf-kde
-    dafos.plasma-applet-netspeed-widget
-    gruvbox-gtk-theme
-    kde-gruvbox
-    papirus-icon-theme
-    inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt6
-    # Utils
-    kdotool
-    wl-clipboard
   ];
 in
 {
@@ -49,6 +40,7 @@ in
 
     extraPackages = mkOpt (listOf package) [ ] "Extra Packages to install";
 
+    full = mkBoolOpt true "Whether or not to enable slim down version of plasma.";
     touchScreen = mkBoolOpt false "Whether or not to enable touch screen capabilities.";
     themeSwitcher = mkBoolOpt false "Whether or not to enable theme switcher service.";
   };
@@ -61,20 +53,6 @@ in
 
     programs.plasma.enable = true;
 
-    home.sessionVariables = {
-      QT_QPA_PLATFORMTHEME = "qt6ct";
-      QT_QPA_PLATFORMTHEME_QT6 = "qt6ct";
-    };
-
-    qt = {
-      enable = true;
-      style.package = [
-        inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt5
-        inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt6
-      ];
-      # platformTheme.name = "kde6";
-    };
-
     home.packages =
       with pkgs;
       (lib.optionals cfg.touchScreen [
@@ -83,6 +61,7 @@ in
         maliit-keyboard
       ])
       ++ defaultPackages
+      ++ (lib.optionals cfg.full fullPackages)
       ++ cfg.extraPackages;
   };
 }

@@ -51,8 +51,8 @@ in
     font.mono = mkOpt types.str "Departure Mono" "Mono Font to use for the system.";
     font.ui = mkOpt types.str "Inter" "UI Font to use for the system.";
 
-    location.latitude = mkOpt types.str "48.85" "The latitude of the user.";
-    location.longitude = mkOpt types.str "2.35" "The longitude of the user.";
+    location.latitude = mkOpt types.str "48.89" "The latitude of the user.";
+    location.longitude = mkOpt types.str "2.21" "The longitude of the user.";
 
     home = mkOpt (types.nullOr types.str) home-directory "The user's home directory.";
   };

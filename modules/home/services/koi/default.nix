@@ -19,6 +19,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.packages = [
+      pkgs.kdePackages.koi
+    ];
+
     systemd.user.services.koi = {
       Unit = {
         Description = "koi";
