@@ -33,21 +33,21 @@ in
         autosuggestion.enable = true;
         enableCompletion = true;
         syntaxHighlighting.enable = true;
+        dotDir = "${config.xdg.configHome}/zsh";
 
-        initContent =
-          ''
-            # Fix an issue with tmux.
-            export KEYTIMEOUT=1
+        initContent = ''
+          # Fix an issue with tmux.
+          export KEYTIMEOUT=1
 
-            # Use vim bindings.
-            set -o vi
+          # Use vim bindings.
+          set -o vi
 
-            # Improved vim bindings.
-            source ${pkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-          ''
-          + optionalString cfg.prompt-init ''
-            ${getExe pkgs.toilet} -f future "Dafos" --gay
-          '';
+          # Improved vim bindings.
+          source ${pkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+        ''
+        + optionalString cfg.prompt-init ''
+          ${getExe pkgs.toilet} -f future "Dafos" --gay
+        '';
 
         shellAliases = {
           say = "${getExe pkgs.toilet} -f pagga";
