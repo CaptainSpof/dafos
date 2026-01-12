@@ -35,7 +35,7 @@ in
           wildcard
         ]
         ++ lib.optionals cfg.nix.enable [
-          nixfmt-rfc-style
+          nixfmt
           nixpkgs-fmt
           nixpkgs-hammering
           nixpkgs-review

@@ -103,7 +103,7 @@ in
     programs.firefox = {
       enable = true;
 
-      package = cfg.package;
+      inherit (cfg) package;
       # package = cfg.package.override (orig: {
       #   nativeMessagingHosts = (orig.nativeMessagingHosts or [ ]) ++ [
       #     pkgs.tridactyl-native
@@ -221,6 +221,8 @@ in
 
             "browser.ctrlTab.sortByRecentlyUsed" = true;
             "browser.tabs.inTitlebar" = 0;
+            "browser.tabs.insertAfterCurrent" = true;
+            "browser.tabs.insertRelatedAfterCurrent" = true;
             "browser.theme.content-theme" = 0; # follow system theme (2)
             "browser.theme.toolbar-theme" = 0;
 
