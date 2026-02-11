@@ -52,8 +52,8 @@ in
       wl-clipboard
       xclip
       xdotool
-      xorg.xprop
-      xorg.xwininfo
+      xprop
+      xwininfo
       ydotool
     ];
 

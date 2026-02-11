@@ -82,11 +82,11 @@ in
           videos
           ;
         extraConfig = {
-          XDG_ORG_DIR = dirs.org;
-          XDG_PROJECTS_DIR = dirs.projects;
-          XDG_REPOSITORIES_DIR = dirs.repositories;
-          XDG_SCREENSHOTS_DIR = dirs.screenshots;
-          XDG_SYNC_DIR = dirs.sync;
+          ORG = dirs.org;
+          PROJECTS = dirs.projects;
+          REPOSITORIES = dirs.repositories;
+          SCREENSHOTS = dirs.screenshots;
+          SYNC = dirs.sync;
         };
       };
 
