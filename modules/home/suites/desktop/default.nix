@@ -46,7 +46,7 @@ in
       };
       programs = {
         graphical = {
-          launchers.vicinae = disabled;
+          launchers.vicinae = enabled;
         };
       };
     };

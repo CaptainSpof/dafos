@@ -36,6 +36,7 @@ in
       coreutils
       curl
       duf
+      dust
       fd
       file
       findutils

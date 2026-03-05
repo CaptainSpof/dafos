@@ -29,7 +29,7 @@ in
       with pkgs;
       [
         pulsemixer
-        helvum
+        crosspipe
         kdePackages.plasma-pa
       ]
       ++ cfg.extra-packages;

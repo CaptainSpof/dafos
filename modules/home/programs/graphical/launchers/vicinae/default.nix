@@ -1,7 +1,9 @@
 {
   config,
   lib,
-  namespace, inputs, pkgs,
+  namespace,
+  inputs,
+  pkgs,
   ...
 }:
 
@@ -17,31 +19,22 @@ in
   };
 
   config = mkIf cfg.enable {
-    services.vicinae = {
+    programs.vicinae = {
       enable = true;
-      systemd.autoStart = true;
+      systemd.enable = true;
       settings = {
-        faviconService = "twenty";
-        keybindingScheme = "emacs";
-        font.size = 11;
-        popToRootOnClose = false;
-        closeOnFocusLoss = true;
-        rootSearch.searchFiles = false;
-        # theme.name = "matugen";
-        window = {
-          csd = true;
-          opacity = 0.9;
-          rounding = 12;
-        };
+        keybinding_scheme = "Emacs";
+        font.normal.size = 11;
+        favicon_service = "twenty";
+        close_on_focus_loss = true;
       };
-      extensions =
-        with inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system}; [
-          bluetooth
-          firefox
-          it-tools
-          nix
-          wifi-commander
-        ];
+      extensions = with inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system}; [
+        # bluetooth
+        firefox
+        it-tools
+        nix
+        wifi-commander
+      ];
     };
   };
 }

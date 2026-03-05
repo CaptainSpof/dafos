@@ -18,8 +18,6 @@ in
     programs.ssh = {
       extraConfig = ''
         AddKeysToAgent yes
-        Host *
-          HostKeyAlgorithms +ssh-rsa
       '';
     };
   };

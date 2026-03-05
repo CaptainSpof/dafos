@@ -21,7 +21,7 @@ in
 
     environment.etc."xdg/menus/plasma-applications.menu".source =
       "${pkgs.kdePackages.plasma-workspace}/etc/xdg/menus/plasma-applications.menu";
-    
+
     programs = {
       niri = {
         enable = true;

@@ -34,6 +34,8 @@ let
         IdentityFile ~/.ssh/daf@${host}.pem
         IdentitiesOnly yes
         ControlMaster auto
+        ControlPath ~/.ssh/control-%r@%h:%p
+        ControlPersist 10m
         User ${remote-user-name}
         ForwardAgent yes
         Port ${builtins.toString cfg.port}
