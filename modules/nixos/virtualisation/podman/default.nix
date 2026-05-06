@@ -27,7 +27,7 @@ in
     environment.systemPackages = with pkgs; [
       compose2nix
       podman-compose
-      podman-desktop
+      # podman-desktop
     ];
 
     dafos = {

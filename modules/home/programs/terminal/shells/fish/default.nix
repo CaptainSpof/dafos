@@ -85,7 +85,7 @@ in
           nrs = "${nr} switch";
           nhs = "nh os switch .";
           nhb = "nh os build .";
-          nhc = "nh clean all";
+          nhc = "nh clean all --keep 10";
           ncl = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +10";
           ngc = "nix store gc --debug";
           ndiff = "nix store diff-closures /nix/var/nix/profiles/(ls -r /nix/var/nix/profiles/ | grep -E 'system\-' | sed -n '2 p') /nix/var/nix/profiles/system";

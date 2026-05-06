@@ -76,7 +76,7 @@ in
             saturation = 1.0,
             brightness = 0.8
           },
-          window_background_opacity = 0.95,
+          window_background_opacity = 0.70,
           window_close_confirmation = "NeverPrompt",
           window_decorations = "NONE",
           window_padding = { left = 12, right = 12, top = 12, bottom = 12, },
