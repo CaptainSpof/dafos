@@ -27,12 +27,12 @@ in
       };
 
       extraPackages = with pkgs.bat-extras; [
-        batdiff
+        # batdiff
         # batgrep
-        batman
-        batpipe
-        batwatch
-        prettybat
+        # batman
+        # batpipe
+        # batwatch
+        # prettybat
       ];
     };
 

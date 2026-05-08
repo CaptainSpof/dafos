@@ -64,7 +64,7 @@ in
           ffmpegthumbnailer
           hunspellDicts.en-us
           hunspellDicts.fr-any
-          languagetool
+          # languagetool
           mediainfo
           nuspell
           poppler

@@ -27,19 +27,19 @@ in
     fonts.packages =
       with pkgs;
       [
-        nerd-fonts.monaspace
-        nerd-fonts.hack
+        # nerd-fonts.monaspace
+        # nerd-fonts.hack
         departure-mono
-        google-fonts
-        julia-mono
-        maple-mono.NF
-        iosevka-comfy.comfy
-        mononoki
-        noto-fonts
-        noto-fonts-color-emoji
+        # google-fonts
+        # julia-mono
+        # maple-mono.NF
+        # iosevka-comfy.comfy
+        # mononoki
+        # noto-fonts
+        # noto-fonts-color-emoji
         roboto
         roboto-mono
-        sarasa-gothic
+        # sarasa-gothic
         # twemoji-color-font
       ]
       ++ cfg.fonts;

@@ -64,6 +64,7 @@ in
       nix-output-monitor
       flake-checker
       yaml2nix
+      nil
     ];
 
     programs.nh = mkIf cfg.nh.enable {

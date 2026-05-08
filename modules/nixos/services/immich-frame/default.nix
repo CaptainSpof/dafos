@@ -13,23 +13,39 @@ let
   cfg = config.${namespace}.services.immich-frame;
 in
 {
-
   options.${namespace}.services.immich-frame = {
     enable = mkEnableOption "Whether or not to configure immich-frame.";
     base-url = mkOpt types.str "https://photos.daftdaf.dev" "The base url";
   };
 
   config = mkIf cfg.enable {
+    sops.secrets."immich-frame-api-key-env".sopsFile =
+      lib.snowfall.fs.get-file "secrets/daf/immich-frame.yaml";
+    sops.secrets."immich-frame-weather-api-key-env".sopsFile =
+      lib.snowfall.fs.get-file "secrets/daf/immich-frame.yaml";
+    sops.secrets."immich-frame-albums-key-env".sopsFile =
+      lib.snowfall.fs.get-file "secrets/daf/immich-frame.yaml";
     # Containers
     virtualisation.oci-containers.containers."immichframe" = {
       image = "ghcr.io/immichframe/immichframe:latest";
+      environmentFiles = [
+        config.sops.secrets."immich-frame-api-key-env".path
+        config.sops.secrets."immich-frame-weather-api-key-env".path
+        config.sops.secrets."immich-frame-albums-key-env".path
+      ];
       environment = {
-        "ApiKey" = ""; # NOCOMMIT
-        "ImmichServerUrl" = cfg.base-url;
-        "TZ" = "Europe/Paris";
+        ImmichServerUrl = cfg.base-url;
+        TZ = "Europe/Paris";
+        PhotoDateFormat = "dd-MM-yyyy";
+        ClockFormat = "HH:mm";
+        Interval = "30";
+        Language = "fr";
+        UnitSystem = "metric";
+        ShowWeatherDescription = "true";
+        WeatherLatLong = "48.8913,2.2005";
       };
       ports = [
-        "8080:8080/tcp"
+        "8084:8080/tcp"
       ];
       log-driver = "journald";
       extraOptions = [

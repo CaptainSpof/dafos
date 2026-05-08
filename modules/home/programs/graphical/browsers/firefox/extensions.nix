@@ -17,12 +17,12 @@ in
       packages = mkOpt (with lib.types; listOf package) (with pkgs.firefoxAddons; [
         adnauseam
         adguard-adblocker
-        adaptive-tab-bar-colour
-        absolute-enable-right-click
-        auto-tab-discard
+        # adaptive-tab-bar-colour
+        # absolute-enable-right-click
+        # auto-tab-discard
         bitwarden-password-manager
         consent-o-matic
-        darkreader
+        # darkreader
         dearrow
         downthemall
         modern-for-wikipedia
@@ -32,8 +32,8 @@ in
         frankerfacez
         # french-language-pack
         # fx_cast
-        karakeep
-        languagetool
+        # karakeep
+        # languagetool
         org-capture # TODO: setup
         plasma-integration
         pywalfox

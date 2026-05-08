@@ -8,7 +8,7 @@
 
 let
   inherit (lib) mkIf types;
-  inherit (lib.${namespace}) mkBoolOpt mkOpt enabled;
+  inherit (lib.${namespace}) mkBoolOpt mkOpt enabled disabled;
 
   cfg = config.${namespace}.desktop.plasma;
 
@@ -22,7 +22,7 @@ let
     kdePackages.signon-kwallet-extension
     kdePackages.signond
     # Utils
-    kdotool
+    # kdotool
   ];
   fullPackages = with pkgs; [
     # kdePackages.itinerary
@@ -40,14 +40,14 @@ in
 
     extraPackages = mkOpt (listOf package) [ ] "Extra Packages to install";
 
-    full = mkBoolOpt true "Whether or not to enable slim down version of plasma.";
+    full = mkBoolOpt false "Whether or not to enable slim down version of plasma.";
     touchScreen = mkBoolOpt false "Whether or not to enable touch screen capabilities.";
     themeSwitcher = mkBoolOpt false "Whether or not to enable theme switcher service.";
   };
 
   config = mkIf cfg.enable {
     dafos = {
-      desktop.addons.electron-support = enabled;
+      desktop.addons.electron-support = disabled;
       services.koi.enable = cfg.themeSwitcher;
     };
 

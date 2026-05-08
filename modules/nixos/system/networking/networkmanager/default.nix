@@ -24,7 +24,7 @@ in
         };
 
         plugins = with pkgs; [
-          networkmanager-l2tp
+          # networkmanager-l2tp
           networkmanager-openvpn
           networkmanager-sstp
           networkmanager-vpnc

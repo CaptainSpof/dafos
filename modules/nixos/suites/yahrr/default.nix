@@ -7,7 +7,7 @@
 
 let
   inherit (lib) mkIf;
-  inherit (lib.${namespace}) mkBoolOpt enabled;
+  inherit (lib.${namespace}) mkBoolOpt enabled disabled;
 
   cfg = config.${namespace}.suites.yahrr;
 in
@@ -18,17 +18,18 @@ in
 
   config = mkIf cfg.enable {
     dafos = {
+      user.extraGroups = [ "yahrr"];
       services = {
-        jellyfin = enabled;
-        prowlarr = enabled;
-        radarr = enabled;
-        readarr = enabled;
-        sonarr = enabled;
+        # jellyfin = enabled;
+        # prowlarr = enabled;
+        # radarr = enabled;
+        # readarr = enabled;
+        # sonarr = enabled;
       };
       apps = {
         qbittorrent = {
-          enable = true;
-          nox.enable = true;
+          enable = false;
+          nox.enable = false;
         };
       };
     };

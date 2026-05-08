@@ -19,8 +19,8 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      smile # emoji picker
-      kdePackages.arianna # ebook reader
+      # smile # emoji picker
+      # kdePackages.arianna # ebook reader
       dconf-editor
       gsettings-desktop-schemas
       gsettings-qt
@@ -28,9 +28,9 @@ in
 
     dafos = {
       desktop = {
-        niri = enabled;
+        niri = disabled;
         noctalia-shell = disabled;
-        dms = enabled;
+        dms = disabled;
         plasma = {
           enable = true;
           config = enabled;
@@ -41,7 +41,7 @@ in
           theme = enabled;
         };
         addons = {
-          wallpapers = enabled;
+          wallpapers = disabled;
         };
       };
       programs = {

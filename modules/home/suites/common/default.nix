@@ -46,7 +46,6 @@ in
       lsof
       pciutils
       procs
-      ttyper
       unrar
       unzip
       wget
@@ -71,22 +70,22 @@ in
 
         terminal = {
           emulators = {
-            alacritty = enabled;
-            kitty = enabled;
+            alacritty = disabled;
+            kitty = disabled;
             wezterm = enabled;
           };
 
           shells = {
             fish = enabled;
-            nushell = enabled;
-            zsh = enabled;
+            nushell = disabled;
+            zsh = disabled;
           };
 
           tools = {
             bat = enabled;
             bottom = enabled;
             carapace = enabled;
-            comma = enabled;
+            comma = disabled;
             direnv = enabled;
             eza = enabled;
             fup-repl = enabled;
@@ -95,17 +94,16 @@ in
             less = enabled;
             ripgrep = enabled;
             starship = enabled;
-            zellij = enabled;
+            zellij = disabled;
             zoxide = enabled;
           };
         };
       };
+
       services = {
         espanso = disabled;
       };
     };
-
-    programs.zen-browser.enable = true;
 
     programs.readline = {
       enable = true;

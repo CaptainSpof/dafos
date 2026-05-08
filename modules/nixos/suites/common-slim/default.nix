@@ -22,6 +22,7 @@ in
       cifs-utils
       pkgs.dafos.list-iommu
       powertop
+      gcc
     ];
 
     dafos = {

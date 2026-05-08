@@ -1,0 +1,10 @@
+#clock {
+    position: relative;
+    color: #fff;
+    font-size: 3rem;
+    text-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.6);
+    /* padding: 4rem; */
+    z-index: var(--z-clock);
+    padding-top: 1rem;
+    padding-left: 6rem;
+}

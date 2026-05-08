@@ -13,16 +13,16 @@ let
 
   cfg = config.${namespace}.services.home-assistant;
 
-  customPythonPackages = pkgs.python313Packages.override {
+  customPythonPkgs = pkgs.python314Packages.override {
     overrides = _self: super: {
-      pytapo = super.pytapo.overrideAttrs (_oldAttrs: {
-        version = "3.3.41";
+      pytapo = super.pytapo.overrideAttrs (_oldAttrs: rec {
+        version = "3.4.11";
         src = pkgs.fetchPypi {
           pname = "pytapo";
-          version = "3.3.41";
-          hash = "sha256-ViWXXC8I8e/Q8wTwcI0W8EWObbIq9gXiZ0TVoFs781A=";
+          inherit version;
+          hash = "sha256-FqQVMtZ7Jv3QsDVVW/ZtjQhWMQg95ucQvx6CUl4LSVM=";
         };
-        propagatedBuildInputs = with pkgs.python313Packages; [
+        propagatedBuildInputs = with pkgs.python314Packages; [
           aiohttp
           pycryptodome
           requests
@@ -61,11 +61,11 @@ in
     #   requiredBy = [ "home-assistant.service" ];
     # };
 
-    # systemd.services.zigbee2mqtt.serviceConfig = {
-    #   # WatchdogSec = "30s";
-    #   Restart = mkForce "always";
-    #   # RestartSec = "10s";
-    # };
+    systemd.services.zigbee2mqtt.serviceConfig = {
+      # WatchdogSec = "30s";
+      Restart = mkForce "always";
+      # RestartSec = "10s";
+    };
 
     services = {
       mosquitto = {
@@ -88,10 +88,10 @@ in
       zigbee2mqtt = {
         enable = true;
         settings = {
-          # homeassistant = true;
+          homeassistant.enabled = config.services.home-assistant.enable;
           availability = true;
           advanced.transmit_power = 20;
-          permit_join = false;
+          permit_join = true;
           mqtt = {
             server = "mqtt://127.0.0.1:1883";
             base_topic = "zigbee2mqtt";
@@ -121,8 +121,8 @@ in
           "forked_daapd"
           "freebox"
           "google"
-          "google_tasks"
           "google_translate"
+          "google_tasks"
           "ibeacon"
           "ipp"
           "isal"
@@ -148,7 +148,7 @@ in
           "telegram"
           "telegram_bot"
           "tplink"
-          "tuya"
+          # "tuya"
           "wled"
           "yeelight"
           "zha"
@@ -168,24 +168,29 @@ in
           samsungtv-smart
           smartir
           spook
+          # tuya_local
+          # localtuya
+          # pkgs.dafos.hass-divoom
           (pkgs.buildHomeAssistantComponent {
             owner = "JurajNyiri";
-            domain = "tapo";
-            version = "6.1.3";
+            domain = "tapo_control";
+            version = "7.0.12";
             src = inputs.hass-tapo-control;
             dontConfigure = true;
             dontBuild = true;
-            doCheck = false;
+             doCheck = false;
 
             propagatedBuildInputs = [
-              customPythonPackages.pytapo
-              pkgs.python313Packages.aiohttp
-              pkgs.python313Packages.requests
+              customPythonPkgs.pytapo
+              # pkgs.python313Packages.pytapo
+              pkgs.python314Packages.aiohttp
+              pkgs.python314Packages.requests
             ];
           })
         ];
 
         customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
+          advanced-camera-card
           atomic-calendar-revive
           bubble-card
           button-card
@@ -212,8 +217,12 @@ in
           default_config = { };
 
           http = {
-            trusted_proxies = [ "127.0.0.1" ];
             use_x_forwarded_for = true;
+            trusted_proxies = [
+              "10.80.0.1"
+              "192.168.0.10"
+              "127.0.0.1"
+            ];
             server_host = [
               "0.0.0.0"
               "::"
@@ -235,6 +244,28 @@ in
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
+
+          "template" = [
+            {
+              trigger = [
+                {
+                  trigger = "event";
+                  event_type = "bubble_card_update_modules";
+                }
+              ];
+              sensor = [
+                {
+                  name = "Bubble Card Modules";
+                  state = "saved";
+                  icon = "mdi:puzzle";
+                  attributes = {
+                    modules = "{{ trigger.event.data.modules }}";
+                    last_updated = "{{ trigger.event.data.last_updated }}";
+                  };
+                }
+              ];
+            }
+          ];
 
           binary_sensor = import ./sensors/binary_sensors.nix;
           input_boolean = import ./sensors/input_booleans.nix;

@@ -7,9 +7,13 @@
 
     # NixPkgs (nixos-unstable)
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    # nixpkgs.url = "github:K900/nixpkgs/plasma-6.4";
 
     # NixPkgs Master
     nixpkgs-master.url = "github:nixos/nixpkgs";
+
+    # NixPkgs Staging
+    nixpkgs-staging.url = "github:nixos/nixpkgs/staging";
 
     # Home Manager
     home-manager = {
@@ -54,10 +58,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:sodiboo/niri-flake";
-    };
+    niri.url = "github:sodiboo/niri-flake";
 
     niri-switch = {
       url = "github:Kiki-Bouba-Team/niri-switch";
@@ -134,11 +135,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    git-hooks-nix = {
-      # Git Hooks
-      url = "github:cachix/git-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # Git Hooks
+    git-hooks-nix.url = "github:cachix/git-hooks.nix";
+    git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # System Deployment
     deploy-rs = {
@@ -159,7 +158,9 @@
 
     dank-material-shell = {
       url = "github:AvengeMedia/DankMaterialShell";
+      # url = "git+file:///home/daf/Repositories/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.dgop.follows = "dgop";
     };
 
     noctalia = {
@@ -167,7 +168,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # vicinae.url = "github:vicinaehq/vicinae";
+    vicinae = {
+      url = "github:vicinaehq/vicinae";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     vicinae-extensions = {
       url = "github:vicinaehq/extensions";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -206,12 +210,12 @@
       channels-config = {
         allowUnfree = true;
         # permittedInsecurePackages = [
-        # "aspnetcore-runtime-6.0.36"
-        # "emacs-unstable-pgtk-30.1"
-        # "emacs-unstable-pgtk-with-packages-30.1"
-        # "dotnet-sdk-6.0.428"
-        # "qtwebengine-5.15.19"
-        # "olm-3.2.16"
+          # "aspnetcore-runtime-6.0.36"
+          # "emacs-unstable-pgtk-30.1"
+          # "emacs-unstable-pgtk-with-packages-30.1"
+          # "dotnet-sdk-6.0.428"
+          # "qtwebengine-5.15.19"
+          # "olm-3.2.16"
         # ];
       };
 
@@ -224,20 +228,19 @@
       ];
 
       homes.modules = with inputs; [
-        dank-material-shell.homeModules.dank-material-shell
-        dank-material-shell.homeModules.niri
-        niri.homeModules.niri
-        nix-index-database.homeModules.nix-index
         nix-podman-stacks.homeModules.nps
+        nix-index-database.homeModules.nix-index
         noctalia.homeModules.default
         plasma-manager.homeModules.plasma-manager
         sops-nix.homeManagerModules.sops
-        # vicinae.homeManagerModules.default
         zen-browser.homeModules.beta
+        niri.homeModules.niri
+        vicinae.homeManagerModules.default
+        dank-material-shell.homeModules.dank-material-shell
+        dank-material-shell.homeModules.niri
       ];
 
       systems.modules.nixos = with inputs; [
-        dank-material-shell.nixosModules.greeter
         disko.nixosModules.disko
         noctalia.nixosModules.default
         home-manager.nixosModules.home-manager

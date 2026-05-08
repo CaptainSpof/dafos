@@ -7,33 +7,57 @@
 
 let
   inherit (lib.${namespace}) enabled disabled;
+  inherit (lib) mkForce;
 in
-{
-  dafos = {
-    user = {
-      enable = true;
-      inherit (config.snowfallorg.user) name;
-    };
-
-    desktop = {
-      plasma = {
-        theme.wallpaper = disabled;
-        config.screenlocker = disabled;
+  {
+    dafos = {
+      user = {
+        enable = true;
+        inherit (config.snowfallorg.user) name;
       };
-    };
 
-    programs = {
-      terminal = {
-        tools = {
-          ssh = enabled;
+      desktop = {
+        niri.enable = mkForce false;
+        dms.enable = mkForce false;
+
+        plasma = {
+          theme.wallpaper = disabled;
+          config.screenlocker = disabled;
+        };
+
+        addons = {
+          wallpapers.enable = mkForce false;
         };
       };
-    };
 
-    suites = {
-      common = enabled;
-      desktop = enabled;
-      video = enabled;
+      programs = {
+        terminal = {
+          tools = {
+            ssh = enabled;
+          };
+        };
+      };
+
+      services = {
+        authelia = enabled;
+        grimmory = enabled;
+        calibre = enabled;
+        donetick = enabled;
+        glance = enabled;
+        it-tools = enabled;
+        # karakeep = enabled;
+        lldap = enabled;
+        norish = enabled;
+        papra = enabled;
+        shelfmark = enabled;
+        streaming = enabled;
+        traefik = enabled;
+      };
+
+      suites = {
+        common = enabled;
+        desktop = enabled;
+        video = enabled;
+      };
     };
-  };
-}
+  }

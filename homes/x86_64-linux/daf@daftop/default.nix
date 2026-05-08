@@ -92,7 +92,7 @@ in
 
   home.packages = with pkgs; [
     libation
-    calibre
+    # calibre
     # rustdesk
     uget
   ];

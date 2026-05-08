@@ -35,6 +35,7 @@ in
   ];
 
   boot = {
+    kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 80;
     kernelPackages = pkgs.linuxPackages_latest;
     kernelModules = [
       "tcp_bbr"
@@ -84,7 +85,17 @@ in
       fsType = "cifs";
       options = freeboxCifsOptions;
     };
+
+    "/mnt/yahrr" = {
+      device = "//${freeboxHostname}/Freebox/yahrr";
+      fsType = "cifs";
+      options = freeboxCifsOptions;
+    };
   };
+
+  systemd.tmpfiles.rules = [
+    "d /mnt/livres 0775 calibre calibre - -"
+  ];
 
   systemd.services.wait-freebox-available = {
     description = "Waiting for Freebox to become reachable.";
