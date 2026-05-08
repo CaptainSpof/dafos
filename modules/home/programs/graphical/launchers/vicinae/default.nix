@@ -21,19 +21,49 @@ in
   config = mkIf cfg.enable {
     programs.vicinae = {
       enable = true;
-      systemd.enable = true;
+      systemd = {
+        enable = true;
+        autoStart = true;
+      };
       settings = {
         keybinding_scheme = "Emacs";
-        font.normal.size = 11;
-        favicon_service = "twenty";
         close_on_focus_loss = true;
+        consider_preedit = true;
+        pop_to_root_on_close = true;
+        favicon_service = "twenty";
+        search_files_in_root = true;
+        font = {
+          normal = {
+            size = 12;
+          };
+        };
+        theme = {
+          light = {
+            name = "vicinae-light";
+            icon_theme = "default";
+          };
+          dark = {
+            name = "vicinae-dark";
+            icon_theme = "default";
+          };
+        };
+        launcher_window = {
+          opacity = 0.98;
+        };
       };
       extensions = with inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system}; [
-        # bluetooth
+        bluetooth
         firefox
         it-tools
         nix
+        power-profile
         wifi-commander
+      ] ++ [
+        # (config.lib.vicinae.mkRayCastExtension {
+        #   name = "tailscale";
+        #   rev = "bc92e53ae972e41a44800b2a4763a5b7bf69122e";
+        #   sha256 = "sha256-7Fc/qengMNQFVM42Qvea7gn+HbEJs5Pgmu87f3RUPeg=";
+        # })
       ];
     };
   };
