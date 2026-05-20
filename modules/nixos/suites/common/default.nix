@@ -26,7 +26,7 @@ in
       dafos.list-iommu
       powertop
       ripgrep
-      calibre
+      # calibre
     ];
 
     dafos = {

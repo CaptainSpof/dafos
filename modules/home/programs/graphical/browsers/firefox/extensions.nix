@@ -27,7 +27,7 @@ in
         downthemall
         modern-for-wikipedia
         # enhancer-for-youtube
-        firefox-color
+        # firefox-color
         flagfox
         frankerfacez
         # french-language-pack

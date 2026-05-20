@@ -27,11 +27,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-firefox-addons.url = "github:osipog/nix-firefox-addons";
+    nix-firefox-addons = {
+      url = "github:osipog/nix-firefox-addons";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    claude-desktop.url = "github:aaddrick/claude-desktop-debian";
 
     nix-podman-stacks = {
       url = "github:Tarow/nix-podman-stacks";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
     };
 
     # Flake Utils
@@ -58,7 +66,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri.url = "github:sodiboo/niri-flake";
+    niri.url = "github:myume/niri-flake/blur";
 
     niri-switch = {
       url = "github:Kiki-Bouba-Team/niri-switch";
@@ -160,7 +168,6 @@
       url = "github:AvengeMedia/DankMaterialShell";
       # url = "git+file:///home/daf/Repositories/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.dgop.follows = "dgop";
     };
 
     noctalia = {
@@ -185,7 +192,10 @@
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
     };
   };
 
@@ -220,6 +230,7 @@
       };
 
       overlays = with inputs; [
+        claude-desktop.overlays.default
         emacs-overlay.overlays.default
         niri.overlays.niri
         nuenv.overlays.default

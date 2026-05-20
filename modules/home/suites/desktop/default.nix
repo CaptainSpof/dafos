@@ -28,9 +28,9 @@ in
 
     dafos = {
       desktop = {
-        niri = disabled;
+        niri = enabled;
         noctalia-shell = disabled;
-        dms = disabled;
+        dms = enabled;
         plasma = {
           enable = true;
           config = enabled;
@@ -41,7 +41,7 @@ in
           theme = enabled;
         };
         addons = {
-          wallpapers = disabled;
+          wallpapers = enabled;
         };
       };
       programs = {

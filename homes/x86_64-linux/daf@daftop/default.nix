@@ -22,7 +22,7 @@ in
         touchScreen = false;
         themeSwitcher = false;
         desktop.digitalClock.position.horizontal = 1200;
-        extraPackages = [ inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+        # extraPackages = [ inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default ];
       };
     };
 

@@ -23,6 +23,7 @@ in
         enableFishIntegration = fish.enable;
         enableNushellIntegration = nushell.enable;
         enableZshIntegration = zsh.enable;
+        enableTransience = true;
         settings = {
           format = ''
             $nix_shell$directory$aws$all$package$fill$vcsh$git_commit$git_state$git_metrics$git_branch$git_status
@@ -50,7 +51,7 @@ in
             format = "[󱦟 $duration ]($style)";
           };
 
-          fill.symbol = "·";
+          fill.symbol = " ";
           line_break = {
             disabled = true;
           };
@@ -129,12 +130,12 @@ in
 
           nix_shell = {
             symbol = "󱄅";
-            impure_msg = "[ 󱄅⁣ ](fg:white bg:red bold)";
-            pure_msg = "[ 󱄅⁣ ](fg:white bg:blue bold)";
+            impure_msg = "[    󱄅 ](fg:white bg:red bold)";
+            pure_msg = "[    󱄅 ](fg:white bg:blue bold)"; # extra spaces : fix zsh
             format = "[$state]($style)";
           };
-          package.format = "· [$symbol$version]($style) ";
 
+          package.format = "· [$symbol$version]($style) ";
         };
       };
     };
