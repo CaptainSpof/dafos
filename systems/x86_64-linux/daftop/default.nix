@@ -52,10 +52,7 @@ in
     };
 
     system = {
-      kanata = {
-        enable = true;
-        chordTimeout = 25;
-      };
+      kanata = enabled;
 
       networking = {
         enable = true;

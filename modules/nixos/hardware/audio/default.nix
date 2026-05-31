@@ -28,9 +28,10 @@ in
     environment.systemPackages =
       with pkgs;
       [
-        pulsemixer
         crosspipe
         kdePackages.plasma-pa
+        pulseaudio
+        pulsemixer
       ]
       ++ cfg.extra-packages;
 
@@ -46,7 +47,18 @@ in
         audio.enable = true;
         jack.enable = false;
         pulse.enable = true;
-        wireplumber.enable = true;
+        wireplumber = {
+          enable = true;
+          extraConfig.bluetoothCodecs = {
+            "monitor.bluez.properties" = {
+              "bluez5.codecs" = [
+                "sbc"
+                "sbc_xq"
+                "aac"
+              ];
+            };
+          };
+        };
       };
     };
   };

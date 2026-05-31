@@ -1,0 +1,68 @@
+;; Alternative layers reachable by holding the ` (grave) key.
+;;
+;; Hold ` to enter the switcher, then press a number to switch layer:
+;;   1 = base (default Arsenik / Ergo-L)   2 = qwerty
+;;   3 = gaming                            4 = basic
+;; Tap ` to type a literal backtick.
+;; Every alternative layer keeps ` as the switcher, so you can always return.
+
+(defalias
+  ;; ` : tap = backtick, hold = layer switcher
+  grv  (tap-hold $tap_timeout $hold_timeout grv (layer-while-held layers-switcher))
+
+  ;; Layer selectors (persistent until changed)
+  Lbas (layer-switch base)
+  Lqwe (layer-switch qwerty)
+  Lgam (layer-switch gaming)
+  Lbsc (layer-switch basic)
+
+  ;; QWERTY-emulation punctuation that isn't on an Ergo-L level-1 key:
+  qsc S-.   ;; QWERTY ';'  -> Ergo-L Shift+period = semicolon
+  qsl AG-l  ;; QWERTY '/'  -> Ergo-L AltGr+l     = slash
+)
+
+(deflayer layers-switcher
+  _
+  @Lbas @Lqwe @Lgam @Lbsc XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX        XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX        XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+            XX            XX             XX
+)
+
+;; QWERTY emulation while the OS layout stays Ergo-L (fr/ergol).
+;; Each physical key emits the scancode whose Ergo-L output equals the
+;; QWERTY character printed on that key (inverse of the Ergo-L permutation).
+;; Letters + digits are exact (uppercase via shift works automatically);
+;; ; and / are rebuilt with @qsc/@qsl. Other shifted/AltGr symbols still
+;; produce their Ergo-L characters.
+(deflayer qwerty
+  @grv
+  1    2    3    4    5  bspc   6    7    8    9    0
+  q    t    d    j    k         p    ;    l    e    r
+  a    s    i    g    ,         m    y    /    h    @qsc
+  z    x    w    v    b    <    f    u    .    n    @qsl
+            lalt          spc             ralt
+)
+
+;; Gaming: plain keys, no home-row mods / layer-taps, full spacebar.
+(deflayer gaming
+  @grv
+  1    2    3    4    5  bspc   6    7    8    9    0
+  q    w    e    r    t         y    u    i    o    p
+  a    s    d    f    g         h    j    k    l    ;
+  z    x    c    v    b    <    n    m    ,    .    /
+            lalt          spc             ralt
+)
+
+;; Basic: plain pass-through fallback (normal keyboard behaviour).
+(deflayer basic
+  @grv
+  1    2    3    4    5  bspc   6    7    8    9    0
+  q    w    e    r    t         y    u    i    o    p
+  a    s    d    f    g         h    j    k    l    ;
+  z    x    c    v    b    <    n    m    ,    .    /
+            lalt          spc             ralt
+)
+
+;; vim: set ft=lisp

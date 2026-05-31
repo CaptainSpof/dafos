@@ -1,0 +1,35 @@
+;; Base layer: layer-taps under the thumbs + home-row mods on SDF and JKL
+
+(deflayer base
+  @grv
+  _    _    _    _    _    _    _    _    _    _    _
+  q    w    e    r    t         y    u    i    o    p
+  a    @ss  @dd  @ff  g         h    @jj  @kk  @ll  @nav
+  z    x    c    v    b    <    n    m    ,    .    /
+            @alt          @ssp            @sym
+)
+
+;; Timing variables are defined in `kanata.kbd` file.
+
+(defalias
+  ;; Navigation on the right pinky (Ergo-L 'u', QWERTY-; key): Nav layer when held, key when tapped.
+  nav (tap-hold $tap_timeout $long_hold_timeout ; (layer-while-held navigation))
+
+  ;; Space: Shift when held, Space when tapped.
+  ssp (tap-hold-press $tap_timeout $hold_timeout spc lsft)
+
+  ;; Space-cadet thumb keys: Alt/BackSpace, Symbols/Enter.
+  ;; Acts as a modifier/layer by default, or as BackSpace/Enter when tapped separately.
+  alt (tap-hold-press $tap_timeout $hold_timeout bspc lalt)
+  sym (tap-hold-press $tap_timeout $hold_timeout ret (layer-while-held symbols))
+
+  ;; Home-row mods (Ergo-L letters): ring=Alt, middle=Ctrl, index=Super
+  ss (tap-hold $tap_timeout $long_hold_timeout s lalt)   ;; s -> Alt
+  dd (tap-hold $tap_timeout $long_hold_timeout d lctl)   ;; e -> Ctrl
+  ff (tap-hold $tap_timeout $long_hold_timeout f lmet)   ;; n -> Super
+  jj (tap-hold $tap_timeout $long_hold_timeout j rmet)   ;; r -> Super
+  kk (tap-hold $tap_timeout $long_hold_timeout k rctl)   ;; t -> Ctrl
+  ll (tap-hold $tap_timeout $long_hold_timeout l ralt)   ;; i -> Alt
+)
+
+;; vim: set ft=lisp

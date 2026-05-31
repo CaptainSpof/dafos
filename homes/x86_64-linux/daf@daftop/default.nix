@@ -55,6 +55,8 @@ in
       };
     };
 
+    services.kanata-notify = enabled;
+
     services.sops = {
       enable = true;
       defaultSopsFile = lib.snowfall.fs.get-file "secrets/daftop/daf/default.yaml";
