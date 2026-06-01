@@ -16,12 +16,12 @@
   nav (tap-hold $tap_timeout $long_hold_timeout ; (layer-while-held navigation))
 
   ;; Space: Shift when held, Space when tapped.
-  ssp (tap-hold-press $tap_timeout $hold_timeout spc lsft)
+  ssp (tap-hold-release $tap_timeout $hold_timeout spc lsft)
 
   ;; Space-cadet thumb keys: Alt/BackSpace, Symbols/Enter.
   ;; Acts as a modifier/layer by default, or as BackSpace/Enter when tapped separately.
-  alt (tap-hold-press $tap_timeout $hold_timeout bspc lalt)
-  sym (tap-hold-press $tap_timeout $hold_timeout ret (layer-while-held symbols))
+  alt (tap-hold-release $tap_timeout $hold_timeout bspc lalt)
+  sym (tap-hold-release $tap_timeout $hold_timeout ret (layer-while-held symbols))
 
   ;; Home-row mods (Ergo-L letters): ring=Alt, middle=Ctrl, index=Super
   ss (tap-hold $tap_timeout $long_hold_timeout s lalt)   ;; s -> Alt
