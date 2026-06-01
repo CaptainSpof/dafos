@@ -1,14 +1,15 @@
-;; Alternative layers reachable by holding the ` (grave) key.
+;; Alternative layers reachable by holding the Esc key.
 ;;
-;; Hold ` to enter the switcher, then press a number to switch layer:
+;; Hold Esc to enter the switcher, then press a number to switch layer:
 ;;   1 = base (default Arsenik / Ergo-L)   2 = qwerty
 ;;   3 = gaming                            4 = basic
-;; Tap ` to type a literal backtick.
-;; Every alternative layer keeps ` as the switcher, so you can always return.
+;; Tap Esc to send a normal Escape.
+;; Every alternative layer keeps Esc as the switcher, so you can always return.
+;; (The ` key is no longer remapped — it types a plain backtick.)
 
 (defalias
-  ;; ` : tap = backtick, hold = layer switcher
-  grv  (tap-hold $tap_timeout $hold_timeout grv (layer-while-held layers-switcher))
+  ;; Esc : tap = Escape, hold = layer switcher
+  esw  (tap-hold $tap_timeout $hold_timeout esc (layer-while-held layers-switcher))
 
   ;; Layer selectors (persistent until changed)
   Lbas (layer-switch base)
@@ -37,7 +38,7 @@
 ;; ; and / are rebuilt with @qsc/@qsl. Other shifted/AltGr symbols still
 ;; produce their Ergo-L characters.
 (deflayer qwerty
-  @grv
+  @esw
   1    2    3    4    5  bspc   6    7    8    9    0
   q    t    d    j    k         p    ;    l    e    r
   a    s    i    g    ,         m    y    /    h    @qsc
@@ -47,7 +48,7 @@
 
 ;; Gaming: plain keys, no home-row mods / layer-taps, full spacebar.
 (deflayer gaming
-  @grv
+  @esw
   1    2    3    4    5  bspc   6    7    8    9    0
   q    w    e    r    t         y    u    i    o    p
   a    s    d    f    g         h    j    k    l    ;
@@ -57,7 +58,7 @@
 
 ;; Basic: plain pass-through fallback (normal keyboard behaviour).
 (deflayer basic
-  @grv
+  @esw
   1    2    3    4    5  bspc   6    7    8    9    0
   q    w    e    r    t         y    u    i    o    p
   a    s    d    f    g         h    j    k    l    ;

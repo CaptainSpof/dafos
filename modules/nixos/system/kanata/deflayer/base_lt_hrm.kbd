@@ -1,7 +1,7 @@
 ;; Base layer: layer-taps under the thumbs + home-row mods on SDF and JKL
 
 (deflayer base
-  @grv
+  @esw
   _    _    _    _    _    _    _    _    _    _    _
   q    w    e    r    t         y    u    i    o    p
   a    @ss  @dd  @ff  g         h    @jj  @kk  @ll  @nav

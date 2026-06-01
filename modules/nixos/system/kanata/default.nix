@@ -41,7 +41,7 @@ in
       "WH-1000XM3 (AVRCP)"
     ] "The devices to be excluded.";
     tapTimeout = mkOpt types.number 200 "Arsenik tap_timeout: key must be pressed twice within this many ms to enable repetitions.";
-    holdTimeout = mkOpt types.number 200 "Arsenik hold_timeout: key must be held this many ms to become a layer shift.";
+    holdTimeout = mkOpt types.number 250 "Arsenik hold_timeout: key must be held this many ms to become a layer shift.";
     longHoldTimeout = mkOpt types.number 300 "Arsenik long_hold_timeout: slightly higher value for typing keys, to prevent unexpected hold effect.";
     tcpPort = mkOpt types.port 5829 "Port for kanata's TCP server (localhost only). Used by the layer-change notifier to receive LayerChange events.";
   };

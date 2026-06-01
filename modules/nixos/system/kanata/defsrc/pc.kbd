@@ -1,7 +1,7 @@
 ;; `defsrc` defines the keys that will be intercepted by kanata.
 
 (defsrc
-  grv
+  esc
   1    2    3    4    5  bspc   6    7    8    9    0
   q    w    e    r    t         y    u    i    o    p
   a    s    d    f    g         h    j    k    l    ;
