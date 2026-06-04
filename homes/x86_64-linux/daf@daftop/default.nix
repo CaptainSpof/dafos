@@ -27,6 +27,13 @@ in
     };
 
     programs = {
+      ai = {
+        enable = true;
+        claude.code = enabled;
+        claude.desktop = enabled;
+        gemini.cli = enabled;
+      };
+
       graphical = {
         browsers = {
           firefox = {
