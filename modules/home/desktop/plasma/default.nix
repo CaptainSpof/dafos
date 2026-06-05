@@ -3,6 +3,7 @@
   lib,
   namespace,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -32,6 +33,7 @@ let
     kdePackages.kweather
     kdePackages.merkuro
     kdePackages.partitionmanager
+    inputs.kwin-effects-better-blur-dx.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 in
 {

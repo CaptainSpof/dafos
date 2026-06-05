@@ -26,9 +26,6 @@ in
           enable = false;
           lockOnResume = false;
         };
-        extraPackages = [
-          # inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default
-        ];
         config.powerdevil.autoSuspend.action = "nothing";
         panels = {
           topPanel = {
