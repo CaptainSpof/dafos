@@ -9,7 +9,7 @@
 
 (defalias
   ;; Esc : tap = Escape, hold = layer switcher
-  esw  (tap-hold $tap_timeout $hold_timeout esc (layer-while-held layers-switcher))
+  esw  (tap-hold-release $tap_timeout $hold_timeout esc (layer-while-held layers-switcher))
 
   ;; Layer selectors (persistent until changed)
   Lbas (layer-switch base)

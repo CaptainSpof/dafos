@@ -8,7 +8,7 @@
 }:
 
 let
-  inherit (lib.${namespace}) enabled;
+  inherit (lib.${namespace}) enabled disabled;
 
   firefox-pkg = config.${namespace}.programs.graphical.browsers.firefox.package;
 in
@@ -27,7 +27,7 @@ in
           lockOnResume = false;
         };
         extraPackages = [
-          inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default
+          # inputs.kwin-effects-forceblur.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
         config.powerdevil.autoSuspend.action = "nothing";
         panels = {
@@ -46,6 +46,8 @@ in
         };
       };
     };
+
+    services.kanata-notify = enabled;
 
     programs = {
       ai = {
@@ -91,7 +93,7 @@ in
 
       games = {
         enable = true;
-        lutris = enabled;
+        lutris = disabled;
       };
 
       graphics = {

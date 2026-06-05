@@ -36,15 +36,13 @@ RECONNECT_DELAY = 2.0
 
 
 def notify(label):
-    """Show (or replace) the single keyboard-layer notification."""
+    """Show a keyboard-layer notification."""
     subprocess.run(
         [
             NOTIFY_SEND,
             "--app-name=kanata",
             "--icon=input-keyboard",
             "--expire-time=1500",
-            # Coalesce repeated notifications into one (supported by most daemons).
-            "--hint=string:x-canonical-private-synchronous:kanata-layer",
             "Keyboard layer",
             label,
         ],
