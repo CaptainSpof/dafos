@@ -2,10 +2,9 @@
 ;;
 ;; Hold Esc to enter the switcher, then press a number to switch layer:
 ;;   1 = base (default Arsenik / Ergo-L)   2 = qwerty
-;;   3 = gaming                            4 = basic
+;;   3 = gaming                            4 = ergol (plain Ergo-L, no mods)
 ;; Tap Esc to send a normal Escape.
 ;; Every alternative layer keeps Esc as the switcher, so you can always return.
-;; (The ` key is no longer remapped — it types a plain backtick.)
 
 (defalias
   ;; Esc : tap = Escape, hold = layer switcher
@@ -15,7 +14,7 @@
   Lbas (layer-switch base)
   Lqwe (layer-switch qwerty)
   Lgam (layer-switch gaming)
-  Lbsc (layer-switch basic)
+  Lerg (layer-switch ergol-no-mods)
 
   ;; QWERTY-emulation punctuation that isn't on an Ergo-L level-1 key:
   qsc S-.   ;; QWERTY ';'  -> Ergo-L Shift+period = semicolon
@@ -24,7 +23,7 @@
 
 (deflayer layers-switcher
   _
-  @Lbas @Lqwe @Lgam @Lbsc XX   XX   XX   XX   XX   XX   XX
+  @Lbas @Lqwe @Lgam @Lerg  XX   XX   XX   XX   XX   XX   XX
   XX   XX   XX   XX   XX        XX   XX   XX   XX   XX
   XX   XX   XX   XX   XX        XX   XX   XX   XX   XX
   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
@@ -57,7 +56,7 @@
 )
 
 ;; Basic: plain pass-through fallback (normal keyboard behaviour).
-(deflayer basic
+(deflayer ergol-no-mods
   @esw
   1    2    3    4    5  bspc   6    7    8    9    0
   q    w    e    r    t         y    u    i    o    p

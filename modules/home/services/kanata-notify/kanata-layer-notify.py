@@ -27,9 +27,9 @@ NOTIFY_SEND = os.environ.get("NOTIFY_SEND", "notify-send")
 # Any layer name not in this map is treated as momentary and ignored.
 LAYERS = {
     "base": "Ergo-L",
-    "qwerty": "QWERTY",
+    "qwerty": "Qwerty",
     "gaming": "Gaming",
-    "basic": "Basic",
+    "ergol-no-mods": "Ergo-L Pass Through (no mods)",
 }
 
 RECONNECT_DELAY = 2.0
