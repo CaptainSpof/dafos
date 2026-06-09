@@ -22,7 +22,6 @@ in
     environment.systemPackages = with pkgs; [
       nfs-utils
       ntfs3g
-      fuseiso
     ];
 
     services.fstrim.enable = mkDefault cfg.ssdEnable;

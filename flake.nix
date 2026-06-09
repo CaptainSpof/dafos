@@ -250,7 +250,6 @@
 
       systems.modules.nixos = with inputs; [
         disko.nixosModules.disko
-        noctalia.nixosModules.default
         home-manager.nixosModules.home-manager
         nix-gaming.nixosModules.platformOptimizations
         sops-nix.nixosModules.sops

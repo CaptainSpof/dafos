@@ -18,116 +18,90 @@ in
   };
 
   config = mkIf cfg.enable {
-    programs = {
-      noctalia-shell = {
-        enable = true;
-        systemd.enable = true;
-        settings = {
-          bar = {
-            position = "top";
-            backgroundOpacity = 0;
-            monitors = [ ];
-            density = "comfortable";
-            showCapsule = true;
-            floating = false;
-            marginVertical = 0.4;
-            marginHorizontal = 0.4;
-            outerCorners = true;
-            exclusive = true;
-            widgets = {
-              left = [
-                {
-                  id = "ControlCenter";
-                }
-                {
-                  id = "SystemMonitor";
-                  showMemoryAsPercent = true;
-                  showNetworkStats = true;
-                }
-                {
-                  id = "ActiveWindow";
-                }
-                {
-                  id = "MediaMini";
-                }
-              ];
-              center = [
-                {
-                  id = "Clock";
-                  usePrimaryColor = false;
-                  formatHorizontal = "dddd dd MMMM · HH:mm";
-                }
-              ];
-              right = [
-                {
-                  id = "Workspace";
-                  labelMode = "none";
-                }
-                {
-                  id = "WiFi";
-                }
-                {
-                  id = "KeepAwake";
-                }
-                {
-                  id = "Tray";
-                }
-                {
-                  id = "NotificationHistory";
-                }
-                {
-                  id = "Battery";
-                  displayMode = "alwaysShow";
-                  warningThreshold = 30;
-                }
-                {
-                  id = "Volume";
-                }
-                {
-                  id = "Brightness";
-                }
-                {
-                  id = "SessionMenu";
-                }
-              ];
-            };
-          };
-
-          colorSchemes = {
-            predefinedScheme = "Kanagawa";
-            # useWallpaperColors = true;
-          };
-          general = {
-            avatarImage = "/home/drfoobar/.face";
-            radiusRatio = 0.6;
-          };
-          dock = {
-            displayMode = "auto_hide";
-            floatingRatio = 0.5;
-            size = 1.5;
-          };
-          location = {
-            monthBeforeDay = false;
-            name = "Paris, France";
-            firstDayOfWeek = 1;
-          };
-          wallpaper = {
-            directory = "${home}/Pictures/wallpapers/";
-            overviewEnabled = true;
-            recursiveSearch = true;
-            randomEnabled = true;
-            randomIntervalSec = 180;
-            defaultWallpaper = "${home}/Pictures/wallpapers/annapurna.png";
-          };
-          templates = {
-            qt = false;
-            vicinae = false;
-            wezterm = false;
+    # noctalia v5 renamed the home-manager option from `programs.noctalia-shell`
+    # to `programs.noctalia` and switched the config format to TOML
+    # (~/.config/noctalia/config.toml). See https://docs.noctalia.dev/v5
+    programs.noctalia = {
+      enable = true;
+      systemd.enable = true;
+      settings = {
+        shell = {
+          avatar_path = "${home}/.face";
+          corner_radius_scale = 0.6;
+          time_format = "{:%H:%M}";
+          date_format = "%A %d %B";
+          animation = {
+            enabled = true;
+            speed = 1.0;
           };
         };
-        # this may also be a string or a path to a JSON file,
-        # but in this case must include *all* settings.
+
+        theme = {
+          mode = "dark";
+          source = "builtin";
+          builtin = "Kanagawa";
+        };
+
+        bar.main = {
+          position = "top";
+          background_opacity = 0.0;
+          capsule = true;
+          reserve_space = true;
+          margin_h = 0;
+          margin_v = 0;
+          start = [
+            "control-center"
+            "sysmon"
+            "active_window"
+            "media"
+          ];
+          center = [
+            "clock"
+          ];
+          end = [
+            "workspaces"
+            "network"
+            "caffeine"
+            "tray"
+            "notifications"
+            "battery"
+            "volume"
+            "brightness"
+            "session"
+          ];
+        };
+
+        # Per-widget default settings.
+        widget.clock = {
+          format = "{:%A %d %B · %H:%M}";
+        };
+
+        dock = {
+          enabled = true;
+          auto_hide = true;
+        };
+
+        location = {
+          auto_locate = false;
+          address = "Paris, France";
+        };
+
+        wallpaper = {
+          enabled = true;
+          directory = "${home}/Pictures/wallpapers/";
+          default = {
+            path = "${home}/Pictures/wallpapers/annapurna.png";
+          };
+          automation = {
+            enabled = true;
+            interval_minutes = 3;
+            order = "random";
+            recursive = true;
+          };
+        };
       };
+      # `settings` may also be a raw TOML string or a path to a .toml file,
+      # but in that case it must include *all* settings.
     };
   };
 }
