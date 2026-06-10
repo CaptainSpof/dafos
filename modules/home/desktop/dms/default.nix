@@ -195,7 +195,6 @@ in
       Unit = {
         Description = "Watch matugen color file for changes";
       };
-      # The fix: PathModified must be inside the 'Path' set
       Path = {
         PathModified = "%h/.config/qt6ct/colors/matugen.conf";
       };
@@ -203,6 +202,10 @@ in
         WantedBy = [ "default.target" ];
       };
     };
+
+    systemd.user.services.dms.Service.ExecCondition = ''
+      ${lib.getExe pkgs.bash} -c '[[ ":$XDG_CURRENT_DESKTOP:" == *:niri:* ]]'
+    '';
 
     programs.dank-material-shell = {
       enable = true;
@@ -213,7 +216,12 @@ in
       };
 
       niri = {
-        enableKeybinds = true; # Automatic keybinding configuration
+        # Keybinds are defined directly in the niri module
+        # (modules/home/desktop/niri) and DMS's own binds.kdl is pulled in via
+        # includes.enable (default true). Letting DMS also inject binds here
+        # would be a redundant third source — see the upstream warning about
+        # using enableKeybinds and includes.enable together.
+        enableKeybinds = false;
       };
 
       # Core features
