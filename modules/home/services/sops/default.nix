@@ -33,7 +33,9 @@ in
       age = {
         generateKey = true;
         keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
-        sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafoltop" ] ++ cfg.sshKeyPaths;
+        # Each host declares its own SSH key in its home config; the derived
+        # age identity must be authorized in .sops.yaml.
+        inherit (cfg) sshKeyPaths;
       };
     };
   };

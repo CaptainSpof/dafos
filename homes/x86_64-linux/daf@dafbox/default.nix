@@ -3,7 +3,6 @@
   config,
   namespace,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -45,6 +44,8 @@ in
     };
 
     services.kanata-notify = enabled;
+
+    services.sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafbox.pem" ];
 
     programs = {
       ai = {

@@ -2,8 +2,10 @@ keys:
   - &admin_daf age1rafskpaqudsd8vnvcdryt5uqn5lxs4wx22n355h64qv7yg2ya4esr4e7kw
   - &user_daf_daftop age1xv0yq7ppjmvsvmc5na3ha5eue44syvuc024n7ynhufnje8nmzvlqps77zs
   - &user_daf_dafoltop age1yexg74nkdw9xh9yhsk6fwn462jzehdfayp4qhrwlml40gcv6hp6sr8afse
+  - &user_daf_dafbox age18pkcwmj4zduztmhukyus54md2c0xax5jpxzrh0egkjg2mna3fd6qwy6nvj
   - &root_dafoltop age1ekfdvtw4949t3jclxnthtj8k68vhhhqs4g5x0j2h43nrdfgu5yrsjulhqu
   - &root_daftop age1e7qyrvn6uz9ndpfpc4kpgudqt2qvyzhsr8v9dnvfvzpprnyttgsqjqnj7h
+  - &root_dafbox age1v7p9tkz4vyzhp3penujtzs8slf64hemxjqzmyndwhqgmy92zhgfs7qzgwx
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
@@ -20,5 +22,7 @@ creation_rules:
           - *admin_daf
           - *user_daf_daftop
           - *user_daf_dafoltop
+          - *user_daf_dafbox
           - *root_dafoltop
           - *root_daftop
+          - *root_dafbox
