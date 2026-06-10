@@ -212,6 +212,13 @@ in
             "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
             "extensions.autoDisableScopes" = 0;
 
+            # Use the legacy JSON storage backend
+            # (browser-extension-data/<id>/storage.js) instead of per-profile
+            # IndexedDB, so Nix-managed extension settings
+            # (firefox.extensions.settings: New Tab Override URL, AdNauseam
+            # filter lists) are authoritative rather than shadowed by IDB.
+            "extensions.webextensions.ExtensionStorageIDB.enabled" = false;
+
             "font.name.monospace.x-western" = "MonaspiceKr Nerd Font";
             "font.name.sans-serif.x-western" = "MonaspiceNe Nerd Font";
             "font.name.serif.x-western" = "MonaspiceNe Nerd Font";

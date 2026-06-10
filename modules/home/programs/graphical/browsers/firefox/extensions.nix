@@ -78,6 +78,16 @@ in
             ];
           };
         };
+
+        # New Tab Override: open a custom URL on every new tab.
+        "newtaboverride@agenedia.com" = {
+          # Home-manager skip collision check
+          force = true;
+          settings = {
+            type = "custom_url";
+            url = "https://fp.daftdaf.dev";
+          };
+        };
       } "Settings to apply to the extensions.";
 
     };
