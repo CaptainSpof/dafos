@@ -222,6 +222,21 @@ in
         # would be a redundant third source — see the upstream warning about
         # using enableKeybinds and includes.enable together.
         enableKeybinds = false;
+
+        # Output config is owned by Nix (programs.niri.settings.outputs in
+        # modules/home/desktop/niri), so drop "outputs" from the DMS include
+        # list. Otherwise dms/outputs.kdl is included after hm.kdl and would
+        # override the Nix-defined outputs. This is the upstream default list
+        # minus "outputs".
+        includes.filesToInclude = [
+          "alttab"
+          "binds"
+          "colors"
+          "cursor"
+          "layout"
+          "windowrules"
+          "wpblur"
+        ];
       };
 
       # Core features
