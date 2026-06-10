@@ -25,6 +25,7 @@ in
     home.packages =
       with pkgs;
       [
+        mangohud
         protontricks
         protonup-ng
         protonup-qt

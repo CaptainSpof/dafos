@@ -24,6 +24,7 @@ in
             games = {
               steam = enabled;
               gamemode = enabled;
+              gamescope = enabled;
             };
           };
         };
