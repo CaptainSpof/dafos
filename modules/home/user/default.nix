@@ -73,6 +73,10 @@ in
       xdg.userDirs = {
         enable = true;
         createDirectories = true;
+        # Keep exporting $XDG_*_DIR (and the extraConfig vars below) into the
+        # session. The HM default flipped to false in stateVersion 26.05; pin
+        # the legacy behavior explicitly to silence the warning.
+        setSessionVariables = true;
         inherit (dirs)
           documents
           download
