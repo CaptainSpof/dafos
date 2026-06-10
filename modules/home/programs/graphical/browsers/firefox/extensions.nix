@@ -55,7 +55,10 @@ in
       ]) "Extensions to install";
 
       settings = mkOpt (with lib.types; attrsOf anything) {
-        "uBlock0@raymondhill.net" = {
+        # AdNauseam is the active content blocker (a uBlock Origin fork that
+        # reads the same managed-storage keys). uBlock Origin itself is not
+        # installed, so these settings target adnauseam's extension id.
+        "adnauseam@rednoise.org" = {
           # Home-manager skip collision check
           force = true;
           settings = {

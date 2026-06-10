@@ -16,8 +16,6 @@ let
   inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
   cfg = config.${namespace}.programs.graphical.browsers.firefox;
-  firefoxPath = ".mozilla/firefox/${config.${namespace}.user.name}";
-
 in
 {
   imports = lib.snowfall.fs.get-non-default-nix-files ./.;
@@ -58,8 +56,8 @@ in
         "bing@search.mozilla.org".installation_mode = "blocked";
         "ddg@search.mozilla.org".installation_mode = "blocked";
         "wikipedia@search.mozilla.org".installation_mode = "blocked";
-
-        "tridactyl".installation_mode = "force_installed";
+        # Tridactyl is installed declaratively via firefox.extensions.packages
+        # (tridactyl-vim), so no force_installed policy is needed here.
       };
       Preferences = { };
     } "Policies to apply to firefox";
@@ -69,22 +67,9 @@ in
   };
 
   config = mkIf cfg.enable {
-    home = {
-      file = mkMerge [
-        # Fix tridactyl & plasma integration
-        {
-          "${firefoxPath}/native-messaging-hosts".source = pkgs.symlinkJoin {
-            name = "native-messaging-hosts";
-            paths = [
-              "${pkgs.kdePackages.plasma-browser-integration}/lib/mozilla/native-messaging-hosts"
-              "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts"
-            ];
-
-            recursive = true;
-          };
-        }
-      ];
-    };
+    # Native messaging hosts (tridactyl, plasma, fx-cast, …) are installed into
+    # ~/.mozilla/native-messaging-hosts by home-manager via the
+    # `programs.firefox.nativeMessagingHosts` list below.
 
     # Tridactyl
     xdg.configFile."tridactyl/tridactylrc".source = ./tridactyl/tridactylrc;
@@ -104,13 +89,11 @@ in
       enable = true;
 
       inherit (cfg) package;
-      # package = cfg.package.override (orig: {
-      #   nativeMessagingHosts = (orig.nativeMessagingHosts or [ ]) ++ [
-      #     pkgs.tridactyl-native
-      #     pkgs.kdePackages.plasma-browser-integration
-      #     pkgs.fx-cast-bridge
-      #   ];
-      # });
+
+      # Pin the legacy profile location (~/.mozilla/firefox). The HM default
+      # moved to $XDG_CONFIG_HOME/mozilla/firefox in stateVersion 26.05;
+      # keeping the old path avoids migrating the existing profile.
+      configPath = ".mozilla/firefox";
 
       nativeMessagingHosts = [
         pkgs.tridactyl-native
@@ -223,7 +206,7 @@ in
             "browser.tabs.inTitlebar" = 0;
             "browser.tabs.insertAfterCurrent" = true;
             "browser.tabs.insertRelatedAfterCurrent" = true;
-            "browser.theme.content-theme" = 0; # follow system theme (2)
+            "browser.theme.content-theme" = 0; # 0 = dark, 1 = light, 2 = follow system
             "browser.theme.toolbar-theme" = 0;
 
             "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";

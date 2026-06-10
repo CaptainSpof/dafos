@@ -1,19 +1,19 @@
 " " Theme
 colorscheme everforest-dark
 
-set keyboardlayoutbase bepo
-set keyboardlayoutforce true
+" " Keyboard layout: ErgoL is provided by the OS xkb layout (fr/ergol), so
+" " Tridactyl reads the typed characters directly. No keyboardlayoutforce needed
+" " (Tridactyl has no built-in ergol table, and ErgoL's base layer is plain ASCII).
 
 " " Open urls
-" " HACK: fix weird issue with the 't' key
+" " HACK: fix weird issue with the scroll keys (physical j/k = ErgoL r/t)
+unbind r
+unbind R
 unbind t
 unbind T
 unbind <C-f>
 
-keybind T J
-keybind t j
-
-bind é fillcmdline recontain
+bind c fillcmdline recontain
 bind O fillcmdline tabopen
 bind W tabdetach
 bind go current_url tabopen
@@ -23,15 +23,15 @@ bind yt tabduplicate
 bind yg composite js "git clone " + document.location.href.replace(/https?:\/\//,"git@").replace("/",":").replace(/\/?$/,".git") | clipboard yank
 
 " " Navigation
-bind T tabprev
+bind R tabprev
 
 " " Mode
 bind , mode ignore
 bind --mode=ignore <C-g> mode normal
 
 " " Scrolling
+bind r scrollline -2
 bind t scrollline 2
-bind s scrollline -2
 set smoothscroll = true
 set scrollduration = 10
 
