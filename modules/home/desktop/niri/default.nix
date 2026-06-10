@@ -97,18 +97,9 @@ in
               };
               "Mod+MouseMiddle".action = close-window;
               "Mod+Shift+Slash".action = show-hotkey-overlay;
-              "Mod+W".action = spawn "${toString firefox-pkg.meta.mainProgram}";
+              "Mod+W".action = spawn firefox-pkg.meta.mainProgram;
               "Mod+D".action = spawn "wezterm";
               "Mod+M".action = spawn "dolphin";
-              # "Mod+E".action = spawn "emacsclient";
-              #   "Mod+Space" = mkIf vicinae.enable {
-              #   repeat = false;
-              #   action = spawn "vicinae" "toggle";
-              # };
-              # "Mod+V" = {
-              #   repeat = false;
-              #   action = spawn "vicinae" "vicinae://extensions/vicinae/clipboard/history";
-              # };
               "Mod+Space" = {
                 action = dms-ipc "spotlight" "toggle";
                 hotkey-overlay.title = "Toggle Application Launcher";
@@ -231,7 +222,7 @@ in
             }
             {
               matches = [
-                { app-id = "^org\.wezfurlong\.wezterm$"; }
+                { app-id = "^org\\.wezfurlong\\.wezterm$"; }
                 { app-id = "^emacs$"; }
               ];
               default-column-width = {
@@ -241,13 +232,13 @@ in
             }
             {
               matches = [
-                { app-id = "^org\.gnome\.Loupe"; }
-                { app-id = "^org\.gnome\.Nautilus"; }
-                { app-id = "^org\.gnome\.Papers"; }
-                { app-id = "^org\.gnome\.Calculator"; }
-                { app-id = "^app\.drey\.Warp"; }
-                { app-id = "^org\.gnome\.NautilusPreviewer$"; }
-                { app-id = "^org\.gnome\.Adwaita1\.Demo$"; }
+                { app-id = "^org\\.gnome\\.Loupe"; }
+                { app-id = "^org\\.gnome\\.Nautilus"; }
+                { app-id = "^org\\.gnome\\.Papers"; }
+                { app-id = "^org\\.gnome\\.Calculator"; }
+                { app-id = "^app\\.drey\\.Warp"; }
+                { app-id = "^org\\.gnome\\.NautilusPreviewer$"; }
+                { app-id = "^org\\.gnome\\.Adwaita1\\.Demo$"; }
               ];
               tiled-state = false;
               default-column-width = { };
