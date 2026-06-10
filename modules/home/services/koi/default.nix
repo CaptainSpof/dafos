@@ -26,17 +26,16 @@ in
     systemd.user.services.koi = {
       Unit = {
         Description = "koi";
-        After = [
-          "plasma-workspace.target"
-          "multi-user.target"
-        ];
+        # koi is a Plasma color-scheme switcher; bind it to the Plasma
+        # session only. Pulling it in via multi-user.target started it at
+        # boot before any display existed, so it fell back to the Qt xcb
+        # plugin, aborted, and crash-looped under non-Plasma sessions (niri).
+        After = [ "plasma-workspace.target" ];
+        PartOf = [ "plasma-workspace.target" ];
       };
 
       Install = {
-        WantedBy = [
-          "plasma-workspace.target"
-          "multi-user.target"
-        ];
+        WantedBy = [ "plasma-workspace.target" ];
       };
 
       Service = {
