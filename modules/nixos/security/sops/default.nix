@@ -14,8 +14,10 @@ in
   options.${namespace}.security.sops = with lib.types; {
     enable = mkBoolOpt false "Whether to enable sops.";
     defaultSopsFile = mkOpt path null "Default sops file.";
+    # System-level secrets are decrypted with the host SSH key, whose derived
+    # age identity is the `root_<host>` key authorized in .sops.yaml.
     sshKeyPaths = mkOpt (listOf path) [
-      "${config.home.homeDirectory}/.ssh/daf@dafoltop.pem"
+      "/etc/ssh/ssh_host_ed25519_key"
     ] "SSH Key paths to use.";
   };
 
@@ -30,10 +32,8 @@ in
       };
     };
 
-    sops.secrets = {
-      "daftop_daf_ssh_key" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/dafos/daf/default.yaml";
-      };
-    };
+    # Declare secrets where this module is enabled, e.g.:
+    #   sops.secrets."my_secret".sopsFile =
+    #     lib.snowfall.fs.get-file "secrets/daf/default.yaml";
   };
 }
