@@ -227,34 +227,6 @@ in
           "Window to Previous Desktop" = [ ];
           "view_zoom_in" = [ ];
           "view_zoom_out" = [ ];
-
-          # Polonium
-          PoloniumCycleEngine = "Meta+/";
-          PoloniumCycleLayouts = [ ];
-          PoloniumFocusAbove = [ ];
-          PoloniumFocusBelow = [ ];
-          PoloniumFocusLeft = [ ];
-          PoloniumFocusRight = [ ];
-          PoloniumRebuildLayout = [ ];
-          PoloniumResizeTileDown = "Meta+Ctrl+T";
-          PoloniumResizeTileLeft = "Meta+Ctrl+C";
-          PoloniumResizeTileRight = "Meta+Ctrl+R";
-          PoloniumResizeTileUp = "Meta+Ctrl+S";
-          PoloniumRetileWindow = "Meta+F";
-          PoloniumShowSettings = [ ];
-          PoloniumSwapAbove = [ ];
-          PoloniumSwapBelow = [ ];
-          PoloniumSwapLeft = [ ];
-          PoloniumSwapRight = [ ];
-          PoloniumEngineBTree = [ ];
-          PoloniumEngineHalf = [ ];
-          PoloniumEngineKWin = [ ];
-          PoloniumEngineMonocle = [ ];
-          PoloniumEngineThreeColumn = [ ];
-          PoloniumInsertAbove = [ ];
-          PoloniumInsertBelow = [ ];
-          PoloniumInsertLeft = [ ];
-          PoloniumInsertRight = [ ];
         };
         "org.kde.konsole.desktop"._launch = [ ];
         plasmashell = {

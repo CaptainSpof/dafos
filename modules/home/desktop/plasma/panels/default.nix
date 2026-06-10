@@ -14,7 +14,7 @@ let
   firefox-pkg = config.${namespace}.programs.graphical.browsers.firefox.package;
 
   toggle-panel = pkgs.writeShellScriptBin "toggle-panel" ''
-    qdbus org.kde.plasmashell /PlasmaShell evaluateScript "p = panelById(panelIds[1]); p.hiding = (p.hiding == 'autohide') ? 'windowsgobelow' : 'autohide';"
+    ${pkgs.kdePackages.qttools}/bin/qdbus org.kde.plasmashell /PlasmaShell evaluateScript "p = panelById(panelIds[1]); p.hiding = (p.hiding == 'autohide') ? 'windowsgobelow' : 'autohide';"
   '';
 
   sharedPanelConfig = {

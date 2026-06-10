@@ -88,7 +88,9 @@ in
       gruvbox-gtk-theme
       kde-gruvbox
       papirus-icon-theme
-      inputs.darkly.packages.${pkgs.stdenv.hostPlatform.system}.darkly-qt6
+      # Platform theme targeted by QT_QPA_PLATFORMTHEME below. Owned here so
+      # Plasma works even when the niri module (which also installs it) is off.
+      kdePackages.qt6ct
     ];
   };
 }

@@ -3,13 +3,12 @@
   lib,
   namespace,
   pkgs,
-  inputs,
   ...
 }:
 
 let
   inherit (lib) mkIf types;
-  inherit (lib.${namespace}) mkBoolOpt mkOpt enabled disabled;
+  inherit (lib.${namespace}) mkBoolOpt mkOpt disabled;
 
   cfg = config.${namespace}.desktop.plasma;
 
@@ -33,7 +32,6 @@ let
     kdePackages.kweather
     kdePackages.merkuro
     kdePackages.partitionmanager
-    inputs.kwin-effects-better-blur-dx.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 in
 {
@@ -42,7 +40,7 @@ in
 
     extraPackages = mkOpt (listOf package) [ ] "Extra Packages to install";
 
-    full = mkBoolOpt false "Whether or not to enable slim down version of plasma.";
+    full = mkBoolOpt false "Whether or not to install the full set of Plasma apps (calculator, calendar, partition manager, …) on top of the slim default set.";
     touchScreen = mkBoolOpt false "Whether or not to enable touch screen capabilities.";
     themeSwitcher = mkBoolOpt false "Whether or not to enable theme switcher service.";
   };

@@ -75,20 +75,22 @@ in
             BorderActivate = 7;
             BorderActivateAll = 9;
           };
-          Effect-blurplus = {
+          # Config for the `better_blur_dx` KWin effect (the better-blur fork,
+          # installed system-wide by the NixOS plasma module). BlurMatching =
+          # true means "blur only windows whose class is in WindowClasses".
+          Effect-better_blur_dx = {
             BlurDocks = true;
             BlurMenus = true;
             BlurStrength = 7;
-            FakeBlur = true;
             NoiseStrength = 3;
-            PaintAsTranslucent = true;
+            BlurMatching = true;
             WindowClasses = "org.wezfurlong.wezterm";
           };
           ElectricBorders.TopRight = "LockScreen";
 
           Plugins = {
             contrastEnabled = true;
-            forceblurEnabled = true;
+            better_blur_dxEnabled = true;
           };
 
           Windows = {

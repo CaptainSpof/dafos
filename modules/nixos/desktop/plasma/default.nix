@@ -3,6 +3,7 @@
   lib,
   namespace,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -20,11 +21,18 @@ in
   config = mkIf cfg.enable {
     dafos.system.xkb.enable = true;
 
+    # KWin is launched by the system (display manager), so third-party KWin
+    # effects must live in the system profile to be discoverable on its
+    # QT_PLUGIN_PATH. Provides the `better_blur_dx` effect used in kwinrc.
+    environment.systemPackages = [
+      inputs.kwin-effects-better-blur-dx.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ];
+
     environment.plasma6.excludePackages = with pkgs.kdePackages; [
       # Multimedia
-      elisa          # music player
-      dragon         # video player (you have VLC)
-      juk            # music manager
+      elisa # music player
+      dragon # video player
+      juk # music manager
 
       akonadi
       akonadi-calendar
@@ -33,29 +41,22 @@ in
       akonadi-search
       kmail
       korganizer
-      merkuro        # calendar app
+      merkuro # calendar app
       kdepim-addons
       kdepim-runtime
       kaddressbook
 
       kalk
-      konsole        # you use wezterm/alacritty
-      khelpcenter    # offline documentation browser
-      ksystemlog     # log viewer (you have lnav)
-      filelight      # disk usage (you have du-dust, duf)
-      kcolorchooser  # color picker
+      khelpcenter # offline documentation browser
 
       # Printing
-      print-manager  # printer manager
+      print-manager # printer manager
 
       # Remote desktop
-      krdp           # RDP server
+      krdp # RDP server
 
       # Discover (package manager GUI — you manage everything via Nix)
       discover
-
-      # Partitioning (you have gparted already)
-      partitionmanager
 
       plasma-sdk
     ];
