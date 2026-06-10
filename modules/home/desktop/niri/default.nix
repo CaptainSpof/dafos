@@ -140,11 +140,12 @@ in
               "Mod+D".action = spawn "wezterm";
               "Mod+M".action = spawn "dolphin";
               "Mod+Space" = {
-                action = dms-ipc "spotlight" "toggle";
+                action = spawn "vicinae" "toggle";
                 hotkey-overlay.title = "Toggle Application Launcher";
               };
               "Mod+V" = {
-                action = dms-ipc "clipboard" "toggle";
+                repeat = false;
+                action = spawn "vicinae" "deeplink" "vicinae://launch/clipboard/history?toggle=true";
                 hotkey-overlay.title = "Toggle Clipboard Manager";
               };
               "Mod+N" = {
