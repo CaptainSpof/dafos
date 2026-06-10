@@ -210,6 +210,60 @@ in
     programs.dank-material-shell = {
       enable = true;
 
+      # Declarative DMS settings. The bulky structural config (bar/dock layout,
+      # widgets, control-center, desktop widget instances) lives in the
+      # extracted ./settings.json snapshot; the hand-tunable scalars below are
+      # expressed in Nix and deep-merged on top (Nix wins on key conflicts).
+      #
+      # Ephemeral runtime state — usage history, per-monitor widget positions,
+      # display profiles and device pins — was stripped before extraction.
+      # Routing this through the option makes settings.json a read-only Nix
+      # store symlink, so DMS's in-app settings UI can no longer persist
+      # changes: re-extract and update ./settings.json to capture future tweaks
+      # to the structural config, or edit the scalars below directly.
+      settings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
+        # Fonts
+        fontFamily = "Inter Variable";
+        monoFontFamily = "Fira Code";
+        fontWeight = 400;
+        fontScale = 1;
+
+        # Clock & locale
+        use24HourClock = true;
+        showSeconds = false;
+        padHours12Hour = false;
+        firstDayOfWeek = -1; # locale default
+        showWeekNumber = false;
+        clockDateFormat = "dddd d MMMM";
+        useFahrenheit = false;
+        windSpeedUnit = "kmh";
+
+        # Theming
+        currentThemeName = "dynamic";
+        currentThemeCategory = "dynamic";
+        matugenScheme = "scheme-fidelity";
+        matugenContrast = 0;
+        runUserMatugenTemplates = true;
+        gtkThemingEnabled = false;
+        qtThemingEnabled = false;
+        syncModeWithPortal = true;
+        terminalsAlwaysDark = true;
+        iconTheme = "System Default";
+        nightModeEnabled = false;
+
+        # Behaviour
+        weatherEnabled = true;
+        useAutoLocation = false;
+        audioVisualizerEnabled = true;
+        soundsEnabled = true;
+        networkPreference = "ethernet";
+
+        # Launcher logo (path derived from the home directory)
+        launcherLogoMode = "os";
+        launcherLogoCustomPath = "${config.home.homeDirectory}/Pictures/ico/spino.png";
+        launcherStyle = "full";
+      };
+
       systemd = {
         enable = true; # Systemd service for auto-start
         restartIfChanged = true; # Auto-restart dms.service when dankMaterialShell changes
