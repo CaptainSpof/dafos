@@ -34,6 +34,11 @@ in
 
           prefer-no-csd = true;
 
+          blur = {
+            passes = 3;
+            offset = 4.0;
+          };
+
           # Output configuration. This used to live in DMS's runtime-generated
           # dms/outputs.kdl; it is now owned by Nix, and "outputs" is dropped
           # from DMS's includes list (see modules/home/desktop/dms) so it can no
@@ -259,6 +264,10 @@ in
                 { app-id = "^org\\.wezfurlong\\.wezterm$"; }
                 { app-id = "^emacs$"; }
               ];
+              # Blur whatever shows through these (translucent) terminals.
+              background-effect = {
+                blur = true;
+              };
               default-column-width = {
                 proportion = 0.75;
               };
