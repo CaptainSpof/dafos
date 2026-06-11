@@ -331,6 +331,13 @@ in
         name = "Gruvbox-Dark";
         package = pkgs.gruvbox-gtk-theme;
       };
+      # Only the GTK3 theme matters here (Electron/Chromium read it). Don't let
+      # home-manager manage ~/.config/gtk-4.0/gtk.css: nwg-look owns that path at
+      # runtime (as a symlink), and home-manager refuses to back up a foreign
+      # symlink, which aborts activation. GTK4 apps still follow the Settings
+      # portal's color-scheme (routed to gtk above). Also adopts the new
+      # gtk.gtk4.theme default and silences the legacy-default warning.
+      gtk4.theme = null;
     };
 
     home.packages = with pkgs; [
