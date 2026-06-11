@@ -308,7 +308,15 @@ in
         pkgs.xdg-desktop-portal-gnome
         pkgs.xdg-desktop-portal-wlr
       ];
-      config.common.default = "kde";
+      config.common = {
+        default = "kde";
+        # Apps (Firefox, GTK) read the OS color-scheme from the Settings portal's
+        # org.freedesktop.appearance. The KDE backend reports light on niri (its
+        # color scheme is never updated here), so route Settings to GTK, which
+        # follows gsettings org.gnome.desktop.interface color-scheme (managed by
+        # DMS dark mode). Without this, Firefox stays light when the OS is dark.
+        "org.freedesktop.impl.portal.Settings" = [ "gtk" ];
+      };
     };
 
     home.packages = with pkgs; [
