@@ -16,11 +16,13 @@ let
   customPythonPkgs = pkgs.python314Packages.override {
     overrides = _self: super: {
       pytapo = super.pytapo.overrideAttrs (_oldAttrs: rec {
-        version = "3.4.11";
+        # tapo_control 7.0.12 pins pytapo==3.4.15 in its manifest; keep this in
+        # sync or the component's manifestCheckPhase fails the HA build.
+        version = "3.4.15";
         src = pkgs.fetchPypi {
           pname = "pytapo";
           inherit version;
-          hash = "sha256-FqQVMtZ7Jv3QsDVVW/ZtjQhWMQg95ucQvx6CUl4LSVM=";
+          hash = "sha256-2hC/MccVar7Xce5TL26qwVMrFQ+bxngiCitNx08Sz3E=";
         };
         propagatedBuildInputs = with pkgs.python314Packages; [
           aiohttp
