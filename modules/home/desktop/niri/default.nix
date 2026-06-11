@@ -148,6 +148,15 @@ in
                 action = spawn "vicinae" "deeplink" "vicinae://launch/clipboard/history?toggle=true";
                 hotkey-overlay.title = "Toggle Clipboard Manager";
               };
+              "Mod+B" = {
+                repeat = false;
+                # Opens the Devices command of the vicinae bluetooth extension.
+                # Deeplink provider is @<author>/<extension-install-dir>, which is
+                # the home-manager-generated dir name (see programs.vicinae
+                # extensions); the entrypoint is the command name "devices".
+                action = spawn "vicinae" "deeplink" "vicinae://launch/@Gelei/vicinae-extension-bluetooth-0/devices";
+                hotkey-overlay.title = "Bluetooth Devices";
+              };
               "Mod+N" = {
                 action = dms-ipc "notifications" "toggle";
                 hotkey-overlay.title = "Toggle Notification Center";
