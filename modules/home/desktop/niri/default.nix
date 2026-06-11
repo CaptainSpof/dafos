@@ -319,6 +319,20 @@ in
       };
     };
 
+    # Pin a dark GTK theme. Under niri there's no koi (Plasma-only) to sync the
+    # GTK theme with the OS color-scheme: DMS flips color-scheme to dark, but the
+    # GTK theme name is left untouched. Electron/Chromium apps (e.g. Claude
+    # Desktop) pick dark/light from the GTK theme, not the portal's
+    # color-scheme, so they stay light without this. In Plasma, koi still
+    # overrides the GTK theme at runtime.
+    gtk = {
+      enable = true;
+      theme = {
+        name = "Gruvbox-Dark";
+        package = pkgs.gruvbox-gtk-theme;
+      };
+    };
+
     home.packages = with pkgs; [
       adw-gtk3
       nwg-look
