@@ -206,10 +206,11 @@ in
             "browser.tabs.inTitlebar" = 0;
             "browser.tabs.insertAfterCurrent" = true;
             "browser.tabs.insertRelatedAfterCurrent" = true;
-            "browser.theme.content-theme" = 0; # 0 = dark, 1 = light, 2 = follow system
-            "browser.theme.toolbar-theme" = 0;
+            # Follow the OS color scheme (reported via the XDG Settings portal).
+            "browser.theme.content-theme" = 2; # 0 = dark, 1 = light, 2 = follow system
+            "browser.theme.toolbar-theme" = 2;
 
-            "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
+            "extensions.activeThemeID" = "default-theme@mozilla.org"; # System theme (follows OS)
             "extensions.autoDisableScopes" = 0;
 
             # Use the legacy JSON storage backend
