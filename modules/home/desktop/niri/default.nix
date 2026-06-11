@@ -182,8 +182,8 @@ in
 
               "Mod+R".action = focus-window-or-workspace-down;
               "Mod+T".action = focus-window-or-workspace-up;
-              "Mod+L".action = focus-column-left;
-              "Mod+I".action = focus-column-right;
+              "Mod+L".action = focus-column-or-monitor-left;
+              "Mod+I".action = focus-column-or-monitor-right;
 
               "Mod+Shift+R".action = move-window-down-or-to-workspace-down;
               "Mod+Shift+T".action = move-window-up-or-to-workspace-up;
