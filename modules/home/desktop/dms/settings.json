@@ -1,7 +1,7 @@
 {
   "customThemeFile": "",
   "matugenTargetMonitor": "",
-  "popupTransparency": 1,
+  "popupTransparency": 0.5,
   "dockTransparency": 0.85,
   "widgetBackgroundColor": "sth",
   "widgetColorMode": "colorful",
@@ -38,7 +38,7 @@
   "modalElevationEnabled": true,
   "popoutElevationEnabled": true,
   "barElevationEnabled": true,
-  "blurEnabled": false,
+  "blurEnabled": true,
   "blurForegroundLayers": true,
   "blurLayerOutlineOpacity": 0.12,
   "blurBorderColor": "outline",
@@ -394,7 +394,7 @@
   "notificationOverlayEnabled": false,
   "notificationPopupShadowEnabled": true,
   "notificationPopupPrivacyMode": false,
-  "modalDarkenBackground": false,
+  "modalDarkenBackground": true,
   "lockScreenShowPowerActions": true,
   "lockScreenShowSystemIcons": true,
   "lockScreenShowTime": true,
@@ -779,6 +779,14 @@
         "displayPreferences": [],
         "showOnOverlay": false,
         "showOnOverview": true
+      },
+      "positions": {
+        "0x1920": {
+          "height": 229.39453125,
+          "width": 204.046875,
+          "x": 1701.76171875,
+          "y": 60.09765625
+        }
       }
     },
     {
@@ -796,6 +804,14 @@
         "showOnOverview": true,
         "backgroundOpacity": 3,
         "showOnOverviewOnly": false
+      },
+      "positions": {
+        "0x1920": {
+          "height": 200,
+          "width": 200,
+          "x": 5.34375,
+          "y": 876.140625
+        }
       }
     },
     {
@@ -817,6 +833,14 @@
         "innerDiameter": 0,
         "showOnOverview": false,
         "bloomIntensity": 84
+      },
+      "positions": {
+        "0x1920": {
+          "height": 200,
+          "width": 200,
+          "x": 5.28515625,
+          "y": 5.40234375
+        }
       }
     }
   ],
