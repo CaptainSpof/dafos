@@ -12,6 +12,19 @@ let
   inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.programs.graphical.launchers.vicinae;
+
+  vicinaeExtensions = inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system};
+
+  # Upstream's bluetooth extension resolves device names as `Name ?? Alias`, so
+  # it shows the hardware name rather than the BlueZ alias. Flip the precedence
+  # to prefer the friendly alias.
+  bluetooth-alias-first = vicinaeExtensions.bluetooth.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace src/bluez/discovery.ts \
+        --replace-fail 'devProps.Name ?? devProps.Alias' 'devProps.Alias ?? devProps.Name' \
+        --replace-fail 'ifaces.Name ?? ifaces.Alias' 'ifaces.Alias ?? ifaces.Name'
+    '';
+  });
 in
 {
   options.${namespace}.programs.graphical.launchers.vicinae = {
@@ -51,14 +64,15 @@ in
           opacity = 0.80;
         };
       };
-      extensions = with inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system}; [
-        bluetooth
+      extensions = [
+        bluetooth-alias-first
+      ] ++ (with vicinaeExtensions; [
         firefox
         it-tools
         nix
         power-profile
         wifi-commander
-      ] ++ [
+      ]) ++ [
         # (config.lib.vicinae.mkRayCastExtension {
         #   name = "tailscale";
         #   rev = "bc92e53ae972e41a44800b2a4763a5b7bf69122e";
