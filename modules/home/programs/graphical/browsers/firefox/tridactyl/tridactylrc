@@ -4,15 +4,22 @@ colorscheme everforest-dark
 " " Keyboard layout: ErgoL is provided by the OS xkb layout (fr/ergol), so
 " " Tridactyl reads the typed characters directly. No keyboardlayoutforce needed
 " " (Tridactyl has no built-in ergol table, and ErgoL's base layer is plain ASCII).
+" " Force it off explicitly: when enabled it reads physical key positions as
+" " QWERTY, so the ErgoL 'i' key (physical KeyL) gets misread as 'l' and binds
+" " like `gi`/`i` never match. This setting persists in extension storage, so
+" " reset it here in case a stale `true` is lingering.
+set keyboardlayoutforce false
 
-" " Open urls
-" " HACK: fix weird issue with the scroll keys (physical j/k = ErgoL r/t)
-unbind r
-unbind R
-unbind t
+" " Keys we repurpose or hand back to Firefox. r/t/R are just rebound lower in
+" " this file, so they need no explicit unbind — listed here for context only:
+" "   r, t  -> scrolling (Scrolling section); on ErgoL, physical j/k emit r/t
+" "   R     -> tabprev   (Navigation section)
+" "   T     (current_url tabopen) dropped
+" "   <C-f> handed back to Firefox so Ctrl-F is native find-in-page
 unbind T
 unbind <C-f>
 
+" " Open urls
 bind c fillcmdline recontain
 bind O fillcmdline tabopen
 bind W tabdetach
@@ -25,13 +32,16 @@ bind yg composite js "git clone " + document.location.href.replace(/https?:\/\//
 " " Navigation
 bind R tabprev
 
+" " Focus last-used text input (restore default; -l keeps the count form, e.g. 3gi)
+bind gi focusinput -l
+
 " " Mode
 bind , mode ignore
 bind --mode=ignore <C-g> mode normal
 
 " " Scrolling
-bind r scrollline -2
-bind t scrollline 2
+bind r scrollline 2
+bind t scrollline -2
 set smoothscroll = true
 set scrollduration = 10
 
@@ -77,7 +87,6 @@ set modeindicator false
 " " set modeindicatormodes {"normal":"false","insert":"false","input":"false","ignore":"true","ex":"false","hint":"false","visual":"false"}
 
 " " go to last accessed tab
-bind l tab #
 bind $ tab #
 
 " " Search
