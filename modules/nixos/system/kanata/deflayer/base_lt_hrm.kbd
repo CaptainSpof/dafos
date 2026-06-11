@@ -13,7 +13,7 @@
 
 (defalias
   ;; Navigation on the right pinky (Ergo-L 'u', QWERTY-; key): Nav layer when held, key when tapped.
-  nav (tap-hold $tap_timeout $long_hold_timeout ; (layer-while-held navigation))
+  nav (tap-hold-release $tap_timeout $long_hold_timeout ; (layer-while-held navigation))
 
   ;; Space: Shift when held, Space when tapped.
   ssp (tap-hold-release $tap_timeout $hold_timeout spc lsft)
@@ -23,12 +23,14 @@
   alt (tap-hold-release $tap_timeout $hold_timeout bspc lalt)
   sym (tap-hold-release $tap_timeout $hold_timeout ret (layer-while-held symbols))
 
-  ;; Home-row mods (Ergo-L letters): ring=Alt, middle=Ctrl, index=Super
-  ss (tap-hold $tap_timeout $long_hold_timeout s lalt)   ;; s -> Alt
-  dd (tap-hold $tap_timeout $long_hold_timeout d lctl)   ;; e -> Ctrl
-  ff (tap-hold $tap_timeout $long_hold_timeout f lmet)   ;; n -> Super
-  kk (tap-hold $tap_timeout $long_hold_timeout k rctl)   ;; t -> Ctrl
-  ll (tap-hold $tap_timeout $long_hold_timeout l ralt)   ;; i -> Alt
+  ;; Home-row mods (Ergo-L letters): ring=Alt, middle=Ctrl, index=Super.
+  ;; tap-hold-release favors the tap on fast rolls, committing to the hold only
+  ;; if another key is pressed AND released while held.
+  ss (tap-hold-release $tap_timeout $long_hold_timeout s lalt)   ;; s -> Alt
+  dd (tap-hold-release $tap_timeout $long_hold_timeout d lctl)   ;; e -> Ctrl
+  ff (tap-hold-release $tap_timeout $long_hold_timeout f lmet)   ;; n -> Super
+  kk (tap-hold-release $tap_timeout $long_hold_timeout k rctl)   ;; t -> Ctrl
+  ll (tap-hold-release $tap_timeout $long_hold_timeout l ralt)   ;; i -> AltGr
 )
 
 ;; vim: set ft=lisp
