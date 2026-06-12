@@ -469,7 +469,7 @@
   "updaterIntervalSeconds": 1800,
   "updaterIncludeFlatpak": true,
   "updaterAllowAUR": true,
-  "displayNameMode": "model",
+  "displayNameMode": "name",
   "screenPreferences": {
     "wallpaper": [
       "all"
@@ -781,7 +781,7 @@
       "id": "dw_clock_primary",
       "name": "Desktop Clock",
       "positions": {
-        "0x1920": {
+        "HDMI-A-1": {
           "height": 229.39453125,
           "width": 204.046875,
           "x": 1701.76171875,
@@ -806,7 +806,7 @@
       "id": "dw_1767712288732_fxhd6k1tx",
       "name": "Dank Desktop Weather",
       "positions": {
-        "0x1920": {
+        "HDMI-A-1": {
           "height": 200,
           "width": 200,
           "x": 5.34375,
@@ -835,7 +835,7 @@
       "id": "dw_1772975971045_tls4ffsik",
       "name": "Dank Audio Visualizer",
       "positions": {
-        "0x1920": {
+        "HDMI-A-1": {
           "height": 200,
           "width": 200,
           "x": 5.28515625,
@@ -876,7 +876,7 @@
         "clickThrough": true
       },
       "positions": {
-        "0x1920": {
+        "HDMI-A-1": {
           "width": 320,
           "height": 480,
           "x": 1590.3125,

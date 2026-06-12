@@ -107,8 +107,9 @@ in
 
   # daftop's display layout, pinned so it doesn't auto-reset each boot.
   #
-  # Two external 1920x1080@60 panels (DP-2 left, HDMI-A-1 right); the internal
-  # laptop panel (eDP-1) is physically broken and kept disabled.
+  # Single active panel: the external 1920x1080@60 on HDMI-A-1. The other
+  # external (DP-2) and the physically broken internal panel (eDP-1) are kept
+  # disabled. Desktop widgets are keyed to HDMI-A-1 (see the dms settings).
   #
   # mkForce overrides the shared niri module's outputs block, which pins
   # dafbox's monitors (DP-2 @2560x1440@170 etc.). Those modes are invalid for
@@ -117,19 +118,7 @@ in
   # its includes), so Nix is the only owner.
   programs.niri.settings.outputs = lib.mkForce {
     "eDP-1".enable = false;
-
-    "DP-2" = {
-      mode = {
-        width = 1920;
-        height = 1080;
-        refresh = 60.0;
-      };
-      scale = 1.0;
-      position = {
-        x = 0;
-        y = 0;
-      };
-    };
+    "DP-2".enable = false;
 
     "HDMI-A-1" = {
       mode = {
@@ -139,7 +128,7 @@ in
       };
       scale = 1.0;
       position = {
-        x = 1920;
+        x = 0;
         y = 0;
       };
     };
