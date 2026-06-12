@@ -8,7 +8,7 @@
 
 let
   inherit (lib) mkIf;
-  inherit (lib.${namespace}) mkBoolOpt;
+  inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
   # Define paths relative to the user's home directory for clarity
   matugenConfigDir = "${config.xdg.configHome}/matugen";
@@ -69,10 +69,21 @@ let
 
   dmsSettingsSeed = (pkgs.formats.json { }).generate "dms-settings-seed.json" dmsSettings;
   dmsSettingsPath = "${config.xdg.configHome}/DankMaterialShell/settings.json";
+
+  # DMS session state (dock pinned apps, wallpaper, night mode, …) lives here.
+  dmsSessionPath = "${config.xdg.stateHome}/DankMaterialShell/session.json";
 in
 {
   options.${namespace}.desktop.dms = {
     enable = mkBoolOpt true "Whether or not to use dms";
+
+    dockApps = mkOpt (with lib.types; listOf str) [
+      "firefox-nightly"
+      "emacs"
+      "steam"
+      "org.wezfurlong.wezterm"
+      "org.kde.dolphin"
+    ] "App IDs (desktop-entry basenames) pinned to the DMS dock, in order. Override per host.";
   };
 
   config = mkIf cfg.enable {
@@ -301,6 +312,31 @@ in
         run rm -f ${lib.escapeShellArg dmsSettingsPath}
         run mkdir -p "$(dirname ${lib.escapeShellArg dmsSettingsPath})"
         run install -m 0644 ${dmsSettingsSeed} ${lib.escapeShellArg dmsSettingsPath}
+      fi
+    '';
+
+    # Keep the DMS dock's pinned apps (session.json `pinnedApps`) declarative and
+    # host-overridable via the `dockApps` option above. session.json is otherwise
+    # DMS-owned runtime state (DMS rewrites it on launcher use, wallpaper change,
+    # …), so we can't symlink it — we patch just the one key with jq, preserving
+    # everything else, and only when it actually differs. A running DMS holds the
+    # session in memory and would clobber our write on its next save, so restart
+    # it when the value changes (best-effort; at boot DMS just reads the file).
+    home.activation.dmsDockApps = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      session=${lib.escapeShellArg dmsSessionPath}
+      desired=${lib.escapeShellArg (builtins.toJSON cfg.dockApps)}
+      run mkdir -p "$(dirname "$session")"
+      if [ -f "$session" ]; then
+        current=$(${pkgs.jq}/bin/jq -c '.pinnedApps // null' "$session")
+      else
+        current=missing
+        run sh -c "echo '{}' > $session"
+      fi
+      if [ "$current" != "$(printf '%s' "$desired" | ${pkgs.jq}/bin/jq -c .)" ]; then
+        tmp=$(mktemp)
+        ${pkgs.jq}/bin/jq --argjson apps "$desired" '.pinnedApps = $apps' "$session" > "$tmp" \
+          && run mv "$tmp" "$session"
+        ${pkgs.systemd}/bin/systemctl --user restart dms.service 2>/dev/null || true
       fi
     '';
 
