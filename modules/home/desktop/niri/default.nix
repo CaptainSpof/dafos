@@ -157,6 +157,13 @@ in
                 action = spawn "vicinae" "deeplink" "vicinae://launch/@Gelei/vicinae-extension-bluetooth-0/devices";
                 hotkey-overlay.title = "Bluetooth Devices";
               };
+              "Mod+Shift+Comma" = {
+                repeat = false;
+                # vicinae built-in emoji & symbol picker. Provider "core" is the
+                # VicinaeExtension repository id; "search-emojis" the command id.
+                action = spawn "vicinae" "deeplink" "vicinae://launch/core/search-emojis";
+                hotkey-overlay.title = "Emoji & Symbol Picker";
+              };
               "Mod+N" = {
                 action = dms-ipc "notifications" "toggle";
                 hotkey-overlay.title = "Toggle Notification Center";
