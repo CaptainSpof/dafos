@@ -12,6 +12,9 @@ repl-result-out
 # A useful artifact when working with configuration documentation
 options.json
 
+# Claude Code local state and worktrees
+.claude/
+
 # backup stuff
 *.bak
 /.pre-commit-config.yaml
