@@ -104,4 +104,44 @@ in
     # rustdesk
     uget
   ];
+
+  # daftop's display layout, pinned so it doesn't auto-reset each boot.
+  #
+  # Two external 1920x1080@60 panels (DP-2 left, HDMI-A-1 right); the internal
+  # laptop panel (eDP-1) is physically broken and kept disabled.
+  #
+  # mkForce overrides the shared niri module's outputs block, which pins
+  # dafbox's monitors (DP-2 @2560x1440@170 etc.). Those modes are invalid for
+  # daftop's panels, so niri was discarding them and auto-laying-out every boot.
+  # DMS doesn't manage outputs here (the shared dms module drops "outputs" from
+  # its includes), so Nix is the only owner.
+  programs.niri.settings.outputs = lib.mkForce {
+    "eDP-1".enable = false;
+
+    "DP-2" = {
+      mode = {
+        width = 1920;
+        height = 1080;
+        refresh = 60.0;
+      };
+      scale = 1.0;
+      position = {
+        x = 0;
+        y = 0;
+      };
+    };
+
+    "HDMI-A-1" = {
+      mode = {
+        width = 1920;
+        height = 1080;
+        refresh = 60.0;
+      };
+      scale = 1.0;
+      position = {
+        x = 1920;
+        y = 0;
+      };
+    };
+  };
 }
