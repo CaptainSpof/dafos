@@ -17,6 +17,58 @@ let
   targetOutputPath = "${config.xdg.configHome}/qt6ct/colors/matugen.conf";
 
   cfg = config.${namespace}.desktop.dms;
+
+  # DMS settings baseline. The bulky structural config (bar/dock layout, widgets,
+  # control-center, desktop widget instances) lives in the extracted
+  # ./settings.json snapshot; the hand-tunable scalars below are expressed in Nix
+  # and deep-merged on top (Nix wins on key conflicts).
+  #
+  # This is rendered as a *seed*, not a managed symlink — see the
+  # home.activation.seedDmsSettings note below for why and how to re-baseline.
+  dmsSettings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
+    # Fonts
+    fontFamily = "Inter Variable";
+    monoFontFamily = "Fira Code";
+    fontWeight = 400;
+    fontScale = 1;
+
+    # Clock & locale
+    use24HourClock = true;
+    showSeconds = false;
+    padHours12Hour = false;
+    firstDayOfWeek = -1; # locale default
+    showWeekNumber = false;
+    clockDateFormat = "dddd d MMMM";
+    useFahrenheit = false;
+    windSpeedUnit = "kmh";
+
+    # Theming
+    currentThemeName = "dynamic";
+    currentThemeCategory = "dynamic";
+    matugenScheme = "scheme-fidelity";
+    matugenContrast = 0;
+    runUserMatugenTemplates = true;
+    gtkThemingEnabled = false;
+    qtThemingEnabled = false;
+    syncModeWithPortal = true;
+    terminalsAlwaysDark = true;
+    iconTheme = "System Default";
+    nightModeEnabled = false;
+
+    # Behaviour
+    weatherEnabled = true;
+    useAutoLocation = false;
+    audioVisualizerEnabled = true;
+    soundsEnabled = true;
+    networkPreference = "ethernet";
+
+    # Launcher logo (path derived from the home directory)
+    launcherLogoMode = "os";
+    launcherStyle = "full";
+  };
+
+  dmsSettingsSeed = (pkgs.formats.json { }).generate "dms-settings-seed.json" dmsSettings;
+  dmsSettingsPath = "${config.xdg.configHome}/DankMaterialShell/settings.json";
 in
 {
   options.${namespace}.desktop.dms = {
@@ -207,54 +259,53 @@ in
       ${lib.getExe pkgs.bash} -c '[[ ":$XDG_CURRENT_DESKTOP:" == *:niri:* ]]'
     '';
 
+    # Stop DMS from re-imposing its own display layout over the Nix-pinned niri
+    # outputs (see modules/home/desktop/niri: programs.niri.settings.outputs).
+    #
+    # On niri, DMS's output management is always live (its read-only/include
+    # gating only applies to Hyprland). DMS persists saved monitor profiles in
+    # this monitors.json, renders them to ~/.config/niri/dms/outputs.kdl, and
+    # re-applies them via niri IPC on login — which silently overrode the
+    # Nix-owned outputs every boot (e.g. it parked HDMI-A-1 at x=2632). Dropping
+    # "outputs" from the includes list above only stops the static include, not
+    # this runtime apply.
+    #
+    # Pinning monitors.json to an empty, read-only config leaves DMS with no
+    # saved layout to re-impose, so niri's Nix-owned outputs stay authoritative.
+    # Re-pin display layouts in the niri `outputs` block — saving a layout from
+    # the DMS display UI no longer persists (the write fails on this symlink,
+    # same as settings.json).
+    xdg.configFile."DankMaterialShell/monitors.json".text = builtins.toJSON {
+      version = 1;
+      configurations = [ ];
+    };
+
+    # Seed DMS's settings.json from Nix once, then let DMS own it at runtime so
+    # GUI changes persist across reboots — specifically desktop-widget positions,
+    # which DMS only stores here (no separate state file) and rewrites on drag.
+    #
+    # We deliberately do NOT use programs.dank-material-shell.settings: that
+    # writes a read-only store symlink, so every DMS write fails with EACCES and
+    # the layout reverts to the snapshot on each restart. Instead ./settings.json
+    # (+ the dmsSettings scalars) is a *baseline* copied into a writable file on
+    # first activation only.
+    #
+    # The guard seeds when the target is missing or still the old store symlink;
+    # once it's a plain writable file, DMS owns it and activation leaves it alone
+    # (home-manager's cleanup only removes paths that still link into the store,
+    # so the writable copy is never reaped). To re-baseline from Nix after
+    # editing ./settings.json, delete the file and re-activate:
+    #   rm ~/.config/DankMaterialShell/settings.json && home-manager switch
+    home.activation.seedDmsSettings = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      if [ ! -e "${dmsSettingsPath}" ] || [ -L "${dmsSettingsPath}" ]; then
+        run rm -f ${lib.escapeShellArg dmsSettingsPath}
+        run mkdir -p "$(dirname ${lib.escapeShellArg dmsSettingsPath})"
+        run install -m 0644 ${dmsSettingsSeed} ${lib.escapeShellArg dmsSettingsPath}
+      fi
+    '';
+
     programs.dank-material-shell = {
       enable = true;
-
-      # Declarative DMS settings. The bulky structural config (bar/dock layout,
-      # widgets, control-center, desktop widget instances) lives in the
-      # extracted ./settings.json snapshot; the hand-tunable scalars below are
-      # expressed in Nix and deep-merged on top (Nix wins on key conflicts).
-      settings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
-        # Fonts
-        fontFamily = "Inter Variable";
-        monoFontFamily = "Fira Code";
-        fontWeight = 400;
-        fontScale = 1;
-
-        # Clock & locale
-        use24HourClock = true;
-        showSeconds = false;
-        padHours12Hour = false;
-        firstDayOfWeek = -1; # locale default
-        showWeekNumber = false;
-        clockDateFormat = "dddd d MMMM";
-        useFahrenheit = false;
-        windSpeedUnit = "kmh";
-
-        # Theming
-        currentThemeName = "dynamic";
-        currentThemeCategory = "dynamic";
-        matugenScheme = "scheme-fidelity";
-        matugenContrast = 0;
-        runUserMatugenTemplates = true;
-        gtkThemingEnabled = false;
-        qtThemingEnabled = false;
-        syncModeWithPortal = true;
-        terminalsAlwaysDark = true;
-        iconTheme = "System Default";
-        nightModeEnabled = false;
-
-        # Behaviour
-        weatherEnabled = true;
-        useAutoLocation = false;
-        audioVisualizerEnabled = true;
-        soundsEnabled = true;
-        networkPreference = "ethernet";
-
-        # Launcher logo (path derived from the home directory)
-        launcherLogoMode = "os";
-        launcherStyle = "full";
-      };
 
       systemd = {
         enable = true; # Systemd service for auto-start
