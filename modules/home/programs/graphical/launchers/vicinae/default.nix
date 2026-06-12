@@ -63,6 +63,16 @@ in
         launcher_window = {
           opacity = 0.80;
         };
+        # Extension preferences. Vicinae reads non-secret extension prefs from
+        # this config file; because it's a read-only Nix store path, vicinae
+        # can't persist them itself, so the Home Assistant server URL is set
+        # here. The provider key is the runtime id `@<author>/<install-dir>`
+        # (verified via `vicinae deeplink vicinae://launch/<id>/lights`). The
+        # long-lived token is a secret and is entered once in the UI — vicinae
+        # stores it in its separate, writable secret store, not in this file.
+        providers."@tonka3000/store.raycast.homeassistant".preferences = {
+          instance = "https://home.daftdaf.dev";
+        };
       };
       extensions = [
         bluetooth-alias-first
