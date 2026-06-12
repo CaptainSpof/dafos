@@ -111,12 +111,9 @@ in
   # external (DP-2) and the physically broken internal panel (eDP-1) are kept
   # disabled. Desktop widgets are keyed to HDMI-A-1 (see the dms settings).
   #
-  # mkForce overrides the shared niri module's outputs block, which pins
-  # dafbox's monitors (DP-2 @2560x1440@170 etc.). Those modes are invalid for
-  # daftop's panels, so niri was discarding them and auto-laying-out every boot.
-  # DMS doesn't manage outputs here (the shared dms module drops "outputs" from
-  # its includes), so Nix is the only owner.
-  programs.niri.settings.outputs = lib.mkForce {
+  # Nix is the sole owner: the shared dms module pins monitors.json empty and
+  # drops "outputs" from DMS's includes, so DMS can't auto-lay-out over this.
+  programs.niri.settings.outputs = {
     "eDP-1".enable = false;
     "DP-2".enable = false;
 

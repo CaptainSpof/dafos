@@ -106,9 +106,10 @@ in
     };
   };
 
-  # dafbox's physical monitors. These outputs are Nix-owned rather than managed
-  # by DMS's runtime-generated dms/outputs.kdl. DP-2 runs at 2560x1440@170 (its
-  # EDID-preferred mode is only 60Hz) with always-on VRR for adaptive sync.
+  # dafbox's physical monitors. Nix owns these (the shared dms module pins
+  # monitors.json empty and drops "outputs" from DMS's includes, so DMS can't
+  # override them). DP-2 runs at 2560x1440@170 (its EDID-preferred mode is only
+  # 60Hz) with always-on VRR for adaptive sync.
   programs.niri.settings.outputs = {
     "DP-2" = {
       mode = {
@@ -136,18 +137,4 @@ in
       };
     };
   };
-
-  # Since the outputs above are Nix-owned, drop "outputs" from the DMS include
-  # list (upstream default minus "outputs"). Otherwise dms/outputs.kdl would be
-  # included after hm.kdl and override them. Other niri hosts keep DMS-managed
-  # outputs, so this stays host-specific rather than in the shared dms module.
-  programs.dank-material-shell.niri.includes.filesToInclude = [
-    "alttab"
-    "binds"
-    "colors"
-    "cursor"
-    "layout"
-    "windowrules"
-    "wpblur"
-  ];
 }

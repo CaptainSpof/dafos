@@ -39,39 +39,12 @@ in
             offset = 4.0;
           };
 
-          # Output configuration. This used to live in DMS's runtime-generated
-          # dms/outputs.kdl; it is now owned by Nix, and "outputs" is dropped
-          # from DMS's includes list (see modules/home/desktop/dms) so it can no
-          # longer override these. Changing displays via the DMS settings UI will
-          # therefore no longer take effect — edit this block instead.
-          outputs = {
-            "DP-2" = {
-              mode = {
-                width = 2560;
-                height = 1440;
-                refresh = 170.001;
-              };
-              scale = 1.0;
-              position = {
-                x = 0;
-                y = 0;
-              };
-              # Always-on VRR (adaptive sync) so it engages for fullscreen games.
-              variable-refresh-rate = true;
-            };
-            "HDMI-A-1" = {
-              mode = {
-                width = 1920;
-                height = 1080;
-                refresh = 74.973;
-              };
-              scale = 1.0;
-              position = {
-                x = 2560;
-                y = 0;
-              };
-            };
-          };
+          # Output (monitor) configuration is host-specific and lives in each
+          # host's home (homes/<host>/default.nix: programs.niri.settings.outputs)
+          # since the physical panels differ per machine. Nix owns it: the shared
+          # dms module pins monitors.json empty and drops "outputs" from DMS's
+          # includes (see modules/home/desktop/dms), so DMS can't override these.
+          # Edit the host's outputs block — the DMS display UI no longer persists.
 
           input = {
             focus-follows-mouse.enable = true;
