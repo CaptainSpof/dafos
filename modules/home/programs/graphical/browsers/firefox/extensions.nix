@@ -55,29 +55,13 @@ in
       ]) "Extensions to install";
 
       settings = mkOpt (with lib.types; attrsOf anything) {
-        # AdNauseam is the active content blocker (a uBlock Origin fork that
-        # reads the same managed-storage keys). uBlock Origin itself is not
-        # installed, so these settings target adnauseam's extension id.
-        "adnauseam@rednoise.org" = {
-          # Home-manager skip collision check
-          force = true;
-          settings = {
-            selectedFilterLists = [
-              "easylist"
-              "easylist-annoyances"
-              "easylist-chat"
-              "easylist-newsletters"
-              "easylist-notifications"
-              "fanboy-cookiemonster"
-              "ublock-badware"
-              "ublock-cookies-easylist"
-              "ublock-filters"
-              "ublock-privacy"
-              "ublock-quick-fixes"
-              "ublock-unbreak"
-            ];
-          };
-        };
+        # NOTE: don't seed AdNauseam (adnauseam@rednoise.org) here. force=true
+        # rewrites its storage.js with only the seeded keys on every activation,
+        # dropping the `version`/`firstInstall` markers — so on the next launch
+        # AdNauseam thinks it's freshly installed and shows its setup page. It
+        # owns its own storage instead; pick filter lists in its dashboard. Set
+        # filter lists via Firefox managed storage (adminSettings) if they ever
+        # need to be declarative again.
 
         # New Tab Override: open a custom URL on every new tab.
         "newtaboverride@agenedia.com" = {

@@ -215,9 +215,9 @@ in
 
             # Use the legacy JSON storage backend
             # (browser-extension-data/<id>/storage.js) instead of per-profile
-            # IndexedDB, so Nix-managed extension settings
-            # (firefox.extensions.settings: New Tab Override URL, AdNauseam
-            # filter lists) are authoritative rather than shadowed by IDB.
+            # IndexedDB, so the Nix-managed extension settings
+            # (firefox.extensions.settings: New Tab Override URL) are
+            # authoritative rather than shadowed by IDB.
             "extensions.webextensions.ExtensionStorageIDB.enabled" = false;
 
             "font.name.monospace.x-western" = "MonaspiceKr Nerd Font";
