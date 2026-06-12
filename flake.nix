@@ -32,7 +32,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    claude-desktop.url = "github:aaddrick/claude-desktop-debian";
+    # Pinned: later revs (e.g. d2ce046, 2026-06-11) fail to build — their
+    # ".asar --add-dir filter" patch aborts ("--add-dir pattern matches 2 times
+    # (expected 1)") against the current Claude app. e85450c is the last rev that
+    # builds. Drop the rev suffix to track upstream again once it's fixed.
+    claude-desktop.url = "github:aaddrick/claude-desktop-debian/e85450c90ba38159f89f02bdd0f6c6d7e6bce065";
 
     nix-podman-stacks = {
       url = "github:Tarow/nix-podman-stacks";
