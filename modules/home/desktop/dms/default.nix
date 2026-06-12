@@ -214,13 +214,6 @@ in
       # widgets, control-center, desktop widget instances) lives in the
       # extracted ./settings.json snapshot; the hand-tunable scalars below are
       # expressed in Nix and deep-merged on top (Nix wins on key conflicts).
-      #
-      # Ephemeral runtime state — usage history, per-monitor widget positions,
-      # display profiles and device pins — was stripped before extraction.
-      # Routing this through the option makes settings.json a read-only Nix
-      # store symlink, so DMS's in-app settings UI can no longer persist
-      # changes: re-extract and update ./settings.json to capture future tweaks
-      # to the structural config, or edit the scalars below directly.
       settings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
         # Fonts
         fontFamily = "Inter Variable";
@@ -260,7 +253,6 @@ in
 
         # Launcher logo (path derived from the home directory)
         launcherLogoMode = "os";
-        launcherLogoCustomPath = "${config.home.homeDirectory}/Pictures/ico/spino.png";
         launcherStyle = "full";
       };
 
@@ -271,17 +263,8 @@ in
 
       niri = {
         # Keybinds are defined directly in the niri module
-        # (modules/home/desktop/niri) and DMS's own binds.kdl is pulled in via
-        # includes.enable (default true). Letting DMS also inject binds here
-        # would be a redundant third source — see the upstream warning about
-        # using enableKeybinds and includes.enable together.
         enableKeybinds = false;
 
-        # Output config is owned by Nix (programs.niri.settings.outputs in
-        # modules/home/desktop/niri), so drop "outputs" from the DMS include
-        # list. Otherwise dms/outputs.kdl is included after hm.kdl and would
-        # override the Nix-defined outputs. This is the upstream default list
-        # minus "outputs".
         includes.filesToInclude = [
           "alttab"
           "binds"
