@@ -385,6 +385,10 @@ in
     programs.dank-material-shell = {
       enable = true;
 
+      # Plugin sources, pinned in ./plugins.nix (symlinked into the plugins dir).
+      # Enable-state/settings stay in DMS's runtime-owned plugin_settings.json.
+      plugins = import ./plugins.nix { inherit pkgs; };
+
       systemd = {
         enable = true; # Systemd service for auto-start
         restartIfChanged = true; # Auto-restart dms.service when dankMaterialShell changes
