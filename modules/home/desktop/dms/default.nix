@@ -35,6 +35,10 @@ let
   # Bar setup (bar layout + control-center tiles) extracted to Nix; see bar.nix.
   barSetup = import ./bar.nix;
 
+  # User location (lat/long/name), reused to fix the DMS weather widget's
+  # location instead of DMS's IP-based auto location.
+  userLocation = config.${namespace}.user.location;
+
   # DMS settings baseline. The bulky structural config (widgets, desktop widget
   # instances) lives in the ./settings.json snapshot; the bar setup (bar layout
   # + control-center tiles) is extracted to ./bar.nix (host-overridable via the
@@ -377,6 +381,28 @@ in
       if [ "$current" != "$(printf '%s' "$desired" | ${pkgs.jq}/bin/jq -c .)" ]; then
         tmp=$(mktemp)
         ${pkgs.jq}/bin/jq --argjson apps "$desired" '.pinnedApps = $apps' "$session" > "$tmp" \
+          && run mv "$tmp" "$session"
+        ${pkgs.systemd}/bin/systemctl --user restart dms.service 2>/dev/null || true
+      fi
+    '';
+
+    # Weather location: drive DMS's weather off dafos.user.location rather than
+    # its IP-based auto location (useAutoLocation is already false in the seed
+    # above). weatherCoordinates/weatherLocation live in DMS-owned session.json,
+    # so — like dmsDockApps — patch just those keys with jq and restart DMS when
+    # they change, leaving the rest of the session untouched.
+    home.activation.dmsWeather = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      session=${lib.escapeShellArg dmsSessionPath}
+      coords=${lib.escapeShellArg "${userLocation.latitude},${userLocation.longitude}"}
+      name=${lib.escapeShellArg userLocation.name}
+      run mkdir -p "$(dirname "$session")"
+      [ -f "$session" ] || run sh -c "echo '{}' > $session"
+      cur_coords=$(${pkgs.jq}/bin/jq -r '.weatherCoordinates // ""' "$session")
+      cur_name=$(${pkgs.jq}/bin/jq -r '.weatherLocation // ""' "$session")
+      if [ "$cur_coords" != "$coords" ] || [ "$cur_name" != "$name" ]; then
+        tmp=$(mktemp)
+        ${pkgs.jq}/bin/jq --arg c "$coords" --arg n "$name" \
+          '.weatherCoordinates = $c | .weatherLocation = $n' "$session" > "$tmp" \
           && run mv "$tmp" "$session"
         ${pkgs.systemd}/bin/systemctl --user restart dms.service 2>/dev/null || true
       fi

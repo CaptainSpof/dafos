@@ -53,6 +53,9 @@ in
 
     location.latitude = mkOpt types.str "48.89" "The latitude of the user.";
     location.longitude = mkOpt types.str "2.21" "The longitude of the user.";
+    location.name =
+      mkOpt types.str "Nanterre, France"
+        "Human-readable name of the user's location (e.g. the DMS weather label).";
 
     home = mkOpt (types.nullOr types.str) home-directory "The user's home directory.";
   };
