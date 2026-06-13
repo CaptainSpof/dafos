@@ -84,16 +84,4 @@ in
     rev = "f035c3a0923e5872f912fc9bd4cc0c7f161fbe2a";
     hash = "sha256-cXuljANI8aO5cb7xwIs/ttucJD/y9s9PXuUw7LS+BGI=";
   };
-  wallpaperShufflerPlugin.src = fetchFromGitHub {
-    owner = "Daniel-42-z";
-    repo = "dms-wallpaper-shuffler";
-    rev = "cc459906990e562d3a332bd5c6869e8f5af1ee52";
-    hash = "sha256-71kZLdVZmWMG+sgpbPHH8RFGmvLWve9NNTpZNJXrRd4=";
-  };
-  webSearch.src = fetchFromGitHub {
-    owner = "devnullvoid";
-    repo = "dms-web-search";
-    rev = "52f9ec482dc86d9c5ff0110a5d57401112191a38";
-    hash = "sha256-c6mVBTlkJdfvMuMvPjXGeOEWBtb0mdmIcPNzgmMxGwE=";
-  };
 }
