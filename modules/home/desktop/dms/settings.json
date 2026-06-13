@@ -60,7 +60,7 @@
   "selectedGpuIndex": 0,
   "enabledGpuPciIds": [],
   "showSystemTray": true,
-  "systemTrayIconTintMode": "none",
+  "systemTrayIconTintMode": "monochrome",
   "systemTrayIconTintSaturation": 50,
   "systemTrayIconTintStrength": 135,
   "showClock": true,
