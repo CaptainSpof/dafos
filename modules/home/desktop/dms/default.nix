@@ -32,14 +32,24 @@ let
 
   cfg = config.${namespace}.desktop.dms;
 
-  # DMS settings baseline. The bulky structural config (bar/dock layout, widgets,
-  # control-center, desktop widget instances) lives in the extracted
-  # ./settings.json snapshot; the hand-tunable scalars below are expressed in Nix
-  # and deep-merged on top (Nix wins on key conflicts).
+  # Bar setup (bar layout + control-center tiles) extracted to Nix; see bar.nix.
+  barSetup = import ./bar.nix;
+
+  # DMS settings baseline. The bulky structural config (widgets, desktop widget
+  # instances) lives in the ./settings.json snapshot; the bar setup (bar layout
+  # + control-center tiles) is extracted to ./bar.nix (host-overridable via the
+  # `bar.*` options); the hand-tunable scalars below are expressed in Nix and
+  # deep-merged on top (Nix wins on key conflicts).
   #
   # This is rendered as a *seed*, not a managed symlink — see the
   # home.activation.seedDmsSettings note below for why and how to re-baseline.
   dmsSettings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
+    # Bar setup: defined in Nix in ./bar.nix, overridable per host via the
+    # `bar.*` options below. Each replaces its settings.json key wholesale
+    # (recursiveUpdate swaps lists rather than merging element-wise).
+    barConfigs = cfg.bar.configs;
+    controlCenterWidgets = cfg.bar.controlCenterWidgets;
+
     # Fonts
     fontFamily = "Inter Variable";
     monoFontFamily = "Fira Code";
@@ -98,6 +108,15 @@ in
       "org.wezfurlong.wezterm"
       "org.kde.dolphin"
     ] "App IDs (desktop-entry basenames) pinned to the DMS dock, in order. Override per host.";
+
+    bar = {
+      configs =
+        mkOpt (with lib.types; listOf attrs) barSetup.configs
+          "DMS bar layout (barConfigs), in Nix. Defaults to ./bar.nix; override per host for a different set of bars.";
+      controlCenterWidgets =
+        mkOpt (with lib.types; listOf attrs) barSetup.controlCenterWidgets
+          "DMS control-center quick-settings tiles. Defaults to ./bar.nix; override per host.";
+    };
   };
 
   config = mkIf cfg.enable {
