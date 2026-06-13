@@ -65,6 +65,11 @@ in
           KDE.widgetStyle = "Darkly";
           General.AccentColorFromWallpaper = true;
         };
+        # Make Dolphin follow the global color scheme. Under the qt6ct platform
+        # theme (vs full Plasma), KColorSchemeManager doesn't see a "system"
+        # scheme, so without this Dolphin falls back to its light default while
+        # other KDE apps stay dark. "*" is KDE's "follow system scheme" sentinel.
+        dolphinrc.UiSettings.ColorScheme = "*";
       };
     };
 
