@@ -30,7 +30,12 @@ in
       amdgpu_top
       nvtopPackages.amd
       lact
+      ddcutil # control external monitors (brightness, etc.) over DDC/CI
     ];
+
+    # Let the primary user talk to /dev/i2c-* without root, so DDC/CI controls
+    # (external-monitor brightness) work unprivileged. Needs a re-login to apply.
+    users.users.${config.${namespace}.user.name}.extraGroups = [ "i2c" ];
 
     services.lact.enable = true;
 
@@ -54,6 +59,10 @@ in
         # };
         inherit (cfg) opencl;
       };
+
+      # DDC/CI over the GPU's i2c buses: loads i2c-dev, creates /dev/i2c-*,
+      # the i2c group, and the udev rules. Enables external-monitor brightness.
+      i2c.enable = true;
 
       graphics = {
         enable = true;
