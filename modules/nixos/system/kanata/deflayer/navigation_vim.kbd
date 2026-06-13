@@ -1,14 +1,15 @@
 ;; Vim-Navigation layer:
 ;;  - right: Vim-like arrows on HJKL, home/end page up/down, mouse scroll
 ;;  - left: one-hand shortcuts (Cmd/Ctrl-WASZXCV), Tab/Shift-Tab, prev/next
-;;  - top: Super-num (i3/sway) or Alt-num (browser), zoom in/out
+;;  - top: laptop-style media keys (mute, volume, transport, brightness);
+;;         9 and 0 keep Super-num (i3/sway/niri workspace switching)
 
 ;; The `lrld` action stands for "live reload". This will re-parse everything
 ;; except for linux-dev, i.e. you cannot live reload and switch keyboard devices.
 
 (deflayer navigation
   _
-  M-1  M-2  M-3  M-4  M-5  lrld M-6  M-7  M-8  M-9  M-0
+  mute vold volu prev pp   lrld next brdown brup M-9  M-0
   @pad @cls bck  fwd  XX        home pgdn pgup end  @run
   @all @sav S-tab tab XX        lft  down up   rght @fun
   @ndo @cut @cpy @pst XX    _   @mwl @mwd @mwu @mwr XX

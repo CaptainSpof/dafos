@@ -222,6 +222,22 @@ in
                 allow-when-locked = true;
                 action = dms-ipc "audio" "micmute";
               };
+
+              # Media transport (driven by the kanata nav-layer media keys:
+              # pp/prev/next emit XF86AudioPlay/Prev/Next). playerctl controls
+              # the active MPRIS player, the same one the DMS bar reflects.
+              "XF86AudioPlay" = {
+                allow-when-locked = true;
+                action = spawn "playerctl" "play-pause";
+              };
+              "XF86AudioPrev" = {
+                allow-when-locked = true;
+                action = spawn "playerctl" "previous";
+              };
+              "XF86AudioNext" = {
+                allow-when-locked = true;
+                action = spawn "playerctl" "next";
+              };
             };
 
           layer-rules = [
@@ -337,6 +353,7 @@ in
       kanagawa-icon-theme
       libnotify
       nirius
+      playerctl
       wdisplays
       wl-mirror
       xwayland-satellite
