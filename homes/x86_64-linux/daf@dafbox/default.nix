@@ -3,6 +3,7 @@
   config,
   namespace,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -20,7 +21,7 @@ in
 
     desktop = {
       plasma = {
-        themeSwitcher = true;
+        themeSwitcher = false;
         config.screenlocker = {
           enable = false;
           lockOnResume = false;
@@ -47,6 +48,8 @@ in
 
     services.sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafbox.pem" ];
 
+    system.xdg = enabled;
+
     programs = {
       ai = {
         enable = true;
@@ -59,7 +62,8 @@ in
         browsers = {
           firefox = {
             enable = true;
-            package = pkgs.firefox-beta;
+            package = inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
+            # package = pkgs.firefox-beta;
             gpuAcceleration = true;
             hardwareDecoding = true;
             settings = {
