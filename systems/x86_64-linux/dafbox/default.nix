@@ -25,7 +25,7 @@ in
 
     display-managers = {
       enable = true;
-      defaultSession = "plasma";
+      defaultSession = "niri";
       autoLogin = {
         enable = true;
         user = config.${namespace}.user.name;
