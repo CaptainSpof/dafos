@@ -106,13 +106,6 @@ in
   ];
 
   # daftop's display layout, pinned so it doesn't auto-reset each boot.
-  #
-  # Single active panel: the external 1920x1080@60 on HDMI-A-1. The other
-  # external (DP-2) and the physically broken internal panel (eDP-1) are kept
-  # disabled. Desktop widgets are keyed to HDMI-A-1 (see the dms settings).
-  #
-  # Nix is the sole owner: the shared dms module pins monitors.json empty and
-  # drops "outputs" from DMS's includes, so DMS can't auto-lay-out over this.
   programs.niri.settings.outputs = {
     "eDP-1".enable = false;
     "DP-2".enable = false;
