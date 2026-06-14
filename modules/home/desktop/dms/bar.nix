@@ -294,5 +294,10 @@
       enabled = true;
       width = 100;
     }
+    {
+      id = "plugin_dankKDEConnect";
+      enabled = true;
+      width = 100;
+    }
   ];
 }
