@@ -10,17 +10,11 @@ let
   inherit (lib) mkIf;
   inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
-  # Define paths relative to the user's home directory for clarity
   matugenConfigDir = "${config.xdg.configHome}/matugen";
   templatePath = "${matugenConfigDir}/templates/qtct-colors.conf";
 
   targetOutputPath = "${config.xdg.configHome}/qt6ct/colors/matugen.conf";
 
-  # qt6ct.conf selects the Darkly style + the matugen palette DMS renders into
-  # the color file above. It's seeded as a writable file (see
-  # home.activation.seedQt6ctConf) rather than an xdg.configFile symlink, because
-  # the qt6ct-reload service touches it and qt6ct rewrites it on reload — both
-  # fail on a read-only /nix/store symlink.
   qt6ctConfPath = "${config.xdg.configHome}/qt6ct/qt6ct.conf";
   qt6ctConf = pkgs.writeText "qt6ct.conf" ''
     [Appearance]
@@ -40,17 +34,8 @@ let
   userLocation = config.${namespace}.user.location;
 
   # DMS settings baseline. The bulky structural config (widgets, desktop widget
-  # instances) lives in the ./settings.json snapshot; the bar setup (bar layout
-  # + control-center tiles) is extracted to ./bar.nix (host-overridable via the
-  # `bar.*` options); the hand-tunable scalars below are expressed in Nix and
-  # deep-merged on top (Nix wins on key conflicts).
-  #
-  # This is rendered as a *seed*, not a managed symlink — see the
-  # home.activation.seedDmsSettings note below for why and how to re-baseline.
+  # instances) lives in the ./settings.json snapshot;
   dmsSettings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
-    # Bar setup: defined in Nix in ./bar.nix, overridable per host via the
-    # `bar.*` options below. Each replaces its settings.json key wholesale
-    # (recursiveUpdate swaps lists rather than merging element-wise).
     barConfigs = cfg.bar.configs;
     controlCenterWidgets = cfg.bar.controlCenterWidgets;
 
@@ -308,21 +293,7 @@ in
     '';
 
     # Stop DMS from re-imposing its own display layout over the Nix-pinned niri
-    # outputs (see modules/home/desktop/niri: programs.niri.settings.outputs).
-    #
-    # On niri, DMS's output management is always live (its read-only/include
-    # gating only applies to Hyprland). DMS persists saved monitor profiles in
-    # this monitors.json, renders them to ~/.config/niri/dms/outputs.kdl, and
-    # re-applies them via niri IPC on login — which silently overrode the
-    # Nix-owned outputs every boot (e.g. it parked HDMI-A-1 at x=2632). Dropping
-    # "outputs" from the includes list above only stops the static include, not
-    # this runtime apply.
-    #
-    # Pinning monitors.json to an empty, read-only config leaves DMS with no
-    # saved layout to re-impose, so niri's Nix-owned outputs stay authoritative.
-    # Re-pin display layouts in the niri `outputs` block — saving a layout from
-    # the DMS display UI no longer persists (the write fails on this symlink,
-    # same as settings.json).
+    # outputs
     xdg.configFile."DankMaterialShell/monitors.json".text = builtins.toJSON {
       version = 1;
       configurations = [ ];
@@ -387,10 +358,7 @@ in
     '';
 
     # Weather location: drive DMS's weather off dafos.user.location rather than
-    # its IP-based auto location (useAutoLocation is already false in the seed
-    # above). weatherCoordinates/weatherLocation live in DMS-owned session.json,
-    # so — like dmsDockApps — patch just those keys with jq and restart DMS when
-    # they change, leaving the rest of the session untouched.
+    # its IP-based auto location. 
     home.activation.dmsWeather = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       session=${lib.escapeShellArg dmsSessionPath}
       coords=${lib.escapeShellArg "${userLocation.latitude},${userLocation.longitude}"}

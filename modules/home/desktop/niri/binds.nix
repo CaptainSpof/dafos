@@ -131,9 +131,6 @@ lib.mkForce {
     action = dms-ipc "audio" "micmute";
   };
 
-  # Media transport (driven by the kanata nav-layer media keys:
-  # pp/prev/next emit XF86AudioPlay/Prev/Next). playerctl controls
-  # the active MPRIS player, the same one the DMS bar reflects.
   "XF86AudioPlay" = {
     allow-when-locked = true;
     action = spawn "playerctl" "play-pause";

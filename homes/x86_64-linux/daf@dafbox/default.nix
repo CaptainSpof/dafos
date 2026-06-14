@@ -110,10 +110,6 @@ in
     };
   };
 
-  # dafbox's physical monitors. Nix owns these (the shared dms module pins
-  # monitors.json empty and drops "outputs" from DMS's includes, so DMS can't
-  # override them). DP-2 runs at 2560x1440@170 (its EDID-preferred mode is only
-  # 60Hz) with always-on VRR for adaptive sync.
   programs.niri.settings.outputs = {
     "DP-2" = {
       mode = {
