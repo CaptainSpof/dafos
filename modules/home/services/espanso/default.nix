@@ -31,7 +31,7 @@ in
             layout = "fr";
             variant = "ergol";
           };
-          backend = "inject";
+          backend = "auto";
           inject_delay = 5;
           key_delay = 5;
         };
