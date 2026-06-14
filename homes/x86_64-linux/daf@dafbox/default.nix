@@ -20,6 +20,15 @@ in
     };
 
     desktop = {
+      dms.dockApps = [
+        "firefox-nightly"
+        "emacs"
+        "steam"
+        "org.wezfurlong.wezterm"
+        "org.kde.dolphin"
+        "vesktop"
+      ];
+
       plasma = {
         themeSwitcher = false;
         config.screenlocker = {
