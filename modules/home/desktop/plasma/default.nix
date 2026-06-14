@@ -22,7 +22,7 @@ let
     kdePackages.signon-kwallet-extension
     kdePackages.signond
     # Utils
-    # kdotool
+    kdotool
   ];
   fullPackages = with pkgs; [
     # kdePackages.itinerary

@@ -41,7 +41,10 @@ in
         email = {
           matches = [
             {
-              trigger = "@me";
+              triggers = [
+                "@me"
+                "@daf"
+              ];
               replace = email;
             }
             {
@@ -50,6 +53,7 @@ in
             }
           ];
         };
+
         date = {
           matches = [
             {

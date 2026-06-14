@@ -101,7 +101,7 @@ in
       };
 
       services = {
-        espanso = disabled;
+        espanso = enabled;
       };
     };
 

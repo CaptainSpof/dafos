@@ -206,12 +206,13 @@ in
 
     home.packages = with pkgs; [
       adw-gtk3
-      nwg-look
       fuzzel
       kanagawa-gtk-theme
       kanagawa-icon-theme
+      kdotool
       libnotify
       nirius
+      nwg-look
       playerctl
       wdisplays
       wl-mirror
