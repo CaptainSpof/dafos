@@ -70,6 +70,28 @@ in
         # scheme, so without this Dolphin falls back to its light default while
         # other KDE apps stay dark. "*" is KDE's "follow system scheme" sentinel.
         dolphinrc.UiSettings.ColorScheme = "*";
+
+        # Darkly widget-style settings (the "Application Style -> Darkly ->
+        # Configure" page). Captured from ~/.config/darklyrc; plasma-manager
+        # re-asserts them on activation but leaves them writable so the KCM
+        # still works.
+        darklyrc = {
+          Common = {
+            ScrollBarTransient = true;
+            ShadowSize = "ShadowMedium";
+          };
+          Style = {
+            DolphinSidebarOpacity = 80;
+            DolphinViewOpacity = 90;
+            MenuBarOpacity = 80;
+            MenuItemDrawStrongFocus = false;
+            MenuOpacity = 80;
+            RoundedRubberBandFrame = false;
+            SidePanelDrawFrame = true;
+            TabBarOpacity = 80;
+            ToolBarOpacity = 80;
+          };
+        };
       };
     };
 
