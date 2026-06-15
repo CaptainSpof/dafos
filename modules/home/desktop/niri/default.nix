@@ -187,6 +187,7 @@ in
     home.packages = with pkgs; [
       adw-gtk3
       fuzzel
+      grim
       kanagawa-gtk-theme
       kanagawa-icon-theme
       kdotool
@@ -194,6 +195,8 @@ in
       nirius
       nwg-look
       playerctl
+      satty
+      slurp
       wdisplays
       wl-mirror
       xwayland-satellite

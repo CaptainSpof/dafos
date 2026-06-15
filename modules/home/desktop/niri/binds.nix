@@ -9,6 +9,16 @@
 with config.lib.niri.actions;
 let
   dms-ipc = spawn "dms" "ipc";
+  # spawn execs a single binary with literal args (no shell), so pipes and
+  # command substitution need an explicit `sh -c`.
+  shell = cmd: spawn "sh" "-c" cmd;
+  # Run a niri screenshot action into a temp PNG, then open it in satty for
+  # annotation. niri can't pipe a capture to stdout and its clipboard copy is
+  # async/racy, so we poll the temp file until niri has written it (with a ~5s
+  # safety timeout), then hand it to satty and clean up afterwards.
+  shotToSatty =
+    action:
+    shell ''f=$(mktemp --suffix=.png); niri msg action ${action} -p false --path "$f"; for i in $(seq 100); do [ -s "$f" ] && break; sleep 0.05; done; [ -s "$f" ] && satty -f "$f"; rm -f "$f"'';
 in
 lib.mkForce {
   "Mod+Q" = {
@@ -101,9 +111,13 @@ lib.mkForce {
   "Mod+C".action.center-column = { };
   "Mod+Alt+C".action.center-visible-columns = { };
 
-  "Print".action.screenshot = [ ];
-  "Ctrl+Print".action.screenshot-screen = [ ];
-  "Alt+Print".action.screenshot-window = [ ];
+  # Screenshots, each opened in satty for annotation:
+  #   Print       region select (grim writes to stdout, satty reads stdin)
+  #   Ctrl+Print  focused monitor
+  #   Alt+Print   focused window
+  "Print".action = shell ''grim -g "$(slurp)" - | satty -f -'';
+  "Ctrl+Print".action = shotToSatty "screenshot-screen";
+  "Alt+Print".action = shotToSatty "screenshot-window";
 
   "XF86MonBrightnessUp" = {
     allow-when-locked = true;
