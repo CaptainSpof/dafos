@@ -41,10 +41,7 @@ in
 
           # Output (monitor) configuration is host-specific and lives in each
           # host's home (homes/<host>/default.nix: programs.niri.settings.outputs)
-          # since the physical panels differ per machine. Nix owns it: the shared
-          # dms module pins monitors.json empty and drops "outputs" from DMS's
-          # includes (see modules/home/desktop/dms), so DMS can't override these.
-          # Edit the host's outputs block — the DMS display UI no longer persists.
+          # since the physical panels differ per machine.
 
           input = {
             focus-follows-mouse.enable = true;
@@ -177,24 +174,13 @@ in
       };
     };
 
-    # Pin a dark GTK theme. Under niri there's no koi (Plasma-only) to sync the
-    # GTK theme with the OS color-scheme: DMS flips color-scheme to dark, but the
-    # GTK theme name is left untouched. Electron/Chromium apps (e.g. Claude
-    # Desktop) pick dark/light from the GTK theme, not the portal's
-    # color-scheme, so they stay light without this. In Plasma, koi still
-    # overrides the GTK theme at runtime.
+    # Pin a dark GTK theme.
     gtk = {
       enable = true;
       theme = {
         name = "Gruvbox-Dark";
         package = pkgs.gruvbox-gtk-theme;
       };
-      # Only the GTK3 theme matters here (Electron/Chromium read it). Don't let
-      # home-manager manage ~/.config/gtk-4.0/gtk.css: nwg-look owns that path at
-      # runtime (as a symlink), and home-manager refuses to back up a foreign
-      # symlink, which aborts activation. GTK4 apps still follow the Settings
-      # portal's color-scheme (routed to gtk above). Also adopts the new
-      # gtk.gtk4.theme default and silences the legacy-default warning.
       gtk4.theme = null;
     };
 
