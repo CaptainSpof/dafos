@@ -106,12 +106,17 @@ in
     home.sessionVariables = {
       QT_QPA_PLATFORMTHEME = "qt6ct";
       QT_QPA_PLATFORMTHEME_QT6 = "qt6ct";
+      # Kirigami / QtQuick Controls apps (skanpage, etc.) default to the light
+      # "Basic" style outside Plasma. Force the KDE style so they follow the
+      # color scheme (provided by qqc2-desktop-style, in home.packages below).
+      QT_QUICK_CONTROLS_STYLE = "org.kde.desktop";
     };
 
     home.packages = with pkgs; [
       dafos.kde-warm-eyes
       dafos.leaf-kde
       dafos.plasma-applet-netspeed-widget
+      kdePackages.qqc2-desktop-style # org.kde.desktop QtQuick Controls style
       gruvbox-gtk-theme
       kde-gruvbox
       papirus-icon-theme
