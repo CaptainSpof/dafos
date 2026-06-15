@@ -18,30 +18,21 @@ in
 
   config = mkIf cfg.enable {
     # GitHub access token for Nix (raises the 60 req/h unauthenticated GitHub
-    # API limit hit during flake eval/update). Rendered from the SOPS secret
-    # into a sops template and !include-d into the user's nix.conf so the token
-    # never lands in the world-readable store.
-    #
-    # DISABLED until secrets/daf/github.yaml is re-keyed: it's encrypted to
-    # admin + daftop + dafoltop only, not dafbox, so sops-nix activation fails on
-    # dafbox. Re-key from a host that can decrypt it:
-    #   sops updatekeys secrets/daf/github.yaml
-    # then re-enable this block.
-    #
-    # sops = {
-    #   secrets."github-access-token-flake-update" = {
-    #     sopsFile = lib.snowfall.fs.get-file "secrets/daf/github.yaml";
-    #   };
-    #   templates."nix-access-tokens" = {
-    #     content = ''
-    #       access-tokens = github.com=${config.sops.placeholder."github-access-token-flake-update"}
-    #     '';
-    #   };
-    # };
-    #
-    # nix.extraOptions = ''
-    #   !include ${config.sops.templates."nix-access-tokens".path}
-    # '';
+    # API limit hit during flake eval/update).
+    sops = {
+      secrets."github-access-token-flake-update" = {
+        sopsFile = lib.snowfall.fs.get-file "secrets/daf/github.yaml";
+      };
+      templates."nix-access-tokens" = {
+        content = ''
+          access-tokens = github.com=${config.sops.placeholder."github-access-token-flake-update"}
+        '';
+      };
+    };
+
+    nix.extraOptions = ''
+      !include ${config.sops.templates."nix-access-tokens".path}
+    '';
 
     home.packages = with pkgs; [
       coreutils
