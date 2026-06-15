@@ -14,7 +14,7 @@
   @pad @cls bck  fwd  XX        home pgdn pgup end  @run
   @all @sav S-tab tab XX        lft  down up   rght @fun
   @ndo @cut @cpy @pst XX    _   @mwl @mwd @mwu @mwr XX
-            del             _             esc
+            del             _             esc  _
 )
 
 ;; NumPad
@@ -24,7 +24,7 @@
   XX   home up   end  pgup      @/   @7   @8   @9   XX
   XX   lft  down rght pgdn      @-   @4   @5   @6   @0
   XX   XX   XX   XX   XX    _   @,   @1   @2   @3   @.
-            @std           @nbs           @std
+            @std           @nbs           @std  _
 )
 
 ;; function keys
@@ -34,7 +34,7 @@
   f1   f2   f3   f4   XX        XX   XX   XX   XX   XX
   f5   f6   f7   f8   XX        XX   lctl lalt lmet _
   f9   f10  f11  f12  XX   XX   XX   XX   XX   XX   XX
-            _               _             _
+            _               _             _    _
 )
 
 (defalias

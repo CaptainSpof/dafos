@@ -27,7 +27,7 @@
   XX   XX   XX   XX   XX        XX   XX   XX   XX   XX
   XX   XX   XX   XX   XX        XX   XX   XX   XX   XX
   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
-            XX            XX             XX
+            XX            XX             XX  _
 )
 
 ;; QWERTY emulation while the OS layout stays Ergo-L (fr/ergol).
@@ -42,7 +42,7 @@
   q    t    d    j    k         p    ;    l    e    r
   a    s    i    g    ,         m    y    /    h    @qsc
   z    x    w    v    b    <    f    u    .    n    @qsl
-            lalt          spc             ralt
+            lalt          spc             ralt  lmet
 )
 
 ;; Gaming: plain keys, no home-row mods / layer-taps, full spacebar.
@@ -52,7 +52,7 @@
   q    w    e    r    t         y    u    i    o    p
   a    s    d    f    g         h    j    k    l    ;
   z    x    c    v    b    <    n    m    ,    .    /
-            lalt          spc             ralt
+            lalt          spc             ralt  lmet
 )
 
 ;; Basic: plain pass-through fallback (normal keyboard behaviour).
@@ -62,7 +62,7 @@
   q    w    e    r    t         y    u    i    o    p
   a    s    d    f    g         h    j    k    l    ;
   z    x    c    v    b    <    n    m    ,    .    /
-            lalt          spc             ralt
+            lalt          spc             ralt  lmet
 )
 
 ;; vim: set ft=lisp

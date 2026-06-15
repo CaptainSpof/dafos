@@ -41,17 +41,11 @@ lib.mkForce {
   };
   "Mod+B" = {
     repeat = false;
-    # Opens the Devices command of the vicinae bluetooth extension.
-    # Deeplink provider is @<author>/<extension-install-dir>, which is
-    # the home-manager-generated dir name (see programs.vicinae
-    # extensions); the entrypoint is the command name "devices".
     action = spawn "vicinae" "deeplink" "vicinae://launch/@Gelei/vicinae-extension-bluetooth-0/devices";
     hotkey-overlay.title = "Bluetooth Devices";
   };
   "Mod+Shift+Comma" = {
     repeat = false;
-    # vicinae built-in emoji & symbol picker. Provider "core" is the
-    # VicinaeExtension repository id; "search-emojis" the command id.
     action = spawn "vicinae" "deeplink" "vicinae://launch/core/search-emojis";
     hotkey-overlay.title = "Emoji & Symbol Picker";
   };
@@ -71,7 +65,10 @@ lib.mkForce {
     action = dms-ipc "processlist" "toggle";
     hotkey-overlay.title = "Toggle Process List";
   };
-  "Mod+Z".action = toggle-overview;
+  "Mod+Z".action = switch-preset-column-width;
+  # A single tap of the physical Super key emits F23 (via the kanata @met
+  # tap-hold overload); hold/combo stays Super. So tap Super -> overview.
+  "F23".action = toggle-overview;
 
   "Mod+BackSpace" = {
     repeat = false;

@@ -6,7 +6,7 @@
   q    w    e    r    t         y    u    i    o    p
   a    @ss  @dd  @ff  g         h    j    @kk  @ll  @nav
   z    x    c    v    b    <    n    m    ,    .    /
-            @alt          @ssp            @sym
+            @alt          @ssp            @sym  @met
 )
 
 ;; Timing variables are defined in `kanata.kbd` file.
@@ -31,6 +31,11 @@
   ff (tap-hold-release $tap_timeout $long_hold_timeout f lmet)   ;; n -> Super
   kk (tap-hold-release $tap_timeout $long_hold_timeout k rctl)   ;; t -> Ctrl
   ll (tap-hold-release $tap_timeout $long_hold_timeout l ralt)   ;; i -> AltGr
+
+  ;; Physical Super key (regular position): hold or use-in-combo = Super, a
+  ;; clean quick tap = F23 (niri binds F23 -> toggle-overview). tap-hold-press
+  ;; keeps Super instant in combos; only a bare tap with no other key fires F23.
+  met (tap-hold-press $tap_timeout $hold_timeout f23 lmet)
 )
 
 ;; vim: set ft=lisp
