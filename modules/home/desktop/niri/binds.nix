@@ -97,6 +97,17 @@ lib.mkForce {
   "Mod+Shift+L".action = move-column-left-or-to-monitor-left;
   "Mod+Shift+I".action = move-column-right-or-to-monitor-right;
 
+  # Super + scroll wheel jumps between workspaces. cooldown-ms rate-limits it
+  # so one notch moves one workspace instead of flying through several.
+  "Mod+WheelScrollDown" = {
+    cooldown-ms = 150;
+    action = focus-workspace-down;
+  };
+  "Mod+WheelScrollUp" = {
+    cooldown-ms = 150;
+    action = focus-workspace-up;
+  };
+
   "Mod+Comma".action = set-column-width "+15%";
   "Mod+Mod5+R".action = set-column-width "-15%";
   "Mod+G".action = set-column-width "-15%";
