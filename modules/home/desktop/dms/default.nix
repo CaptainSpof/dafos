@@ -15,6 +15,11 @@ let
 
   targetOutputPath = "${config.xdg.configHome}/qt6ct/colors/matugen.conf";
 
+  # wezterm matugen template (DMS's dank16-based body) and its rendered output,
+  # a wezterm color-scheme TOML loaded by the wezterm module as "dank-theme".
+  weztermTemplatePath = "${matugenConfigDir}/templates/wezterm.toml";
+  weztermColorsPath = "${config.xdg.configHome}/wezterm/colors/dank-theme.toml";
+
   qt6ctConfPath = "${config.xdg.configHome}/qt6ct/qt6ct.conf";
   qt6ctConf = pkgs.writeText "qt6ct.conf" ''
     [Appearance]
@@ -257,6 +262,29 @@ in
       inactiveForeground={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
     '';
 
+    # wezterm color scheme, matugen-rendered. Body is DMS's own wezterm template
+    # (dank16 16-colour terminal palette), plus a [metadata] name so wezterm
+    # registers it as the "dank-theme" scheme. matugen overwrites [colors] on
+    # each theme change; wezterm auto-reloads color files.
+    xdg.configFile."matugen/templates/wezterm.toml".text = ''
+      [metadata]
+      name = "dank-theme"
+
+      [colors]
+      background = '{{colors.background.default.hex}}'
+      foreground = '{{colors.on_surface.default.hex}}'
+
+      cursor_bg = '{{colors.primary.default.hex}}'
+      cursor_fg = '{{colors.background.default.hex}}'
+      cursor_border = '{{colors.primary.default.hex}}'
+
+      selection_bg = '{{colors.primary_container.default.hex}}'
+      selection_fg = '{{colors.on_surface.default.hex}}'
+
+      ansi = ['{{dank16.color0.default.hex}}', '{{dank16.color1.default.hex}}', '{{dank16.color2.default.hex}}', '{{dank16.color3.default.hex}}', '{{dank16.color4.default.hex}}', '{{dank16.color5.default.hex}}', '{{dank16.color6.default.hex}}', '{{dank16.color7.default.hex}}']
+      brights = ['{{dank16.color8.default.hex}}', '{{dank16.color9.default.hex}}', '{{dank16.color10.default.hex}}', '{{dank16.color11.default.hex}}', '{{dank16.color12.default.hex}}', '{{dank16.color13.default.hex}}', '{{dank16.color14.default.hex}}', '{{dank16.color15.default.hex}}']
+    '';
+
     xdg.configFile."matugen/config.toml".text = lib.mkForce ''
       [config]
       # General Matugen settings can go here
@@ -264,6 +292,10 @@ in
       [templates.custom_qt6ct]
       input_path = "${templatePath}"
       output_path = "${targetOutputPath}"
+
+      [templates.dank_wezterm]
+      input_path = "${weztermTemplatePath}"
+      output_path = "${weztermColorsPath}"
     '';
 
     systemd.user.services.qt6ct-reload = {
@@ -358,7 +390,7 @@ in
     '';
 
     # Weather location: drive DMS's weather off dafos.user.location rather than
-    # its IP-based auto location. 
+    # its IP-based auto location.
     home.activation.dmsWeather = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       session=${lib.escapeShellArg dmsSessionPath}
       coords=${lib.escapeShellArg "${userLocation.latitude},${userLocation.longitude}"}
