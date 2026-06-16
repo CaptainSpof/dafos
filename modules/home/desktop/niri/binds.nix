@@ -69,6 +69,8 @@ lib.mkForce {
   # A single tap of the physical Super key emits F23 (via the kanata @met
   # tap-hold overload); hold/combo stays Super. So tap Super -> overview.
   "F23".action = toggle-overview;
+  # Super + the mouse forward (front side) button also toggles the overview.
+  "Mod+MouseForward".action = toggle-overview;
 
   "Mod+BackSpace" = {
     repeat = false;
@@ -103,6 +105,17 @@ lib.mkForce {
   "Mod+WheelScrollUp" = {
     cooldown-ms = 150;
     action = focus-workspace-up;
+  };
+
+  # Super + wheel tilt (middle button left/right) focuses the column to that
+  # side, jumping to the adjacent monitor at the edge (matches Mod+L / Mod+I).
+  "Mod+WheelScrollLeft" = {
+    cooldown-ms = 150;
+    action = focus-column-or-monitor-left;
+  };
+  "Mod+WheelScrollRight" = {
+    cooldown-ms = 150;
+    action = focus-column-or-monitor-right;
   };
 
   "Mod+Comma".action = set-column-width "+15%";
