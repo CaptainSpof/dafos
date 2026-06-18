@@ -31,6 +31,23 @@ let
 
   cfg = config.${namespace}.desktop.dms;
 
+  # Quickshell with the QtWebSockets QML module added to its QML import path.
+  # The Home Assistant DMS plugin (homeAssistantMonitor) does `import
+  # QtWebSockets`, which nixpkgs' quickshell wrapper doesn't ship. Its wrapper
+  # prefixes NIXPKGS_QT6_QML_IMPORT_PATH, so re-wrapping to prepend the
+  # qtwebsockets qml dir makes the module resolvable without rebuilding QS.
+  quickshellWithWebSockets = pkgs.symlinkJoin {
+    name = "quickshell-with-qtwebsockets";
+    paths = [ pkgs.quickshell ];
+    nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
+    postBuild = ''
+      for b in quickshell qs; do
+        wrapProgram "$out/bin/$b" \
+          --prefix NIXPKGS_QT6_QML_IMPORT_PATH : ${pkgs.kdePackages.qtwebsockets}/lib/qt-6/qml
+      done
+    '';
+  };
+
   # Bar setup (bar layout + control-center tiles) extracted to Nix; see bar.nix.
   barSetup = import ./bar.nix;
 
@@ -410,6 +427,10 @@ in
 
     programs.dank-material-shell = {
       enable = true;
+
+      # Quickshell wrapped with the QtWebSockets QML module (see let binding) so
+      # the Home Assistant plugin can `import QtWebSockets`.
+      quickshell.package = quickshellWithWebSockets;
 
       # Plugin sources, pinned in ./plugins.nix (symlinked into the plugins dir).
       # Enable-state/settings stay in DMS's runtime-owned plugin_settings.json.
