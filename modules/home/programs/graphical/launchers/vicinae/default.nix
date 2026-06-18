@@ -45,43 +45,49 @@ in
   };
 
   config = mkIf cfg.enable {
+    # vicinae's settings are rendered via sops so the Home Assistant token (for
+    # the @tonka3000 extension) can be embedded without landing in the
+    # world-readable Nix store. The builtin home-manager vicinae module has no
+    # secret/override option, but the vicinae binary loads VICINAE_OVERRIDES
+    # (set on the user service below). Put the token in secrets/daf/vicinae.yaml.
+    sops.secrets."vicinae-homeassistant-token".sopsFile =
+      lib.snowfall.fs.get-file "secrets/daf/vicinae.yaml";
+
+    sops.templates."vicinae-settings.json".content = builtins.toJSON {
+      keybinding_scheme = "Emacs";
+      close_on_focus_loss = true;
+      consider_preedit = true;
+      pop_to_root_on_close = true;
+      favicon_service = "twenty";
+      search_files_in_root = true;
+      font.normal.size = 12;
+      theme = {
+        light = {
+          name = "vicinae-light";
+          icon_theme = "default";
+        };
+        dark = {
+          name = "vicinae-dark";
+          icon_theme = "default";
+        };
+      };
+      launcher_window.opacity = 0.80;
+      # Home Assistant extension preferences; token is the sops placeholder.
+      providers."@tonka3000/store.raycast.homeassistant".preferences = {
+        instance = "https://home.daftdaf.dev";
+        token = config.sops.placeholder."vicinae-homeassistant-token";
+      };
+    };
+
     programs.vicinae = {
       enable = true;
       systemd = {
         enable = true;
         autoStart = true;
       };
-      settings = {
-        keybinding_scheme = "Emacs";
-        close_on_focus_loss = true;
-        consider_preedit = true;
-        pop_to_root_on_close = true;
-        favicon_service = "twenty";
-        search_files_in_root = true;
-        font = {
-          normal = {
-            size = 12;
-          };
-        };
-        theme = {
-          light = {
-            name = "vicinae-light";
-            icon_theme = "default";
-          };
-          dark = {
-            name = "vicinae-dark";
-            icon_theme = "default";
-          };
-        };
-        launcher_window = {
-          opacity = 0.80;
-        };
-
-        # Extension preferences
-        providers."@tonka3000/store.raycast.homeassistant".preferences = {
-          instance = "https://home.daftdaf.dev";
-        };
-      };
+      # Settings are intentionally NOT set here: they're rendered via the sops
+      # template above and loaded through VICINAE_OVERRIDES so the HA token
+      # stays out of the Nix store. Edit settings in that template, not here.
       extensions = [
         bluetooth-alias-first
       ] ++ (with vicinaeExtensions; [
@@ -95,5 +101,12 @@ in
         homeassistant-extension
       ];
     };
+
+    # The vicinae binary honours VICINAE_OVERRIDES (colon-separated config files
+    # merged on load). Point it at the sops-rendered settings so the decrypted
+    # HA token reaches vicinae without ever being written to the store.
+    systemd.user.services.vicinae.Service.Environment = [
+      "VICINAE_OVERRIDES=${config.sops.templates."vicinae-settings.json".path}"
+    ];
   };
 }
