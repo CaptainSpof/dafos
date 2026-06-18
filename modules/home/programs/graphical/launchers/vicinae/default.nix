@@ -25,6 +25,19 @@ let
         --replace-fail 'ifaces.Name ?? ifaces.Alias' 'ifaces.Alias ?? ifaces.Name'
     '';
   });
+
+  # Home Assistant Raycast extension (@tonka3000) — not packaged in
+  # vicinae-extensions, so build it from the raycast/extensions monorepo with
+  # the vicinae mkRayCastExtension helper. The instance URL is configured via
+  # programs.vicinae.settings.providers below. To update: bump rev and refresh
+  # sha256 (it's the sparse-checkout hash of extensions/homeassistant; a build
+  # on mismatch prints the correct value).
+  homeassistant-extension =
+    inputs.vicinae.lib.${pkgs.stdenv.hostPlatform.system}.mkRayCastExtension {
+      name = "homeassistant";
+      rev = "b1f5a90ffd31feb46c2f70d51328783f87a48680";
+      sha256 = "sha256-QuaaX+M0oa7cbS/sQirhYHyqF8tGbqHxFQm7vv672p8=";
+    };
 in
 {
   options.${namespace}.programs.graphical.launchers.vicinae = {
@@ -79,11 +92,7 @@ in
         power-profile
         wifi-commander
       ]) ++ [
-        # (config.lib.vicinae.mkRayCastExtension {
-        #   name = "tailscale";
-        #   rev = "bc92e53ae972e41a44800b2a4763a5b7bf69122e";
-        #   sha256 = "sha256-7Fc/qengMNQFVM42Qvea7gn+HbEJs5Pgmu87f3RUPeg=";
-        # })
+        homeassistant-extension
       ];
     };
   };
