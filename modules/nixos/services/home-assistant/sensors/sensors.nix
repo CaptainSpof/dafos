@@ -1,28 +1,8 @@
+# Non-template `sensor:` platform entries. The legacy template sensors that used
+# to live here were moved to ./template_sensors.nix (the modern `template:`
+# integration) when HA 2026.6 removed the legacy `platform: template` format.
+# `history_stats` is its own integration and is unaffected, so it stays here.
 [
-  {
-    platform = "template";
-    sensors.maybe_dafphone_charging = {
-      friendly_name = "dafphone";
-      value_template = ''
-        {% if is_state('binary_sensor.phone_is_charging', 'on') %}
-          charging
-        {% else %}
-          not charging
-        {% endif %}
-      '';
-      unique_id = "dafos.sensor.maybe_dafphone_charging";
-    };
-  }
-  {
-    platform = "template";
-    sensors.maybe_dashboard_warning = {
-      friendly_name = "Maybe Dashboard Warning";
-      value_template = ''
-        {{ label_entities('dashboard-warning') | expand | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list | count > 0 }}
-      '';
-      unique_id = "dafos.sensor.maybe_dashboard_warning";
-    };
-  }
   {
     platform = "history_stats";
     entity_id = "sensor.veranda_tv_plug_power";

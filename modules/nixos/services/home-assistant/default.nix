@@ -152,6 +152,7 @@ in
           "tplink"
           # "tuya"
           "wled"
+          "xiaomi_ble"
           "yeelight"
           "zha"
         ];
@@ -267,9 +268,14 @@ in
                 }
               ];
             }
+            # Template binary sensors + sensors migrated from the legacy
+            # `binary_sensor:`/`sensor: - platform: template` format that HA
+            # 2026.6 removed. They now live under the modern `template:`
+            # integration as separate blocks.
+            { binary_sensor = import ./sensors/binary_sensors.nix; }
+            { sensor = import ./sensors/template_sensors.nix; }
           ];
 
-          binary_sensor = import ./sensors/binary_sensors.nix;
           input_boolean = import ./sensors/input_booleans.nix;
           sensor = [
             {
