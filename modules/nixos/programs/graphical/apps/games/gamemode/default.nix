@@ -23,11 +23,11 @@ let
   dockReveal = "${dms} ipc call dock reveal || true";
 
   defaultStartScript = ''
-    ${getExe' pkgs.libnotify "notify-send"} 'GameMode started'
+    ${getExe' pkgs.libnotify "notify-send"} 'GameMode started' 'Dock Hidden'
   '';
 
   defaultEndScript = ''
-    ${getExe' pkgs.libnotify "notify-send"} 'GameMode ended'
+    ${getExe' pkgs.libnotify "notify-send"} 'GameMode ended' 'Dock Revealed'
   '';
 in
 {
