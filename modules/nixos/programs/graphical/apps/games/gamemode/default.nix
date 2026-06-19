@@ -15,12 +15,18 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   dms = getExe' inputs.dank-material-shell.packages.${system}.dms-shell "dms";
 
+  # `dms ipc` shells out to `qs` (the Quickshell CLI) to reach the running
+  # shell's IPC socket. gamemoded runs these scripts with a minimal PATH that
+  # lacks the user profile, so qs must be put on PATH explicitly or the call
+  # fails silently (notify-send still works — it only needs the session bus).
+  qsBin = "${inputs.dank-material-shell.packages.${system}.quickshell}/bin";
+
   # Fully remove the DMS dock while gaming. `dock hide`/`reveal` toggle
   # showDock (the dock surface itself), so a cursor near the screen edge can't
   # pop it over a fullscreen game — unlike the autoHide/manualHide IPC, which
   # only flip the hover-reveal behaviour and would still show on hover.
-  dockHide = "${dms} ipc call dock hide || true";
-  dockReveal = "${dms} ipc call dock reveal || true";
+  dockHide = "PATH=${qsBin}:$PATH ${dms} ipc call dock hide || true";
+  dockReveal = "PATH=${qsBin}:$PATH ${dms} ipc call dock reveal || true";
 
   defaultStartScript = ''
     ${getExe' pkgs.libnotify "notify-send"} 'GameMode started' 'Dock Hidden'
