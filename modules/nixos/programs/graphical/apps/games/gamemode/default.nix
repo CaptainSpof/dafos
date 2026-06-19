@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   namespace,
   ...
 }:
@@ -10,6 +11,16 @@ let
   inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
   cfg = config.${namespace}.programs.graphical.apps.games.gamemode;
+
+  system = pkgs.stdenv.hostPlatform.system;
+  dms = getExe' inputs.dank-material-shell.packages.${system}.dms-shell "dms";
+
+  # Fully remove the DMS dock while gaming. `dock hide`/`reveal` toggle
+  # showDock (the dock surface itself), so a cursor near the screen edge can't
+  # pop it over a fullscreen game — unlike the autoHide/manualHide IPC, which
+  # only flip the hover-reveal behaviour and would still show on hover.
+  dockHide = "${dms} ipc call dock hide || true";
+  dockReveal = "${dms} ipc call dock reveal || true";
 
   defaultStartScript = ''
     ${getExe' pkgs.libnotify "notify-send"} 'GameMode started'
@@ -28,16 +39,16 @@ in
 
   config =
     let
-      startScript =
-        if (cfg.startscript == null) then
-          pkgs.writeShellScript "gamemode-start" defaultStartScript
-        else
-          pkgs.writeShellScript "gamemode-start" cfg.startscript;
-      endScript =
-        if (cfg.endscript == null) then
-          pkgs.writeShellScript "gamemode-end" defaultEndScript
-        else
-          pkgs.writeShellScript "gamemode-end" cfg.endscript;
+      # Hide the dock first, then run the user's (or default) start body;
+      # reveal it again after the user's (or default) end body.
+      startScript = pkgs.writeShellScript "gamemode-start" ''
+        ${dockHide}
+        ${if (cfg.startscript == null) then defaultStartScript else cfg.startscript}
+      '';
+      endScript = pkgs.writeShellScript "gamemode-end" ''
+        ${if (cfg.endscript == null) then defaultEndScript else cfg.endscript}
+        ${dockReveal}
+      '';
     in
     mkIf cfg.enable {
       programs.gamemode = {
