@@ -45,9 +45,9 @@ in
       grimmory = enabled;
       calibre = enabled;
       donetick = enabled;
+      espanso = mkForce disabled;
       glance = enabled;
       it-tools = enabled;
-      # karakeep = enabled;
       lldap = enabled;
       norish = enabled;
       papra = enabled;
