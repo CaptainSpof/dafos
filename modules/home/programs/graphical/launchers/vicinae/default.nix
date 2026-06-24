@@ -32,6 +32,11 @@ let
       rev = "b1f5a90ffd31feb46c2f70d51328783f87a48680";
       sha256 = "sha256-QuaaX+M0oa7cbS/sQirhYHyqF8tGbqHxFQm7vv672p8=";
     };
+
+  # Local extension built from ~/Repositories/vicinae-timezone-converter (added
+  # as a flake input). Converts a time between timezones from the search bar.
+  timezone-converter =
+    inputs.vicinae-timezone-converter.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
   options.${namespace}.programs.graphical.launchers.vicinae = {
@@ -91,6 +96,7 @@ in
         wifi-commander
       ]) ++ [
         homeassistant-extension
+        timezone-converter
       ];
     };
 

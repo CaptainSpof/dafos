@@ -184,6 +184,13 @@
       url = "github:vicinaehq/extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    vicinae-timezone-converter = {
+      url = "github:CaptainSpof/vicinae-timezone-converter";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        vicinae.follows = "vicinae";
+      };
+    };
 
     # Vault Integration
     vault-service = {
