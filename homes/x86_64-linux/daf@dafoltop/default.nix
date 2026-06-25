@@ -51,6 +51,7 @@ in
       lldap = enabled;
       norish = enabled;
       papra = enabled;
+      reactive-resume = enabled;
       shelfmark = enabled;
       streaming = enabled;
       traefik = enabled;

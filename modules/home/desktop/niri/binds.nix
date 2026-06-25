@@ -1,13 +1,12 @@
-# niri keybindings, extracted from the niri module. Called as a function of the
-# module scope: `config` provides the niri action set (config.lib.niri.actions)
-# and is also used for the firefox package; `lib` for mkForce.
 {
   config,
   lib,
   firefox-pkg,
 }:
+
 with config.lib.niri.actions;
 let
+  dms-call = spawn "dms";
   dms-ipc = spawn "dms" "ipc";
   # spawn execs a single binary with literal args (no shell), so pipes and
   # command substitution need an explicit `sh -c`.
@@ -56,6 +55,10 @@ lib.mkForce {
   "Mod+P" = {
     action = dms-ipc "notepad" "toggle";
     hotkey-overlay.title = "Toggle Notepad";
+  };
+  "Mod+Shift+P" = {
+    action = dms-call "color" "pick" "-a";
+    hotkey-overlay.title = "Open Color Picker";
   };
   "Mod+X" = {
     action = dms-ipc "powermenu" "toggle";
