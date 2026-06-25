@@ -70,7 +70,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri.url = "github:myume/niri-flake/blur";
+    niri.url = "github:epireyn/niri-flake";
 
     niri-switch = {
       url = "github:Kiki-Bouba-Team/niri-switch";

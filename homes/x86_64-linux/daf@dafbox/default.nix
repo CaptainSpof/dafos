@@ -21,7 +21,7 @@ in
 
     desktop = {
       dms.dockApps = [
-        "firefox-nightly"
+        "${toString firefox-pkg.meta.mainProgram}"
         "emacs"
         "steam"
         "org.wezfurlong.wezterm"
@@ -71,8 +71,8 @@ in
         browsers = {
           firefox = {
             enable = true;
-            package = inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
-            # package = pkgs.firefox-beta;
+            # package = inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
+            package = pkgs.firefox-beta;
             gpuAcceleration = true;
             hardwareDecoding = true;
             settings = {
@@ -116,6 +116,12 @@ in
       office = enabled;
       social = enabled;
       video = enabled;
+    };
+  };
+
+  programs.niri.settings.input = {
+    tablet = {
+      map-to-output = "DP-2";
     };
   };
 
