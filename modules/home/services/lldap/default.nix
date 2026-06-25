@@ -35,6 +35,7 @@ let
         karakeep.oidc.userGroup
         norish.oidc.userGroup
         papra.oidc.userGroup
+        reactive-resume.oidc.userGroup
         streaming.qui.oidc.userGroup
       ];
     };
