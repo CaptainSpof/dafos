@@ -41,8 +41,8 @@ in
       "https://nix-gaming.cachix.org" = {
         key = "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4=";
       };
-      "https://niri.cachix.org" = {
-        key = "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964=";
+      "https://niri-epireyn.cachix.org" = {
+        key = "niri-epireyn.cachix.org-1:tlVyFN7CtsDT+ZcLPS+ekFWeT1X6X4OqvWqbBMyIzFA=";
       };
       "https://vicinae.cachix.org" = {
         key = "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=";
