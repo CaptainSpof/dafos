@@ -130,8 +130,8 @@ in
 
           nix_shell = {
             symbol = "󱄅";
-            impure_msg = "[    󱄅 ](fg:white bg:red bold)";
-            pure_msg = "[    󱄅 ](fg:white bg:blue bold)"; # extra spaces : fix zsh
+            impure_msg = "[󱄅 ](fg:white bg:red bold)";
+            pure_msg = "[󱄅 ](fg:white bg:blue bold)"; # extra spaces : fix zsh
             format = "[$state]($style)";
           };
 

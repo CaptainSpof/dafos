@@ -137,7 +137,7 @@ in
               owner = "PatrickF1";
               repo = "fzf.fish";
               rev = "8920367cf85eee5218cc25a11e209d46e2591e7a";
-              sha256 = "sha256-nTiFD8vWjafYE4HNemyoUr+4SgsqN3lIJlNX6IGk+aQ=";
+              sha256 = "sha256-T8KYLA/r/gOKvAivKRoeqIwE2pINlxFQtZJHpOy9GMM=";
             };
           }
           {
