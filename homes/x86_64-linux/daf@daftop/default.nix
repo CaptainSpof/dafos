@@ -26,6 +26,8 @@ in
     };
 
     programs = {
+      rustdesk = enabled;
+
       ai = {
         enable = true;
         claude.code = enabled;
@@ -101,7 +103,6 @@ in
   home.packages = with pkgs; [
     libation
     # calibre
-    # rustdesk
     uget
   ];
 

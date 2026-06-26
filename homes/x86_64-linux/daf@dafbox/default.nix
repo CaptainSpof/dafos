@@ -60,6 +60,8 @@ in
     system.xdg = enabled;
 
     programs = {
+      rustdesk = enabled;
+
       ai = {
         enable = true;
         claude.code = enabled;
