@@ -16,31 +16,45 @@ let
     "firefox.desktop"
   ];
   editor = [ "emacs.desktop" ];
-  excel = [ "libreoffice-calc.desktop" ];
-  fileManager = [ "org.kde.dolphin.desktop" ];
-  archive = [ "org.kde.ark.desktop" ];
-  image = [ "org.kde.gwenview.desktop" ];
   mail = [ "emacs.desktop" ];
-  powerpoint = [ "libreoffice-impress.desktop" ];
   terminal = [
     "org.wezfurlong.wezterm.desktop"
     "kitty.desktop"
   ];
-  video = [ "vlc.desktop" ];
+
+  # KDE applications
+  archive = [ "org.kde.ark.desktop" ];
+  fileManager = [ "org.kde.dolphin.desktop" ];
+  image = [ "org.kde.gwenview.desktop" ];
+  pdf = [ "org.kde.okular.desktop" ];
+
+  # LibreOffice
+  base = [ "libreoffice-base.desktop" ];
+  draw = [ "libreoffice-draw.desktop" ];
+  excel = [ "libreoffice-calc.desktop" ];
+  math = [ "libreoffice-math.desktop" ];
+  powerpoint = [ "libreoffice-impress.desktop" ];
   word = [ "libreoffice-writer.desktop" ];
+
+  # Other graphical apps
+  gimp = [ "gimp.desktop" ];
+  svg = [ "org.inkscape.Inkscape.desktop" ];
+  torrent = [ "org.qbittorrent.qBittorrent.desktop" ];
+  video = [ "vlc.desktop" ];
 
   # XDG MIME types
   associations = {
+    "application/epub+zip" = pdf;
     "application/json" = editor;
-    "application/pdf" = [ "okular.desktop" ];
+    "application/pdf" = pdf;
     "application/rss+xml" = editor;
     "application/vnd.ms-excel" = excel;
     "application/vnd.ms-powerpoint" = powerpoint;
     "application/vnd.ms-word" = word;
-    "application/vnd.oasis.opendocument.database" = [ "libreoffice-base.desktop" ];
-    "application/vnd.oasis.opendocument.formula" = [ "libreoffice-math.desktop" ];
-    "application/vnd.oasis.opendocument.graphics" = [ "libreoffice-draw.desktop" ];
-    "application/vnd.oasis.opendocument.graphics-template" = [ "libreoffice-draw.desktop" ];
+    "application/vnd.oasis.opendocument.database" = base;
+    "application/vnd.oasis.opendocument.formula" = math;
+    "application/vnd.oasis.opendocument.graphics" = draw;
+    "application/vnd.oasis.opendocument.graphics-template" = draw;
     "application/vnd.oasis.opendocument.presentation" = powerpoint;
     "application/vnd.oasis.opendocument.presentation-template" = powerpoint;
     "application/vnd.oasis.opendocument.spreadsheet" = excel;
@@ -55,25 +69,27 @@ let
     "application/vnd.openxmlformats-officedocument.spreadsheetml.template" = excel;
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = word;
     "application/vnd.openxmlformats-officedocument.wordprocessingml.template" = word;
+    "application/vnd.rar" = archive;
     "application/vnd.stardivision.calc" = excel;
-    "application/vnd.stardivision.draw" = [ "libreoffice-draw.desktop" ];
+    "application/vnd.stardivision.draw" = draw;
     "application/vnd.stardivision.impress" = powerpoint;
-    "application/vnd.stardivision.math" = [ "libreoffice-math.desktop" ];
+    "application/vnd.stardivision.math" = math;
     "application/vnd.stardivision.writer" = word;
-    "application/vnd.sun.xml.base" = [ "libreoffice-base.desktop" ];
+    "application/vnd.sun.xml.base" = base;
     "application/vnd.sun.xml.calc" = excel;
     "application/vnd.sun.xml.calc.template" = excel;
-    "application/vnd.sun.xml.draw" = [ "libreoffice-draw.desktop" ];
-    "application/vnd.sun.xml.draw.template" = [ "libreoffice-draw.desktop" ];
+    "application/vnd.sun.xml.draw" = draw;
+    "application/vnd.sun.xml.draw.template" = draw;
     "application/vnd.sun.xml.impress" = powerpoint;
     "application/vnd.sun.xml.impress.template" = powerpoint;
-    "application/vnd.sun.xml.math" = [ "libreoffice-math.desktop" ];
+    "application/vnd.sun.xml.math" = math;
     "application/vnd.sun.xml.writer" = word;
     "application/vnd.sun.xml.writer.global" = word;
     "application/vnd.sun.xml.writer.template" = word;
     "application/vnd.wordperfect" = word;
+    "application/x-7z-compressed" = archive;
     "application/x-arj" = archive;
-    "application/x-bittorrent" = [ "org.qbittorrent.qBittorrent.desktop" ];
+    "application/x-bittorrent" = torrent;
     "application/x-bzip" = archive;
     "application/x-bzip-compressed-tar" = archive;
     "application/x-compress" = archive;
@@ -88,6 +104,7 @@ let
     "application/x-extension-xhtml" = browser;
     "application/x-flac" = video;
     "application/x-gzip" = archive;
+    "application/gzip" = archive;
     "application/x-lha" = archive;
     "application/x-lhz" = archive;
     "application/x-lzop" = archive;
@@ -101,22 +118,31 @@ let
     "application/x-tar" = archive;
     "application/x-tarz" = archive;
     "application/x-wine-extension-ini" = [ "org.kde.kate.desktop" ];
+    "application/x-xz" = archive;
+    "application/x-xz-compressed-tar" = archive;
     "application/x-zoo" = archive;
+    "application/x-zstd-compressed-tar" = archive;
+    "application/zip" = archive;
+    "application/zstd" = archive;
     "application/xhtml+xml" = browser;
     "application/xml" = editor;
-    "application/zip" = archive;
     "audio/*" = video;
     "image/*" = image;
+    "image/avif" = image;
     "image/bmp" = image;
     "image/gif" = image;
+    "image/heic" = image;
+    "image/heif" = image;
     "image/jpeg" = image;
     "image/jpg" = image;
+    "image/jxl" = image;
     "image/pjpeg" = image;
     "image/png" = image;
-    "image/svg+xml" = [ "org.inkscape.Inkscape.desktop" ];
+    "image/svg+xml" = svg;
     "image/tiff" = image;
-    "image/x-compressed-xcf" = [ "gimp.desktop" ];
-    "image/x-fits" = [ "gimp.desktop" ];
+    "image/webp" = image;
+    "image/x-compressed-xcf" = gimp;
+    "image/x-fits" = gimp;
     "image/x-icb" = image;
     "image/x-ico" = image;
     "image/x-pcx" = image;
@@ -124,16 +150,18 @@ let
     "image/x-portable-bitmap" = image;
     "image/x-portable-graymap" = image;
     "image/x-portable-pixmap" = image;
-    "image/x-psd" = [ "gimp.desktop" ];
+    "image/x-psd" = gimp;
     "image/x-xbitmap" = image;
-    "image/x-xcf" = [ "gimp.desktop" ];
+    "image/x-xcf" = gimp;
     "image/x-xpixmap" = image;
     "image/x-xwindowdump" = image;
     "inode/directory" = fileManager;
     "message/rfc822" = mail;
     "text/*" = editor;
     "text/calendar" = mail;
+    "text/csv" = excel;
     "text/html" = browser;
+    "text/markdown" = editor;
     "text/plain" = editor;
     "video/*" = video;
     "x-scheme-handler/about" = browser;
@@ -142,6 +170,7 @@ let
     "x-scheme-handler/ftp" = browser;
     "x-scheme-handler/http" = browser;
     "x-scheme-handler/https" = browser;
+    "x-scheme-handler/magnet" = torrent;
     "x-scheme-handler/mailto" = mail;
     "x-scheme-handler/mid" = mail;
     "x-scheme-handler/spotify" = [ "spotify.desktop" ];
