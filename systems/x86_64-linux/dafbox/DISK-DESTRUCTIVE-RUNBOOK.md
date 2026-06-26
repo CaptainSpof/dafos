@@ -98,6 +98,25 @@ ISO on a USB stick. Also note your LUKS/user passwords if any.
 
 ---
 
+**0.5 — Preserve the host SSH key (CRITICAL for sops).** dafbox's host key
+`/etc/ssh/ssh_host_ed25519_key` derives the `root_dafbox` age identity
+(`age1v7p9…`) that system secrets in `secrets/daf/*` are encrypted to. A reinstall
+regenerates this key → system secrets stop decrypting. Preserving it also keeps the
+machine's SSH identity stable. It's root-only, so copy it yourself (needs sudo):
+```sh
+mkdir -p /mnt/videos/dafbox-host-keys
+sudo cp -a /etc/ssh/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key.pub \
+          /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key.pub \
+          /mnt/videos/dafbox-host-keys/ 2>/dev/null
+sudo chown "$USER" /mnt/videos/dafbox-host-keys/*    # so restore is easy
+ls -l /mnt/videos/dafbox-host-keys/
+```
+The private key will sit on the NAS in cleartext briefly — delete the folder after
+the restore. (Alternative if you'd rather not preserve it: after reinstall, re-key
+sops — `ssh-to-age` the new host key, update `root_dafbox` in `.sops.yaml`, run
+`sops updatekeys secrets/daf/*.yaml`, commit. More steps; the admin age key in your
+restored `~/.config/sops/age/keys.txt` can do it.)
+
 ## Phase 1 — Edit the flake (before wiping; commit & push)
 
 These edits are applied to the repo now, but they **only take effect when you run
@@ -171,7 +190,22 @@ nixos-install --flake /tmp/dafos#dafbox --no-root-passwd
 # set passwords after first boot, or via your declarative users + sops
 ```
 
-**2.5 — Reboot** into the new system, remove the USB.
+**2.45 — Restore the host SSH key BEFORE first boot** (so sops decrypts on boot and
+the machine keeps its identity). The new install just generated fresh host keys under
+`/mnt/etc/ssh`; overwrite them with the preserved ones:
+```sh
+mount | grep -q /mnt/videos || mount -t cifs //192.168.0.254/Freebox/Vidéos /mnt/videos -o guest,vers=1.0
+install -m600 /mnt/videos/dafbox-host-keys/ssh_host_ed25519_key     /mnt/etc/ssh/ssh_host_ed25519_key
+install -m644 /mnt/videos/dafbox-host-keys/ssh_host_ed25519_key.pub /mnt/etc/ssh/ssh_host_ed25519_key.pub
+install -m600 /mnt/videos/dafbox-host-keys/ssh_host_rsa_key         /mnt/etc/ssh/ssh_host_rsa_key 2>/dev/null
+install -m644 /mnt/videos/dafbox-host-keys/ssh_host_rsa_key.pub     /mnt/etc/ssh/ssh_host_rsa_key.pub 2>/dev/null
+# sanity: derived age identity must equal root_dafbox (age1v7p9…)
+nix-shell -p ssh-to-age --run 'ssh-to-age < /mnt/etc/ssh/ssh_host_ed25519_key.pub'
+```
+
+**2.5 — Reboot** into the new system, remove the USB. First login uses the
+`initialPassword` from your user module (`omgchangeme` unless overridden) — change it
+with `passwd` after logging in.
 
 > Alternative one-shot: `disko-install --flake .#dafbox --disk system <id> --disk
 > data <id>` runs disko + nixos-install together. Or drive it from another machine
