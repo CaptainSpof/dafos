@@ -9,7 +9,10 @@ let
   inherit (lib.${namespace}) enabled;
 in
 {
-  imports = [ ./hardware.nix ];
+  imports = [
+    ./hardware.nix
+    ./disko.nix
+  ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
