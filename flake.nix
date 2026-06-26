@@ -178,11 +178,9 @@
 
     vicinae = {
       url = "github:vicinaehq/vicinae";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     vicinae-extensions = {
       url = "github:vicinaehq/extensions";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     vicinae-timezone-converter = {
       url = "github:CaptainSpof/vicinae-timezone-converter";
