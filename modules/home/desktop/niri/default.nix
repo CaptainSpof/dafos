@@ -174,12 +174,11 @@ in
       };
     };
 
-    # Pin a dark GTK theme.
     gtk = {
       enable = true;
       theme = {
-        name = "Gruvbox-Dark";
-        package = pkgs.gruvbox-gtk-theme;
+        name = "adw-gtk3-dark";
+        package = pkgs.adw-gtk3;
       };
       gtk4.theme = null;
     };
