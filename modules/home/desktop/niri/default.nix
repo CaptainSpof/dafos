@@ -171,6 +171,12 @@ in
       ];
       config.common = {
         default = "kde";
+        # The kde Settings backend can't recompute light/dark outside a full
+        # Plasma session (no kded to signal it), so it always reports "light"
+        # under Niri — breaking prefers-color-scheme for GTK/Firefox/Electron.
+        # Route just the Settings interface to the gtk backend, which follows
+        # the org.gnome.desktop.interface color-scheme gsetting (prefer-dark).
+        "org.freedesktop.impl.portal.Settings" = "gtk";
       };
     };
 

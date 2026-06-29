@@ -87,7 +87,10 @@ let
     runUserMatugenTemplates = true;
     gtkThemingEnabled = false;
     qtThemingEnabled = false;
-    syncModeWithPortal = true;
+    # Don't let DMS follow the xdg portal's appearance signal: the kde Settings
+    # backend always reports "light" under Niri, which would drag DMS back to
+    # light on every change. DMS owns light/dark directly (theme dark/light).
+    syncModeWithPortal = false;
     terminalsAlwaysDark = true;
     iconTheme = "System Default";
     nightModeEnabled = false;
