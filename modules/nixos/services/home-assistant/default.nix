@@ -139,6 +139,7 @@ in
           "netatmo"
           "onvif"
           "openai_conversation"
+          "ollama"
           "radarr"
           "roborock"
           "samsungtv"

@@ -74,6 +74,7 @@ in
         # karakeep = enabled;
         glance = disabled;
         home-assistant = enabled;
+        ollama = enabled;
         immich = enabled;
         # immich-frame = enabled;
         immich-kiosk = enabled;
