@@ -32,6 +32,18 @@ in
       # chgrp yahrr /home/daf
     '';
 
+    # Server storage hygiene (dafoltop runs mostly headless/homelab).
+    # Scoped to this host so the rest of the fleet keeps its defaults.
+
+    # Cap the systemd journal (was uncapped -> grew to ~4G).
+    services.journald.extraConfig = "SystemMaxUse=500M";
+
+    # Keep fewer generations than the module default (--keep 15 --keep-since 14d).
+    programs.nh.clean.extraArgs = mkForce "--keep 5 --keep-since 7d";
+
+    # Match the bootloader entry limit to the generations we actually keep.
+    boot.loader.systemd-boot.configurationLimit = mkForce 5;
+
     dafos = {
       archetypes = {
         workstation = enabled;
