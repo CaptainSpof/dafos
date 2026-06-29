@@ -33,6 +33,9 @@ in
     programs = {
       # Unattended RustDesk target: controllable over the tailnet via direct IP.
       rustdesk = disabled;
+      graphical = {
+        launchers.vicinae = mkForce disabled;
+      };
 
       terminal = {
         tools = {
