@@ -72,7 +72,6 @@ in
         printing = disabled;
         # stirling-pdf = enabled;
         # send = enabled;
-        # rustdesk = enabled;
         # syncthing = enabled;
       };
 

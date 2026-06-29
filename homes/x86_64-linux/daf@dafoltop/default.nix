@@ -32,7 +32,7 @@ in
 
     programs = {
       # Unattended RustDesk target: controllable over the tailnet via direct IP.
-      rustdesk = enabled;
+      rustdesk = disabled;
 
       terminal = {
         tools = {

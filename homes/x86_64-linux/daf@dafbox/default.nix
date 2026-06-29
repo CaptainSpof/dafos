@@ -60,7 +60,6 @@ in
     system.xdg = enabled;
 
     programs = {
-      rustdesk = enabled;
 
       ai = {
         enable = true;

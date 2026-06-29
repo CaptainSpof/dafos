@@ -26,7 +26,6 @@ in
     };
 
     programs = {
-      rustdesk = enabled;
 
       ai = {
         enable = true;
