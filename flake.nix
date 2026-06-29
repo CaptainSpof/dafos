@@ -225,14 +225,15 @@
     lib.mkFlake {
       channels-config = {
         allowUnfree = true;
-        # permittedInsecurePackages = [
+        permittedInsecurePackages = [
           # "aspnetcore-runtime-6.0.36"
           # "emacs-unstable-pgtk-30.1"
           # "emacs-unstable-pgtk-with-packages-30.1"
           # "dotnet-sdk-6.0.428"
           # "qtwebengine-5.15.19"
           # "olm-3.2.16"
-        # ];
+          "pnpm-10.29.2"
+        ];
       };
 
       overlays = with inputs; [
