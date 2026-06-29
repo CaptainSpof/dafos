@@ -33,7 +33,7 @@ let
   '';
 
   defaultEndScript = ''
-    ${getExe' pkgs.libnotify "notify-send"} 'GameMode ended' 'Dock Revealed'
+    ${getExe' pkgs.libnotify "notify-send"} 'GameMode ended' 'Dock Visible'
   '';
 in
 {
