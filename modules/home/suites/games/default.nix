@@ -26,10 +26,12 @@ in
       with pkgs;
       [
         mangohud
+        pince
         protontricks
         protonup-ng
         protonup-qt
         protonplus
+        ryubing
       ]
       ++ lib.optionals cfg.bottles.enable [ bottles ]
       ++ lib.optionals cfg.ftl.enable [ slipstream ]
