@@ -22,6 +22,11 @@ in
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
 
+    # RDNA3 (Navi 31) gates manual fan-curve/overclocking sysfs behind the
+    # overdrive feature mask; without it amdgpu.ppfeaturemask defaults to a
+    # restricted set and tools like LACT can't read/write fan curves.
+    kernelParams = [ "amdgpu.ppfeaturemask=0xffffffff" ];
+
     binfmt.emulatedSystems = [ "aarch64-linux" ];
     initrd = {
       availableKernelModules = [

@@ -39,6 +39,7 @@ in
     hardware = {
       cpu.amd = enabled;
       gpu.amd = enabled;
+      sensors = enabled;
     };
 
     services.syncthing = enabled;
