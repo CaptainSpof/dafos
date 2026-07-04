@@ -18,6 +18,9 @@ let
     "file_mode=0775"
     "dir_mode=0775"
     "vers=3"
+    # Freebox doesn't report stable server inode numbers; silences the
+    # "Autodisabling server inode numbers"/"Hardlinks will not be recognized" warnings.
+    "noserverino"
     "nounix"
     "x-systemd.automount"
     "noauto"

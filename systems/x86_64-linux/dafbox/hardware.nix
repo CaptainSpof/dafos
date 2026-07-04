@@ -58,7 +58,12 @@ in
         "guest"
         "noauto"
         "uid=1000"
-        "vers=1.0"
+        # SMB1 (vers=1.0) is deprecated/insecure; modern Freeboxes speak SMB2/3.
+        # Fall back to "2.1" or "2.0" if the mount fails, or "1.0" for a very old Freebox.
+        "vers=3.0"
+        # noserverino: Freebox doesn't report stable server inode numbers; silences
+        # the "Autodisabling server inode numbers"/"Hardlinks will not be recognized" warnings.
+        "noserverino"
         "nounix"
         "x-systemd.automount"
         "x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s"
