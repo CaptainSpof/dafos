@@ -96,60 +96,9 @@ in
 
           binds = import ./binds.nix { inherit config lib firefox-pkg; };
 
-          layer-rules = [
-            {
-              matches = [
-                { namespace = "^noctalia-overview*"; }
-                { namespace = "dms:blurwallpaper"; }
-              ];
-              place-within-backdrop = true;
-            }
-          ];
+          layer-rules = import ./layer-rules.nix;
 
-          window-rules = [
-            {
-              draw-border-with-background = false;
-              geometry-corner-radius =
-                let
-                  r = 8.0;
-                in
-                {
-                  top-left = r;
-                  top-right = r;
-                  bottom-left = r;
-                  bottom-right = r;
-                };
-              clip-to-geometry = true;
-            }
-            {
-              matches = [
-                { app-id = "^org\\.wezfurlong\\.wezterm$"; }
-                { app-id = "^emacs$"; }
-              ];
-              # Blur whatever shows through these (translucent) terminals.
-              background-effect = {
-                blur = true;
-              };
-              default-column-width = {
-                proportion = 0.75;
-              };
-              default-window-height = { };
-            }
-            {
-              matches = [
-                { app-id = "^org\\.gnome\\.Loupe"; }
-                { app-id = "^org\\.gnome\\.Nautilus"; }
-                { app-id = "^org\\.gnome\\.Papers"; }
-                { app-id = "^org\\.gnome\\.Calculator"; }
-                { app-id = "^app\\.drey\\.Warp"; }
-                { app-id = "^org\\.gnome\\.NautilusPreviewer$"; }
-                { app-id = "^org\\.gnome\\.Adwaita1\\.Demo$"; }
-              ];
-              tiled-state = false;
-              default-column-width = { };
-              default-window-height = { };
-            }
-          ];
+          window-rules = import ./window-rules.nix;
         };
       };
     };
