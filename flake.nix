@@ -32,11 +32,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Pinned: later revs (e.g. d2ce046, 2026-06-11) fail to build — their
-    # ".asar --add-dir filter" patch aborts ("--add-dir pattern matches 2 times
-    # (expected 1)") against the current Claude app. e85450c is the last rev that
-    # builds. Drop the rev suffix to track upstream again once it's fixed.
-    claude-desktop.url = "github:aaddrick/claude-desktop-debian";
+    claude-desktop.url = "github:aaddrick/claude-desktop-debian/605723cc62fa837663ef64407809656c156be668";
 
     nix-podman-stacks = {
       url = "github:Tarow/nix-podman-stacks";
@@ -70,7 +66,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri.url = "github:epireyn/niri-flake";
+    # Pinned to 350668e (not tracking main): the very next commit, 7007897
+    # ("Update flake.lock", 2026-07-01), shipped with an empty refs.nix, which
+    # is a nix file and breaks eval ("syntax error, unexpected end of file").
+    # 350668e is the last known-good commit (2026-06-30). Unpin back to
+    # `github:epireyn/niri-flake` once upstream fixes it.
+    niri.url = "github:epireyn/niri-flake/350668e";
 
     niri-switch = {
       url = "github:Kiki-Bouba-Team/niri-switch";
@@ -180,7 +181,13 @@
       url = "github:vicinaehq/vicinae";
     };
     vicinae-extensions = {
-      url = "github:vicinaehq/extensions";
+      # Pinned: upstream commits after this rev exclude the "bluetooth"
+      # extension from `packages`/`checks` (see their flake.nix removeAttrs
+      # list) because it fails to build node-gyp's dbus-next -> usocket
+      # native module against a newer nodejs/node-gyp toolchain. Confirmed
+      # the extension still builds cleanly at this rev; bump only once
+      # upstream's node-gyp issue is actually fixed, not just excluded.
+      url = "github:vicinaehq/extensions/27d2b04f9ce48bdc69c29cd25d91d854fc8a835f";
     };
     vicinae-timezone-converter = {
       url = "github:CaptainSpof/vicinae-timezone-converter";
