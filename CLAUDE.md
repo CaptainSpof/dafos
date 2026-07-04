@@ -1,0 +1,107 @@
+# dafos — reference for Claude
+
+`dafos` is Cédric's (CaptainSpof) personal fleet of NixOS + Home Manager configs, built with
+[Snowfall Lib](https://snowfall.org/guides/lib/quickstart/) under the `dafos` namespace
+(options live at `dafos.*`, e.g. `dafos.services.foo`, `dafos.suites.desktop`). Repo:
+`github.com/CaptainSpof/dafos`, cloned at `~/.config/dafos`. License Apache 2.0.
+
+This file is project-scoped instructions/context for Claude. Standard Snowfall layout
+(`systems/`, `homes/`, `modules/{nixos,home}/`, `packages/`, `overlays/`, `lib/`, `secrets/`,
+`shells/`, `checks/`) — read the tree directly rather than relying on a description here, since
+it drifts. What follows is context that isn't obvious from a single file read.
+
+## The fleet
+
+| Host | System | Role | Desktop | Notes |
+|---|---|---|---|---|
+| `dafbox` | x86_64-linux | Desktop/workstation | Niri (autologin) + DMS greeter | AMD CPU+GPU (Navi 31/RX 7900), gaming archetype, sunshine, syncthing |
+| `dafoltop` | x86_64-linux | Laptop repurposed as **homelab server** | Plasma (autologin), Niri disabled | Runs most self-hosted services (see below); sleep/suspend/hibernate disabled; journald capped at 500M; nh keeps only 5 generations/7d |
+| `daftop` | x86_64-linux | Laptop | Niri | sudo-rs enabled, gaming archetype, Firefox Nightly (vs. beta on dafbox) |
+| `virt` | x86_64-virtualbox | Throwaway VM | — | disposable test target |
+
+User is `daf` / Cédric Da Fonseca, uid 1000, shell fish, single-user boxes (uid never needs to
+differ). Per-host authorized SSH keys and per-host sops key are declared in
+`modules/nixos/user/default.nix` and `.sops.yaml`.
+
+`dafoltop` is the de facto home server: home-assistant, ollama (local LLM), immich +
+immich-kiosk, authelia, traefik, lldap, glance, calibre, donetick, grimmory, it-tools, norish,
+papra, reactive-resume, shelfmark, streaming. It replaced ChatGPT-based HA notification
+generation with a local ollama model (`qwen2.5:3b` via `ollama-cpu`, `127.0.0.1:11434`,
+`OLLAMA_KEEP_ALIVE=5m`) — see `modules/nixos/services/ollama/README.md` for the one-time HA UI
+integration step (config-flow, not YAML) and the `ai_task.generate_data` automation pattern
+that replaced the OpenAI conversation call.
+
+## Secrets (sops-nix)
+
+Age-encrypted YAML under `secrets/`, rules in `.sops.yaml`. Key groups: one admin key
+(`admin_daf`), one per-host root key (derived from each host's SSH host key via `ssh-to-age`),
+one per-user-per-host key. `secrets/daf/*.yaml` is decryptable by admin + all three user keys +
+all three root keys; `secrets/daftop/daf/*.yaml` is scoped tighter (admin + daftop user only).
+
+**The age identity at `~/.config/sops/age/keys.txt` is the single most important file in this
+setup** — losing it (without a preserved host SSH key) means secrets stop decrypting after a
+reinstall. Host SSH host keys (`/etc/ssh/ssh_host_ed25519_key`) derive the per-host root age
+identity used to decrypt system secrets; regenerating them on reinstall breaks system secrets
+unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` is rekeyed with
+`ssh-to-age` + `sops updatekeys`.
+
+## Known gotchas / non-obvious pins
+
+- **claude-desktop flake input tracks upstream `main`** (`github:aaddrick/claude-desktop-debian`,
+  no rev pin) — the earlier pin to rev `e85450c` (worked around a `.asar --add-dir` build failure
+  against a later rev) has been lifted; don't assume it's still pinned.
+- `pnpm-10.29.2` is in `permittedInsecurePackages` — required after a vicinae bump pulled it in.
+- **dafbox audio**: the Navi 31 GPU exposes multiple HDMI/DP audio profiles but only one active
+  at a time; WirePlumber defaults to the higher-priority M27Q port, which has no speakers (only
+  the LG monitor does). Fixed declaratively via a `wireplumber.extraConfig` ALSA rule in
+  `systems/x86_64-linux/dafbox/default.nix` pinning `output:hdmi-stereo-extra1`. Full detail in
+  memory `dafos-audio`.
+- **Theming/light-dark on Niri**: the KDE Settings xdg-desktop-portal backend can't recompute
+  light/dark outside a full Plasma session under Niri and always reports "light". Fixed by
+  routing just `org.freedesktop.impl.portal.Settings` to the `gtk` backend and having DMS own
+  light/dark directly instead of following the portal's appearance signal
+  (`modules/home/desktop/{dms,niri}/default.nix`). Full chain in memory `dafos-theming`.
+- `dafoltop` disables sleep/suspend/hibernate targets and documentation generation (it's
+  headless-ish homelab); don't assume these are fleet-wide defaults when editing shared modules.
+- Firefox package differs per host on purpose: dafbox/daftop use `firefox-beta`, daftop was
+  switched to `inputs.firefox` nightly — check the specific host file before assuming which
+  channel is live.
+
+## dafbox disk layout — applied (2026-06)
+
+dafbox now runs the declarative disko btrfs layout described in
+`systems/x86_64-linux/dafbox/DISK-POOL-PLAN.md` and `DISK-DESTRUCTIVE-RUNBOOK.md`: ESP + 36G
+swap (hibernate-capable, >30GiB RAM) + 100G btrfs `/` on the Sabrent NVMe, and a `/home` btrfs
+pool (`data=single`, `metadata=raid1`) spanning the rest of the Sabrent + the whole 970 EVO
+(~1.2TB total, no data redundancy — either drive dying loses `/home`, hence "mandatory backups"
+language in the runbook). `disko.nix` is imported from `dafbox/default.nix`, and `hardware.nix`
+no longer hand-declares `/`, `/home`, `/boot`, or swap — disko generates those. The two `.md`
+docs remain as reference for the rationale and the exact commands/host-key-preservation steps
+used, useful if the layout is ever revisited or another host needs the same treatment.
+
+## Workflow conventions
+
+- Formatting: `nix fmt` (treefmt-nix; see `treefmt.nix` for the full formatter list — nixfmt,
+  biome, ruff, rustfmt, shfmt, stylua, statix, deadnix, yamlfmt, etc.). Pre-commit hooks
+  (git-hooks.nix) run treefmt (non-blocking, `fail-on-change = false`), clang-tidy, luacheck,
+  and a sops-encryption check automatically inside `nix develop`.
+- Rebuild locally: `sudo nixos-rebuild switch --flake .#<host>`. Remote: `nix run .#deploy --
+  .#<host>` (deploy-rs, wired via `lib.mkDeploy` in `lib/deploy/default.nix`, respects
+  `dafos.security.doas.enable` → uses `doas -u` instead of sudo when set).
+- `direnv`/`use flake` is set up (`.envrc`) — a `nix develop` shell auto-activates in this dir.
+- Custom `lib.dafos.*` helpers: `mkOpt`/`mkOpt'`/`mkBoolOpt` (option builders), `enabled`/
+  `disabled` shortcuts (`{ enable = true/false; }`), audio helpers (`mkAlsaRename`,
+  `mkAudioNode`, `mkVirtualAudioNode`, `mkBridgeAudioModule` in `lib/audio`), `network.create-proxy`
+  / `network.get-address-parts` for nginx reverse proxies, `mkDeploy` for deploy-rs wiring.
+- Composition pattern: `archetypes` (workstation/gaming/server) turn on bundles of `suites`;
+  `suites` (common, desktop, development, games, graphics, music, office, social, video, yahrr,
+  common-slim) turn on bundles of `services`/`programs`/`apps`. Per-host `default.nix` files
+  mostly toggle suites/services/apps and override specifics with `lib.mkForce` — check the
+  archetype/suite chain, not just the host file, to see what's actually enabled.
+- `yahrr` suite = the *arr/torrent stack grouping (currently mostly commented out/disabled in
+  favor of dafoltop's actual homelab service set — don't assume it's active).
+
+## Related memory
+
+- `dafos-audio` — LG monitor vs M27Q speaker routing detail (dafbox).
+- `dafos-theming` — full NixOS+Niri light/dark chain (DMS → matugen → kdeglobals + xdg portal).
