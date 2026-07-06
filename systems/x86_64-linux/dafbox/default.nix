@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib.${namespace}) enabled;
+  inherit (lib.${namespace}) enabled disabled;
 in
 {
   imports = [
@@ -23,8 +23,15 @@ in
     };
 
     apps = {
-      qbittorrent = enabled;
+      qbittorrent = disabled;
     };
+
+    programs.graphical.apps.games.sisr = enabled;
+
+    # Keep the Sunshine-forwarded Xbox pad (045e:02ea) out of Steam Input's grab so it
+    # stays a distinct controller for Player 2 in emulators, instead of SISR folding it
+    # into the Player 1 pad via its forced Steam Input layout. See the SISR module.
+    programs.graphical.apps.games.steam.ignoreControllers = [ "0x045e/0x02ea" ];
 
     display-managers = {
       enable = true;
@@ -44,6 +51,7 @@ in
 
     services.syncthing = enabled;
     services.sunshine = enabled;
+    services.moondeck-buddy = enabled;
 
     suites = {
       desktop = enabled;
