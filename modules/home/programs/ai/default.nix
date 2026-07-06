@@ -18,6 +18,22 @@ let
   jq = getExe pkgs.jq;
   mcpNixos = getExe' pkgs.mcp-nixos "mcp-nixos";
 
+  # Cowork's virtiofsd probe only checks /usr/{libexec,bin}/virtiofsd and its
+  # bundled fallback is gated to Ubuntu 22.x (claude-desktop-debian#771 — the
+  # asar un-gate patch only runs in the deb build, not the nix one). Upstream's
+  # fhs.nix ships no virtiofsd, so smuggle nixpkgs' Rust virtiofsd into the
+  # env's /usr/bin through the qemu_kvm argument. Harmless once upstream fixes
+  # it: the probe prefers the system path anyway.
+  claudeDesktopFhs = pkgs.claude-desktop-fhs.override {
+    qemu_kvm = pkgs.symlinkJoin {
+      name = "qemu-kvm-with-virtiofsd";
+      paths = [
+        pkgs.qemu_kvm
+        pkgs.virtiofsd
+      ];
+    };
+  };
+
   # The stdio MCP server entry, shared by every Claude client.
   nixosServer = {
     type = "stdio";
@@ -54,7 +70,9 @@ in
   config = mkIf cfg.enable {
     home.packages = mkMerge [
       (mkIf cfg.claude.code.enable [ pkgs.claude-code ])
-      (mkIf cfg.claude.desktop.enable [ pkgs.claude-desktop ])
+      # FHS variant: Cowork's VM probe needs qemu/OVMF/virtiofsd at FHS paths,
+      # which only the fhs wrapper provides. Host must also load vhost_vsock.
+      (mkIf cfg.claude.desktop.enable [ claudeDesktopFhs ])
       (mkIf cfg.gemini.cli.enable [ pkgs.gemini-cli ])
       (mkIf anyClaude [ pkgs.mcp-nixos ])
     ];

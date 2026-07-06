@@ -32,7 +32,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    claude-desktop.url = "github:aaddrick/claude-desktop-debian/605723cc62fa837663ef64407809656c156be668";
+    claude-desktop.url = "github:aaddrick/claude-desktop-debian";
 
     nix-podman-stacks = {
       url = "github:Tarow/nix-podman-stacks";

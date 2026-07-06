@@ -16,6 +16,9 @@ in
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
+  # vsock transport for Claude Desktop's Cowork VM (claude-desktop-fhs)
+  boot.kernelModules = [ "vhost_vsock" ];
+
   dafos = {
     archetypes = {
       workstation = enabled;
