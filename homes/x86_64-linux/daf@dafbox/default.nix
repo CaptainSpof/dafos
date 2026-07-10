@@ -3,7 +3,6 @@
   config,
   namespace,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -20,6 +19,9 @@ in
     };
 
     desktop = {
+      # M27Q — the monitor Remote Play should stream (headless portal pick).
+      niri.screencastOutput = "DP-2";
+
       dms.dockApps = [
         "${toString firefox-pkg.meta.mainProgram}"
         "emacs"

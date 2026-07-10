@@ -7,8 +7,8 @@
 }:
 
 let
-  inherit (lib) mkIf;
-  inherit (lib.${namespace}) mkBoolOpt;
+  inherit (lib) mkIf types optionalString;
+  inherit (lib.${namespace}) mkBoolOpt mkOpt enabled;
 
   cfg = config.${namespace}.desktop.niri;
   firefox-pkg = config.${namespace}.programs.graphical.browsers.firefox.package;
@@ -16,11 +16,18 @@ in
 {
   options.${namespace}.desktop.niri = {
     enable = mkBoolOpt true "Whether or not to use niri as the desktop environment.";
+    screencastOutput = mkOpt (types.nullOr types.str) null ''
+      Output the wlr ScreenCast portal captures without prompting (e.g. "DP-2").
+      Headless selection matters for Steam Remote Play, where nobody is at the
+      desk to answer a chooser dialog. null falls back to the first output.
+    '';
   };
 
   config = mkIf cfg.enable {
 
     services.mpris-proxy.enable = true;
+
+    dafos.system.gtkHmGuard = enabled;
 
     programs = {
       niri = {
@@ -126,8 +133,28 @@ in
         # Route just the Settings interface to the gtk backend, which follows
         # the org.gnome.desktop.interface color-scheme gsetting (prefer-dark).
         "org.freedesktop.impl.portal.Settings" = "gtk";
+        # ScreenCast must go to the wlr backend (via niri's zwlr_screencopy),
+        # NOT gnome: niri's own Mutter.ScreenCast pipewire streams are
+        # DMABUF-only, and Steam's bundled libgbm can't create a GBM device
+        # on a modern-mesa host (its dri backend discovery predates the
+        # mesa 25.1 dri_gbm.so split), so Steam can't negotiate any format
+        # ("no more input formats") and Remote Play streams black frames.
+        # xdg-desktop-portal-wlr serves plain SHM buffers, which Steam
+        # consumes fine.
+        "org.freedesktop.impl.portal.ScreenCast" = "wlr";
+        "org.freedesktop.impl.portal.Screenshot" = "gnome";
       };
     };
+
+    # chooser_type=none: pick the output headlessly instead of popping a
+    # chooser dialog on the desk — Remote Play sessions start with nobody
+    # there to answer it.
+    xdg.configFile."xdg-desktop-portal-wlr/config".text = ''
+      [screencast]
+      chooser_type=none
+      ${optionalString (cfg.screencastOutput != null) "output_name=${cfg.screencastOutput}"}
+      max_fps=60
+    '';
 
     gtk = {
       enable = true;
