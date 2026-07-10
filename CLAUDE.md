@@ -62,6 +62,13 @@ unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` 
   the LG monitor does). Fixed declaratively via a `wireplumber.extraConfig` ALSA rule in
   `systems/x86_64-linux/dafbox/default.nix` pinning `output:hdmi-stereo-extra1`. Full detail in
   memory `dafos-audio`.
+- **gamescope from Steam launch options on Niri**: needs `env MESA_VK_WSI_PRESENT_MODE=mailbox
+  gamescope <flags> -- env -u MESA_VK_WSI_PRESENT_MODE gamemoderun %command%` — without it,
+  gamescope's first present to its output window deadlocks in Mesa's Wayland FIFO WSI (game runs
+  with sound, no window; Plasma unaffected). Never use `-e` as a per-game wrapper. gamescope +
+  gamemode are baked into Steam's FHS sandbox via `extraPkgs`/`extraLibraries` in the steam
+  module; the sandbox has a private `/tmp` (debug probes must write to `$HOME`). Full detail in
+  memory `dafos-gamescope`.
 - **Theming/light-dark on Niri**: the KDE Settings xdg-desktop-portal backend can't recompute
   light/dark outside a full Plasma session under Niri and always reports "light". Fixed by
   routing just `org.freedesktop.impl.portal.Settings` to the `gtk` backend and having DMS own

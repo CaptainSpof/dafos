@@ -16,6 +16,7 @@ let
   inherit (lib.${namespace}) mkBoolOpt mkOpt enabled;
 
   cfg = config.${namespace}.programs.graphical.apps.games.steam;
+  gamesCfg = config.${namespace}.programs.graphical.apps.games;
 in
 {
   options.dafos.programs.graphical.apps.games.steam = {
@@ -39,11 +40,28 @@ in
       remotePlay.openFirewall = true;
       extraCompatPackages = [ pkgs.proton-ge-bin ];
       platformOptimizations = enabled;
-    }
-    // optionalAttrs (cfg.ignoreControllers != [ ]) {
-      package = pkgs.steam.override {
-        extraEnv.SDL_GAMECONTROLLER_IGNORE_DEVICES = concatStringsSep "," cfg.ignoreControllers;
-      };
+      package = pkgs.steam.override (
+        {
+          # Wayland (Niri) needs PipeWire for screen capture — required for
+          # Remote Play streaming and in-game overlay screencasting.
+          extraArgs = "-pipewire";
+          # Steam's FHS sandbox resets PATH (and isolates /tmp), so host
+          # binaries in /run/current-system/sw/bin are invisible to launch
+          # options — `gamescope ... -- %command%` fails inside Steam with
+          # "command not found" unless the tools live inside the sandbox.
+          extraPkgs =
+            p:
+            lib.optional gamesCfg.gamescope.enable p.gamescope
+            ++ lib.optional gamesCfg.gamemode.enable p.gamemode;
+          # libgamemode.so must be dlopen-able by libgamemodeauto from both
+          # 64-bit and 32-bit games, hence multiPkgs (extraLibraries) rather
+          # than extraPkgs.
+          extraLibraries = p: lib.optional gamesCfg.gamemode.enable p.gamemode.lib;
+        }
+        // optionalAttrs (cfg.ignoreControllers != [ ]) {
+          extraEnv.SDL_GAMECONTROLLER_IGNORE_DEVICES = concatStringsSep "," cfg.ignoreControllers;
+        }
+      );
     };
 
     hardware.steam-hardware.enable = true;

@@ -57,6 +57,12 @@ in
       '';
     in
     mkIf cfg.enable {
+      # gamemoded's privileged tweaks (CPU governor, split-lock mitigation)
+      # go through pkexec, and the NixOS module's polkit rule only authorizes
+      # members of the "gamemode" group — without it they fail with
+      # "Error executing command as another user: Not authorized".
+      ${namespace}.user.extraGroups = [ "gamemode" ];
+
       programs.gamemode = {
         enable = true;
         enableRenice = true;
