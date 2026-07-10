@@ -51,6 +51,12 @@ unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` 
   no rev pin) — the earlier pin to rev `e85450c` (worked around a `.asar --add-dir` build failure
   against a later rev) has been lifted; don't assume it's still pinned.
 - `pnpm-10.29.2` is in `permittedInsecurePackages` — required after a vicinae bump pulled it in.
+- **Root-podman container DNS**: the NixOS firewall silently drops container→aardvark-dns
+  traffic on custom podman networks (symptom inside the container: `dial tcp: lookup <host> on
+  10.89.x.1:53: i/o timeout`). Fixed fleet-wide in the podman module by opening port 53 on
+  `podman+` interfaces. Rootless containers are unaffected (their networking lives in a user
+  namespace). Also: Immich server ≥ v3 requires immich-kiosk ≥ 0.40 (v3 stopped embedding
+  `assets` in the album response; older kiosks log "no assets found" for every album).
 - **dafbox audio**: the Navi 31 GPU exposes multiple HDMI/DP audio profiles but only one active
   at a time; WirePlumber defaults to the higher-priority M27Q port, which has no speakers (only
   the LG monitor does). Fixed declaratively via a `wireplumber.extraConfig` ALSA rule in
