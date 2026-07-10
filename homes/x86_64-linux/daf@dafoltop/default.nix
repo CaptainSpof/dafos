@@ -53,6 +53,7 @@ in
       donetick = enabled;
       espanso = mkForce disabled;
       glance = enabled;
+      immich-kiosk = enabled;
       it-tools = enabled;
       lldap = enabled;
       norish = enabled;
