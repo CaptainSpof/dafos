@@ -7,7 +7,7 @@
 }:
 
 let
-  inherit (lib) mkIf getExe;
+  inherit (lib) mkIf getExe boolToString;
   inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.programs.graphical.apps.games.sisr;
@@ -40,6 +40,21 @@ in
 {
   options.${namespace}.programs.graphical.apps.games.sisr = {
     enable = mkBoolOpt false "Whether or not to enable SISR (Steam Input System Redirector).";
+    fullscreen = mkBoolOpt true ''
+      Whether SISR's overlay window opens fullscreen (upstream default: true).
+      Only configurable via the SISR_FULLSCREEN env var or a --window.fullscreen
+      CLI flag, neither of which the desktop entry or the Steam "SISR Marker"
+      shortcut can be made to pass through per-invocation, hence this option.
+      NOTE: with fullscreen=false and showWindow left at its upstream default
+      (false), SISR runs tray-only and shows no window at all — set showWindow
+      too if you actually want a windowed UI.
+    '';
+    showWindow = mkBoolOpt false ''
+      Whether SISR shows any window on startup at all (upstream default:
+      false, i.e. tray-only). With fullscreen=true this also enables the
+      Steam Overlay integration; with fullscreen=false it shows a normal
+      windowed UI. Mirrors --window.show / SISR_SHOW_WINDOW upstream.
+    '';
   };
 
   config = mkIf cfg.enable {
@@ -65,6 +80,8 @@ in
       cat > ${wrapperPath} <<'WRAPPER_EOF'
       #!/bin/sh
       export APPIMAGE="$0"
+      export SISR_FULLSCREEN=${boolToString cfg.fullscreen}
+      export SISR_SHOW_WINDOW=${boolToString cfg.showWindow}
       exec ${getExe sisr} "$@"
       WRAPPER_EOF
       chmod 0755 ${wrapperPath}

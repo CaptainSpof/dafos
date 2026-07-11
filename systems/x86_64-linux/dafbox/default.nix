@@ -29,7 +29,14 @@ in
       qbittorrent = disabled;
     };
 
-    programs.graphical.apps.games.sisr = enabled;
+    programs.graphical.apps.games.sisr = {
+      enable = true;
+      # Overlay felt intrusive fullscreen; run it as a normal window instead.
+      # showWindow must be on too, or fullscreen=false alone just makes SISR
+      # tray-only with no window at all (see the sisr module for why).
+      fullscreen = false;
+      showWindow = true;
+    };
 
     # Keep the Sunshine-forwarded Xbox pad (045e:02ea) out of Steam Input's grab so it
     # stays a distinct controller for Player 2 in emulators, instead of SISR folding it
