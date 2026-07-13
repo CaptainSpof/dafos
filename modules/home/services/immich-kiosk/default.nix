@@ -120,8 +120,10 @@ in
         like_button_action = "favorite"; # album, favorite or both
         hide_button_action = "tag"; # tag, archive or both
 
-        ## Weather (API key comes from weatherApiKeyFile)
-        weather = [
+        ## Weather (API key comes from weatherApiKeyFile).
+        ## Since kiosk 0.41 this is an object with a `locations` list, no
+        ## longer a bare list of locations.
+        weather.locations = [
           {
             name = "nanterre";
             lat = 48.8913;

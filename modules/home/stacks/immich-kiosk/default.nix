@@ -83,9 +83,17 @@ in
       environment.KIOSK_IMMICH_URL = cfg.immichUrl;
       environmentFile = cfg.environmentFiles;
 
-      extraEnv = lib.optionalAttrs (cfg.weatherApiKeyFile != null) {
-        KIOSK_WEATHER_API_KEY.fromFile = cfg.weatherApiKeyFile;
+      # Kiosk >=0.41 only honors the _FILE pattern for the weather key: it
+      # fills the key into every weather location whose `api` field is empty.
+      # The plain KIOSK_WEATHER_API_KEY env var is ignored for the nested
+      # weather.locations config.
+      fileEnvMount = lib.optionalAttrs (cfg.weatherApiKeyFile != null) {
+        KIOSK_WEATHER_API_KEY_FILE = toString cfg.weatherApiKeyFile;
       };
+
+      # The image runs as distroless `nonroot` (uid 65532); map the host user
+      # onto it so the mounted 0400 secret file stays readable in-container.
+      extraConfig.Container.UserNS = "keep-id:uid=65532,gid=65532";
 
       volumeMap = {
         settings = "${cfg.settings}:/config/config.yaml";
