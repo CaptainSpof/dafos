@@ -239,6 +239,7 @@
           # "dotnet-sdk-6.0.428"
           # "qtwebengine-5.15.19"
           # "olm-3.2.16"
+          "electron-40.10.5"
           "pnpm-10.29.2"
         ];
       };

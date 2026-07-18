@@ -60,6 +60,7 @@ in
       papra = enabled;
       reactive-resume = enabled;
       shelfmark = enabled;
+      sparky-fitness = enabled;
       streaming = enabled;
       traefik = enabled;
     };
