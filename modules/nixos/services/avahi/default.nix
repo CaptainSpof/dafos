@@ -38,6 +38,13 @@ in
       nssmdns4 = true;
       # nssmdns6 = true;
 
+      # mDNS over IPv4 only: rotating IPv6 privacy addresses get cached by
+      # other devices on the LAN, and their stale AAAA answers make avahi
+      # think its own hostname is taken — endless "Host name conflict,
+      # retrying with <host>-N" renames that also withdraw every published
+      # service (e.g. Sunshine's _nvstream) faster than clients can see it.
+      ipv6 = false;
+
       # pass avahi port(s) to the firewall
       openFirewall = true;
 
