@@ -1,0 +1,17 @@
+Firmware 19.0.0 moved acc:u0 TrySelectUserWithoutInteraction from command 51 to
+command 52 (51 became TrySelectUserWithoutInteractionDeprecated). Both take the
+same `u8 isNetworkServiceAccountRequired` and return the same `nn::account::Uid`,
+so the existing handler is correct as-is -- it just is not reachable at the new
+command id. Games built against a 19.x+ SDK call 52, hit
+ServiceNotImplementedException, and abort the emulator.
+
+--- a/src/Ryujinx.HLE/HOS/Services/Account/Acc/IAccountServiceForApplication.cs
++++ b/src/Ryujinx.HLE/HOS/Services/Account/Acc/IAccountServiceForApplication.cs
+@@ -72,6 +72,7 @@
+         }
+ 
+         [CommandCmif(51)]
++        [CommandCmif(52)] // 19.0.0+
+         // TrySelectUserWithoutInteraction(bool) -> nn::account::Uid
+         public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
+         {
