@@ -107,7 +107,7 @@ in
 
       games = {
         enable = true;
-        lutris = disabled;
+        lutris = enabled;
       };
 
       graphics = {
