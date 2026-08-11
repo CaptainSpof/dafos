@@ -314,6 +314,7 @@ in
           ];
 
           input_boolean = import ./sensors/input_booleans.nix;
+          input_text = import ./sensors/input_texts.nix;
           sensor = [
             {
               platform = "time_date";
