@@ -11,18 +11,15 @@ let
   inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
   matugenConfigDir = "${config.xdg.configHome}/matugen";
-  templatePath = "${matugenConfigDir}/templates/qtct-colors.conf";
 
+  # DMS's built-in qt6ct matugen template writes this palette file on each theme
+  # change; our qt6ct.conf (style=Darkly) points its color_scheme_path at it.
   targetOutputPath = "${config.xdg.configHome}/qt6ct/colors/matugen.conf";
 
-  # wezterm matugen template (DMS's dank16-based body) and its rendered output,
-  # a wezterm color-scheme TOML loaded by the wezterm module as "dank-theme".
-  weztermTemplatePath = "${matugenConfigDir}/templates/wezterm.toml";
-  weztermColorsPath = "${config.xdg.configHome}/wezterm/colors/dank-theme.toml";
-
-  # GTK matugen template and its rendered outputs. Same idea as the qt6ct
-  # template above, but for GTK: matugen writes ~/.config/gtk-{3,4}.0/gtk.css on
-  # each theme change so GTK/libadwaita apps follow the wallpaper under niri.
+  # GTK matugen template and its rendered outputs. matugen writes
+  # ~/.config/gtk-{3,4}.0/gtk.css on each theme change so GTK/libadwaita apps
+  # follow the wallpaper under niri. (qt6ct and wezterm are handled by DMS's own
+  # built-in templates now; only GTK is still hand-rolled here.)
   gtkTemplatePath = "${matugenConfigDir}/templates/gtk-colors.css";
   gtk3CssPath = "${config.xdg.configHome}/gtk-3.0/gtk.css";
   gtk4CssPath = "${config.xdg.configHome}/gtk-4.0/gtk.css";
@@ -85,8 +82,14 @@ let
     matugenScheme = "scheme-fidelity";
     matugenContrast = 0;
     runUserMatugenTemplates = true;
-    gtkThemingEnabled = false;
-    qtThemingEnabled = false;
+    # DMS's built-in per-app matugen templates default ON (runDmsMatugenTemplates
+    # + matugenTemplate*). We let DMS own the qt6ct and wezterm palettes — its
+    # built-ins write the same files we used to (qt6ct/colors/matugen.conf,
+    # wezterm/colors/dank-theme.toml) and it self-touches qt6ct.conf to trigger
+    # reloads. Only GTK is still hand-rolled (see gtk-colors.css below), so
+    # disable just that one to avoid a redundant second write; everything else
+    # (vesktop/vencord dank-discord.css, etc.) stays on.
+    matugenTemplateGtk = false;
     # Don't let DMS follow the xdg portal's appearance signal: the kde Settings
     # backend always reports "light" under Niri, which would drag DMS back to
     # light on every change. DMS owns light/dark directly (theme dark/light).
@@ -136,176 +139,6 @@ in
   };
 
   config = mkIf cfg.enable {
-
-    xdg.configFile."matugen/templates/qtct-colors.conf".text = ''
-      [ColorScheme]
-      active_colors={{colors.on_surface.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface_container.default.hex}}, {{colors.outline.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.outline_variant.default.hex}}, {{colors.on_surface.default.hex}}, {{colors.on_primary.default.hex}}, {{colors.on_surface.default.hex}}, {{colors.surface_container.default.hex}}, {{colors.background.default.hex}}, {{colors.shadow.default.hex}}, {{colors.primary.default.hex}}, {{colors.on_primary.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface_container_low.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}
-      disabled_colors={{colors.on_surface_variant.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.surface_container.default.hex}}, {{colors.outline.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.outline_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.shadow.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}
-      inactive_colors={{colors.on_surface_variant.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface_container.default.hex}}, {{colors.outline.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.outline_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.surface_container.default.hex}}, {{colors.surface.default.hex}}, {{colors.shadow.default.hex}}, {{colors.outline.default.hex}}, {{colors.on_secondary.default.hex}}, {{colors.secondary.default.hex}}, {{colors.secondary.default.hex}}, {{colors.surface_container_low.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}
-
-      [ColorEffects:Disabled]
-      Color={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ColorAmount=0
-      ColorEffect=0
-      ContrastAmount=0.65
-      ContrastEffect=1
-      IntensityAmount=0.1
-      IntensityEffect=2
-
-      [ColorEffects:Inactive]
-      ChangeSelectionColor=true
-      Color={{colors.outline.default.red}},{{colors.outline.default.green}},{{colors.outline.default.blue}}
-      ColorAmount=0.025
-      ColorEffect=2
-      ContrastAmount=0.1
-      ContrastEffect=2
-      Enable=false
-      IntensityAmount=0
-      IntensityEffect=0
-
-      [Colors:Button]
-      BackgroundAlternate={{colors.surface_container.default.red}},{{colors.surface_container.default.green}},{{colors.surface_container.default.blue}}
-      BackgroundNormal={{colors.surface.default.red}},{{colors.surface.default.green}},{{colors.surface.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [Colors:Complementary]
-      BackgroundAlternate={{colors.surface_container.default.red}},{{colors.surface_container.default.green}},{{colors.surface_container.default.blue}}
-      BackgroundNormal={{colors.background.default.red}},{{colors.background.default.green}},{{colors.background.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [Colors:Header]
-      BackgroundAlternate={{colors.background.default.red}},{{colors.background.default.green}},{{colors.background.default.blue}}
-      BackgroundNormal={{colors.surface.default.red}},{{colors.surface.default.green}},{{colors.surface.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [Colors:Header][Inactive]
-      BackgroundAlternate={{colors.surface.default.red}},{{colors.surface.default.green}},{{colors.surface.default.blue}}
-      BackgroundNormal={{colors.background.default.red}},{{colors.background.default.green}},{{colors.background.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [Colors:Selection]
-      BackgroundAlternate={{colors.primary_container.default.red}},{{colors.primary_container.default.green}},{{colors.primary_container.default.blue}}
-      BackgroundNormal={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.on_primary.default.red}},{{colors.on_primary.default.green}},{{colors.on_primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_primary.default.red}},{{colors.on_primary.default.green}},{{colors.on_primary.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [Colors:Tooltip]
-      BackgroundAlternate={{colors.background.default.red}},{{colors.background.default.green}},{{colors.background.default.blue}}
-      BackgroundNormal={{colors.surface.default.red}},{{colors.surface.default.green}},{{colors.surface.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [Colors:View]
-      BackgroundAlternate={{colors.surface_container_low.default.red}},{{colors.surface_container_low.default.green}},{{colors.surface_container_low.default.blue}}
-      BackgroundNormal={{colors.background.default.red}},{{colors.background.default.green}},{{colors.background.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [Colors:Window]
-      BackgroundAlternate={{colors.surface.default.red}},{{colors.surface.default.green}},{{colors.surface.default.blue}}
-      BackgroundNormal={{colors.background.default.red}},{{colors.background.default.green}},{{colors.background.default.blue}}
-      DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundActive={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-      ForegroundInactive={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      ForegroundLink={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
-      ForegroundNeutral={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-      ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      ForegroundPositive={{colors.tertiary.default.red}},{{colors.tertiary.default.green}},{{colors.tertiary.default.blue}}
-      ForegroundVisited={{colors.secondary.default.red}},{{colors.secondary.default.green}},{{colors.secondary.default.blue}}
-
-      [WM]
-      activeBackground={{colors.surface.default.red}},{{colors.surface.default.green}},{{colors.surface.default.blue}}
-      activeBlend={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      activeForeground={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
-      inactiveBackground={{colors.background.default.red}},{{colors.background.default.green}},{{colors.background.default.blue}}
-      inactiveBlend={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-      inactiveForeground={{colors.on_surface_variant.default.red}},{{colors.on_surface_variant.default.green}},{{colors.on_surface_variant.default.blue}}
-    '';
-
-    # wezterm color scheme, matugen-rendered. Body is DMS's own wezterm template
-    # (dank16 16-colour terminal palette), plus a [metadata] name so wezterm
-    # registers it as the "dank-theme" scheme. matugen overwrites [colors] on
-    # each theme change; wezterm auto-reloads color files.
-    xdg.configFile."matugen/templates/wezterm.toml".text = ''
-      [metadata]
-      name = "dank-theme"
-
-      [colors]
-      background = '{{colors.background.default.hex}}'
-      foreground = '{{colors.on_surface.default.hex}}'
-
-      cursor_bg = '{{colors.primary.default.hex}}'
-      cursor_fg = '{{colors.background.default.hex}}'
-      cursor_border = '{{colors.primary.default.hex}}'
-
-      selection_bg = '{{colors.primary_container.default.hex}}'
-      selection_fg = '{{colors.on_surface.default.hex}}'
-
-      ansi = ['{{dank16.color0.default.hex}}', '{{dank16.color1.default.hex}}', '{{dank16.color2.default.hex}}', '{{dank16.color3.default.hex}}', '{{dank16.color4.default.hex}}', '{{dank16.color5.default.hex}}', '{{dank16.color6.default.hex}}', '{{dank16.color7.default.hex}}']
-      brights = ['{{dank16.color8.default.hex}}', '{{dank16.color9.default.hex}}', '{{dank16.color10.default.hex}}', '{{dank16.color11.default.hex}}', '{{dank16.color12.default.hex}}', '{{dank16.color13.default.hex}}', '{{dank16.color14.default.hex}}', '{{dank16.color15.default.hex}}']
-    '';
 
     # GTK colours, matugen-rendered. libadwaita reads ~/.config/gtk-4.0/gtk.css
     # directly; adw-gtk3 picks the same @define-color names up for GTK3. matugen
@@ -369,14 +202,8 @@ in
     xdg.configFile."matugen/config.toml".text = lib.mkForce ''
       [config]
       # General Matugen settings can go here
-
-      [templates.custom_qt6ct]
-      input_path = "${templatePath}"
-      output_path = "${targetOutputPath}"
-
-      [templates.dank_wezterm]
-      input_path = "${weztermTemplatePath}"
-      output_path = "${weztermColorsPath}"
+      # (qt6ct + wezterm are handled by DMS's own built-in templates; only the
+      # GTK templates below are ours.)
 
       [templates.gtk3]
       input_path = "${gtkTemplatePath}"
@@ -386,28 +213,6 @@ in
       input_path = "${gtkTemplatePath}"
       output_path = "${gtk4CssPath}"
     '';
-
-    systemd.user.services.qt6ct-reload = {
-      Unit = {
-        Description = "Reload qt6ct when matugen colors change";
-      };
-      Service = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.coreutils}/bin/touch %h/.config/qt6ct/qt6ct.conf";
-      };
-    };
-
-    systemd.user.paths.qt6ct-reload = {
-      Unit = {
-        Description = "Watch matugen color file for changes";
-      };
-      Path = {
-        PathModified = "%h/.config/qt6ct/colors/matugen.conf";
-      };
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
-    };
 
     systemd.user.services.dms.Service.ExecCondition = ''
       ${lib.getExe pkgs.bash} -c '[[ ":$XDG_CURRENT_DESKTOP:" == *:niri:* ]]'
@@ -445,9 +250,10 @@ in
     '';
 
     # qt6ct.conf: Nix-owned, written unconditionally each activation (the style /
-    # palette / icon theme are fully declarative). Must be a writable copy, not a
-    # store symlink — the qt6ct-reload service touches it and qt6ct rewrites it on
-    # reload. The matugen palette it points at is regenerated by DMS at runtime.
+    # icon theme are fully declarative). Must be a writable copy, not a store
+    # symlink — DMS touches it (refreshQt6ct) on each theme change and qt6ct
+    # rewrites it on reload. The matugen palette it points at (color_scheme_path)
+    # is regenerated by DMS's built-in qt6ct template at runtime.
     home.activation.seedQt6ctConf = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       run rm -f ${lib.escapeShellArg qt6ctConfPath}
       run install -Dm0644 ${qt6ctConf} ${lib.escapeShellArg qt6ctConfPath}
