@@ -36,6 +36,10 @@ in
       # tray-only with no window at all (see the sisr module for why).
       fullscreen = false;
       showWindow = true;
+      # The 8BitDo Ultimate 2 (2dc8:310b) exposes a keyboard and a mouse HID
+      # interface alongside its pad; keep SISR from grabbing and re-emulating it
+      # so it can't interfere with the other controllers.
+      ignoreControllers = [ "0x2dc8/0x310b" ];
     };
 
     # Keep the Sunshine-forwarded Xbox pad (045e:02ea) out of Steam Input's grab so it
