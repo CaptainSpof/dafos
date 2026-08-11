@@ -6,6 +6,7 @@
   wrapGAppsHook4,
   gtk4,
   glib,
+  gst_all_1,
   webkitgtk_6_0,
   wayland,
   xorg,
@@ -38,6 +39,11 @@ stdenv.mkDerivation rec {
   buildInputs = [
     gtk4
     glib
+    # WebKitGTK's media backend needs GStreamer elements (appsink lives in
+    # gst-plugins-base); wrapGAppsHook4 only exposes plugins listed here.
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
     webkitgtk_6_0
     wayland
     xorg.libX11
