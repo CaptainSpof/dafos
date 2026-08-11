@@ -169,7 +169,6 @@ in
       adw-gtk3
       fuzzel
       grim
-      kanagawa-gtk-theme
       kanagawa-icon-theme
       kdotool
       libnotify

@@ -117,7 +117,6 @@ in
       dafos.leaf-kde
       dafos.plasma-applet-netspeed-widget
       kdePackages.qqc2-desktop-style # org.kde.desktop QtQuick Controls style
-      gruvbox-gtk-theme
       kde-gruvbox
       papirus-icon-theme
       # Platform theme targeted by QT_QPA_PLATFORMTHEME below. Owned here so
