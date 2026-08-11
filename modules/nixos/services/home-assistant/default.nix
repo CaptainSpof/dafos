@@ -183,13 +183,28 @@ in
             src = inputs.hass-tapo-control;
             dontConfigure = true;
             dontBuild = true;
-             doCheck = false;
+            doCheck = false;
 
             propagatedBuildInputs = [
               customPythonPkgs.pytapo
               # pkgs.python313Packages.pytapo
               pkgs.python314Packages.aiohttp
               pkgs.python314Packages.requests
+            ];
+          })
+          (pkgs.buildHomeAssistantComponent {
+            owner = "christiaangoossens";
+            domain = "auth_oidc";
+            version = "1.1.1";
+            src = inputs.hass-oidc-auth;
+            dontConfigure = true;
+            dontBuild = true;
+            doCheck = false;
+
+            propagatedBuildInputs = with pkgs.python314Packages; [
+              joserfc
+              aiofiles
+              jinja2
             ];
           })
         ];
@@ -236,6 +251,26 @@ in
 
           bluetooth = { };
           smartir = { };
+
+          # OIDC/SSO login via Authelia (github.com/christiaangoossens/hass-oidc-auth).
+          # Public client + PKCE, so no client_secret. Access is gated on the
+          # `home-assistant_user` lldap group by an Authelia authorization policy;
+          # `lldap_admin` members additionally become HA admins.
+          auth_oidc = {
+            client_id = "home-assistant";
+            discovery_url = "https://auth.daftdaf.dev/.well-known/openid-configuration";
+            display_name = "MaisonDaf SSO";
+            features.automatic_person_creation = true;
+            claims = {
+              username = "preferred_username";
+              display_name = "name";
+              groups = "groups";
+            };
+            roles = {
+              admin = "lldap_admin";
+              user = "home-assistant_user";
+            };
+          };
 
           homeassistant = {
             name = "MaisonDaf";
@@ -292,7 +327,8 @@ in
                 "time_utc"
               ];
             }
-          ] ++ (import ./sensors/sensors.nix);
+          ]
+          ++ (import ./sensors/sensors.nix);
 
           zha.zigpy_config.device = cfg.serialPort;
         };

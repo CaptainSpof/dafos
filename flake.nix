@@ -153,6 +153,11 @@
       flake = false;
     };
 
+    hass-oidc-auth = {
+      url = "github:christiaangoossens/hass-oidc-auth";
+      flake = false;
+    };
+
     darkly = {
       url = "github:Bali10050/Darkly";
       inputs.nixpkgs.follows = "nixpkgs";

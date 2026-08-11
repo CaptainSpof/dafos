@@ -6,11 +6,15 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf types mkOption;
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    types
+    mkOption
+    ;
   inherit (lib.${namespace}) mkOpt;
 
   cfg = config.${namespace}.services.lldap;
-
 
   users = with config.nps.stacks; {
     readonly = {
@@ -18,7 +22,7 @@ let
       displayName = "readonly";
       password_file = config.sops.secrets."lldap/users/readonly-password".path;
       email = "readonly@${cfg.domain}";
-      groups = [lldap.readOnlyGroup];
+      groups = [ lldap.readOnlyGroup ];
     };
     daf = {
       id = "daf";
@@ -30,6 +34,7 @@ let
         streaming.jellyfin.oidc.adminGroup
 
         # No group-based admin access supported yet, just user-roles
+        "home-assistant_user"
         grimmory.oidc.userGroup
         donetick.oidc.userGroup
         karakeep.oidc.userGroup
@@ -48,6 +53,7 @@ let
         lldap.adminGroup
 
         # No group-based admin access supported yet, just user-roles
+        "home-assistant_user"
         streaming.qui.oidc.userGroup
         grimmory.oidc.userGroup
         papra.oidc.userGroup
@@ -71,42 +77,43 @@ let
   };
 
 in
-  {
-    options.${namespace}.services.lldap = {
-      enable = mkEnableOption "Whether or not to configure lldap.";
-      domain = mkOpt types.str "daftdaf.dev" "The base domain url";
-      lldapUsers =  mkOption {
-        type = types.attrs;
-        default = users;
-        description = "Central definition of LLDAP users";
-      };
+{
+  options.${namespace}.services.lldap = {
+    enable = mkEnableOption "Whether or not to configure lldap.";
+    domain = mkOpt types.str "daftdaf.dev" "The base domain url";
+    lldapUsers = mkOption {
+      type = types.attrs;
+      default = users;
+      description = "Central definition of LLDAP users";
+    };
+  };
+
+  config = mkIf cfg.enable {
+    sops.secrets = {
+      "lldap/admin-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/jwt-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/key-seed".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/users/daf-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/users/cedric-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
     };
 
-    config = mkIf cfg.enable {
-      sops.secrets = {
-        "lldap/admin-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-        "lldap/jwt-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-        "lldap/key-seed".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-        "lldap/users/daf-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-        "lldap/users/cedric-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-        "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-        "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      };
+    nps.stacks = {
+      lldap = {
+        enable = true;
 
-      nps.stacks = {
-        lldap = {
-          enable = true;
+        baseDn = "DC=daftdaf,DC=dev";
 
-          baseDn = "DC=daftdaf,DC=dev";
+        adminPasswordFile = config.sops.secrets."lldap/admin-password".path;
+        jwtSecretFile = config.sops.secrets."lldap/jwt-secret".path;
+        keySeedFile = config.sops.secrets."lldap/key-seed".path;
 
-          adminPasswordFile = config.sops.secrets."lldap/admin-password".path;
-          jwtSecretFile = config.sops.secrets."lldap/jwt-secret".path;
-          keySeedFile = config.sops.secrets."lldap/key-seed".path;
-
-          bootstrap = {
-            users = cfg.lldapUsers;
-          };
+        bootstrap = {
+          users = cfg.lldapUsers;
+          groups.home-assistant_user = { };
         };
       };
     };
-  }
+  };
+}
