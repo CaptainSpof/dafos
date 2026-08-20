@@ -99,6 +99,11 @@ lib.mkForce {
   "Mod+Shift+L".action = move-column-left-or-to-monitor-left;
   "Mod+Shift+I".action = move-column-right-or-to-monitor-right;
 
+  # Jump focus straight to the adjacent monitor, regardless of columns
+  # (Mod+L / Mod+I only cross monitors at the edge of a workspace).
+  "Mod+Ctrl+L".action = focus-monitor-left;
+  "Mod+Ctrl+I".action = focus-monitor-right;
+
   # Super + scroll wheel jumps between workspaces. cooldown-ms rate-limits it
   # so one notch moves one workspace instead of flying through several.
   "Mod+WheelScrollDown" = {
