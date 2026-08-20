@@ -43,6 +43,7 @@ in
       file
       findutils
       fzf
+      skim
       killall
       lnav
       lsof

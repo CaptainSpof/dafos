@@ -65,6 +65,44 @@ in
             body = "nmcli -t -f SSID device wifi list | grep . | sk | xargs -o -I_ nmcli --ask dev wifi connect '_'";
             description = "Fuzzy connect to a wifi";
           };
+          nhr = {
+            body = ''
+              set -l sub switch
+              if contains -- "$argv[1]" switch boot test build
+                  set sub $argv[1]
+                  set -e argv[1]
+              end
+
+              set -l flake (git rev-parse --show-toplevel 2>/dev/null)
+              test -n "$flake"; or set flake ~/.config/dafos
+
+              set -l hosts (nix eval --raw $flake#nixosConfigurations \
+                  --apply 'cfgs: builtins.concatStringsSep "\n" (builtins.attrNames cfgs)')
+              if test -z "$hosts"
+                  echo "nhr: could not list nixosConfigurations in $flake" >&2
+                  return 1
+              end
+
+              set -l host (printf '%s\n' $hosts \
+                  | ${getExe pkgs.skim} --prompt "nh os $sub > " --height 40% --select-1)
+              if test -z "$host"
+                  echo "nhr: no host selected" >&2
+                  return 1
+              end
+
+              set -l cmd nh os $sub
+              test "$host" = "$hostname"; or set -a cmd --target-host $USER@$host --hostname $host
+              set -a cmd $flake $argv
+
+              # hand the command to the prompt for review instead of running it
+              if status is-interactive
+                  commandline --replace -- "$cmd"
+              else
+                  echo "$cmd"
+              end
+            '';
+            description = "Fuzzy-pick a dafos host and put its nh os switch/boot/test/build command on the prompt";
+          };
         };
 
         shellAbbrs = rec {
