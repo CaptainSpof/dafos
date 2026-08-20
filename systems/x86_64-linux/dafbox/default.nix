@@ -69,7 +69,10 @@ in
 
     suites = {
       desktop = enabled;
-      development = enabled;
+      development = {
+        enable = true;
+        podman = enabled;
+      };
     };
 
     system = {
