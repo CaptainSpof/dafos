@@ -42,6 +42,7 @@ let
         papra.oidc.userGroup
         reactive-resume.oidc.userGroup
         streaming.qui.oidc.userGroup
+        sparky-fitness.oidc.userGroup
       ];
     };
     cedric = {
@@ -58,6 +59,20 @@ let
         grimmory.oidc.userGroup
         papra.oidc.userGroup
         donetick.oidc.userGroup
+        norish.oidc.userGroup
+      ];
+    };
+    joaquim = {
+      id = "joaquim";
+      displayName = "joaquim";
+      password_file = config.sops.secrets."lldap/users/joaquim-password".path;
+      email = "joaquim@${cfg.domain}";
+      groups = [
+        lldap.adminGroup
+
+        # No group-based admin access supported yet, just user-roles
+        streaming.qui.oidc.userGroup
+        grimmory.oidc.userGroup
         norish.oidc.userGroup
       ];
     };
@@ -95,6 +110,7 @@ in
       "lldap/key-seed".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
       "lldap/users/daf-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
       "lldap/users/cedric-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/users/joaquim-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
       "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
       "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
     };
