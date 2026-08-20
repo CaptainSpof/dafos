@@ -16,7 +16,13 @@
   nav (tap-hold-release $tap_timeout $long_hold_timeout ; (layer-while-held navigation))
 
   ;; Space: Shift when held, Space when tapped.
-  ssp (tap-hold-release $tap_timeout $hold_timeout spc lsft)
+  ;; The tap goes through `unshift` so that Shift+Space still inserts a plain
+  ;; space: the Ergo-L XKB layout maps Shift+Space to a narrow no-break space,
+  ;; which we only ever want deliberately (see @nbs on the symbols/nav layers).
+  ;; `unshift` releases lsft/rsft around the space and presses them back after;
+  ;; it needs `process-unmapped-keys yes` (set in the module's defcfg) to track
+  ;; the shift keys, since they aren't in defsrc.
+  ssp (tap-hold-release $tap_timeout $hold_timeout (unshift spc) lsft)
 
   ;; Space-cadet thumb keys: Alt/BackSpace, Symbols/Enter.
   ;; Acts as a modifier/layer by default, or as BackSpace/Enter when tapped separately.
