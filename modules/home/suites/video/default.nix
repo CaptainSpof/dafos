@@ -29,6 +29,7 @@ in
         vlc
         yt-dlp
         freetube
+        stremio-linux-shell
       ]
       ++ lib.optionals cfg.jellyfin.enable [ jellyfin-media-player ]
       ++ lib.optionals cfg.mpv.enable [ mpv haruna ]

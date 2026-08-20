@@ -45,6 +45,7 @@ in
     };
 
     # services.syncthing = enabled;
+    services.sunshine = enabled;
 
     suites = {
       desktop = enabled;
