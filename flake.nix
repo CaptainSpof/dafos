@@ -5,21 +5,7 @@
     # NixPkgs (nixos-25.05)
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
 
-    # NixPkgs (nixos-unstable)
-    #
-    # Temporarily pinned off the `nixpkgs-unstable` branch: its current head
-    # (d482ef8, 2026-08-10) carries "nixos/nixpkgs.config: make use of the
-    # module defined in config.nix", which turns `nixpkgs.config` into a
-    # deferredModule. That breaks flake-utils-plus (and so snowfall-lib), which
-    # sets `nixpkgs.pkgs` alongside `nixpkgs.config = lib.mkForce { }` and now
-    # trips nixpkgs' "system configures nixpkgs with an externally created
-    # instance" assertion. Upstream reverted it in d4cc798 (2026-08-09), but the
-    # channel hasn't picked the revert up yet, so pin to the equally recent
-    # nixos-unstable-small head that has it. Restore
-    # `github:nixos/nixpkgs/nixpkgs-unstable` once that branch advances past the
-    # revert.
-    nixpkgs.url = "github:nixos/nixpkgs/265b7e2dbbdb";
-    # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     # nixpkgs.url = "github:K900/nixpkgs/plasma-6.4";
 
     # NixPkgs Master
