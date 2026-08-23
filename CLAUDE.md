@@ -62,6 +62,17 @@ unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` 
   the LG monitor does). Fixed declaratively via a `wireplumber.extraConfig` ALSA rule in
   `systems/x86_64-linux/dafbox/default.nix` pinning `output:hdmi-stereo-extra1`. Full detail in
   memory `dafos-audio`.
+- **dafbox fan control**: `dafos.hardware.sensors` only turns on CoolerControl; it does *not* give
+  it anything to control. The board's NCT6799D Super-I/O (which owns CPU_FAN/CHA_FAN/AIO_PUMP) has
+  no driver unless `nct6775` is in `boot.kernelModules` — coolercontrold detects the chip and then
+  logs `status: skipped_no_modprobe`, leaving the GPU's `pwm1` as the only writable PWM on the box
+  and the CPU curve stuck in BIOS Q-Fan. Loaded explicitly in `dafbox/hardware.nix`; no
+  `acpi_enforce_resources=lax` needed despite ACPI reserving `io 0x0290-0x029f`. On this board
+  **CPU_FAN is `fan2`/`pwm2`**, not `fan1`; `fan6`/`fan7` sit at 82% with no tach (unpopulated pump
+  headers), and asus-ec-sensors' `Water_In`/`Water_Out` are phantom readings — dafbox is air-cooled.
+  The ASUS EC does not fight manual `pwm2_enable=1`, so no BIOS change is required. Curves live in
+  `/var/lib/coolercontrol` and are *stateful* — `programs.coolercontrol.enable` is the only NixOS
+  option, so only the driver half is declarative.
 - **gamescope from Steam launch options on Niri**: needs `env MESA_VK_WSI_PRESENT_MODE=mailbox
   gamescope <flags> -- env -u MESA_VK_WSI_PRESENT_MODE gamemoderun %command%` — without it,
   gamescope's first present to its output window deadlocks in Mesa's Wayland FIFO WSI (game runs

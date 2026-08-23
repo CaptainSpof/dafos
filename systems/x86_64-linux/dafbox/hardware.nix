@@ -43,6 +43,11 @@ in
       "tcp_bbr"
       "kvm-amd"
       "uhid"
+      # The board's NCT6799D Super-I/O owns CPU_FAN/AIO_PUMP/CHA_FAN. Without
+      # this driver the only writable PWM in sysfs is the GPU's, so the CPU
+      # cooler curve stays in the BIOS and coolercontrold logs the chip as
+      # "skipped_no_modprobe". asus-ec-sensors only *reads* CPU_Opt RPM.
+      "nct6775"
     ];
   };
 
