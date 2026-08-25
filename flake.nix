@@ -144,6 +144,13 @@
       flake = false;
     };
 
+    # Companion integration for the lovelace-idf-mobilite card. Pinned to the
+    # v0.1.0 tag (early release) so the code matches manifest.json's version.
+    idf-mobilite-assistant = {
+      url = "github:yyrkoon94/idf-mobilite-assistant/v0.1.0";
+      flake = false;
+    };
+
     darkly = {
       url = "github:Bali10050/Darkly";
       inputs.nixpkgs.follows = "nixpkgs";

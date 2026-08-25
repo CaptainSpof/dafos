@@ -207,6 +207,19 @@ in
               jinja2
             ];
           })
+          # Companion integration for the lovelace-idf-mobilite card (config-flow,
+          # UI setup). manifest.json lists no requirements (aiohttp/voluptuous are
+          # already core HA deps), and it's a content_in_root layout which
+          # buildHomeAssistantComponent handles via the root manifest.json.
+          (pkgs.buildHomeAssistantComponent {
+            owner = "yyrkoon94";
+            domain = "idf_mobilite_assistant";
+            version = "0.1.0";
+            src = inputs.idf-mobilite-assistant;
+            dontConfigure = true;
+            dontBuild = true;
+            doCheck = false;
+          })
         ];
 
         customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
@@ -225,6 +238,7 @@ in
           pkgs.dafos.custom-brand-icons
           pkgs.dafos.lovelace-auto-entities
           pkgs.dafos.lovelace-fold-entity-row
+          pkgs.dafos.lovelace-idf-mobilite
           pkgs.dafos.lovelace-layout-card
           template-entity-row
           universal-remote-card
