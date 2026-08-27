@@ -26,7 +26,7 @@ in
     };
 
     apps = {
-      qbittorrent = disabled;
+      qbittorrent = enabled;
     };
 
     programs.graphical.apps.games.sisr = {

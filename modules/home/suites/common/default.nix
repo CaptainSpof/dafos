@@ -97,7 +97,7 @@ in
             less = enabled;
             ripgrep = enabled;
             starship = enabled;
-            zellij = disabled;
+            zellij = enabled;
             zoxide = enabled;
           };
         };
