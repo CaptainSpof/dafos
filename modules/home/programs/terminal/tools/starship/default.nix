@@ -87,6 +87,10 @@ in
             format = "· [$symbol($profile )($duration )]($style) ";
           };
 
+          gcloud = {
+            detect_env_vars = [ "BOOTDEV_GCLOUD" ];
+          };
+
           git_branch = {
             style = "#2d2f40 bold";
             symbol = "";
