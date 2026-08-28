@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   namespace,
   ...
 }:
@@ -12,14 +11,13 @@ let
 
   cfg = config.${namespace}.programs.graphical.apps.games.gamemode;
 
-  system = pkgs.stdenv.hostPlatform.system;
-  dms = getExe' inputs.dank-material-shell.packages.${system}.dms-shell "dms";
+  dms = getExe' pkgs.${namespace}.dms-shell "dms";
 
   # `dms ipc` shells out to `qs` (the Quickshell CLI) to reach the running
   # shell's IPC socket. gamemoded runs these scripts with a minimal PATH that
   # lacks the user profile, so qs must be put on PATH explicitly or the call
   # fails silently (notify-send still works — it only needs the session bus).
-  qsBin = "${inputs.dank-material-shell.packages.${system}.quickshell}/bin";
+  qsBin = "${pkgs.quickshell}/bin";
 
   # Fully remove the DMS dock while gaming. `dock hide`/`reveal` toggle
   # showDock (the dock surface itself), so a cursor near the screen edge can't

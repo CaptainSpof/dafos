@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   namespace,
   ...
 }:
@@ -13,7 +12,6 @@ let
 
   cfg = config.${namespace}.display-managers.dms-greeter;
   autoLoginUser = config.services.displayManager.autoLogin.user;
-  system = pkgs.stdenv.hostPlatform.system;
 in
 {
   options.${namespace}.display-managers.dms-greeter = {
@@ -32,8 +30,12 @@ in
       # (programs.dank-material-shell) so the greeter's copy of the user's
       # settings.json/session.json/colors.json (via configHome) stays
       # schema-compatible with the theme it was written by.
-      package = inputs.dank-material-shell.packages.${system}.dms-shell;
-      quickshell.package = inputs.dank-material-shell.packages.${system}.quickshell;
+      # pkgs.${namespace}.dms-shell is the DMS flake package with upstream's
+      # dangling agent-doc symlinks stripped (see packages/dms-shell); it is the
+      # same derivation home-manager uses. Quickshell is no longer exported by
+      # the DMS flake (it warns and aliases nixpkgs), so take it from pkgs.
+      package = pkgs.${namespace}.dms-shell;
+      quickshell.package = pkgs.quickshell;
 
       # Pull the user's current DMS theme/wallpaper into the greeter.
       configHome = config.users.users.${autoLoginUser}.home;

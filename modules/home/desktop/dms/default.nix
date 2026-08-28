@@ -306,6 +306,10 @@ in
     programs.dank-material-shell = {
       enable = true;
 
+      # Upstream flake package, minus two dangling agent-doc symlinks that fail
+      # nixpkgs' noBrokenSymlinks fixup hook (see packages/dms-shell).
+      package = pkgs.${namespace}.dms-shell;
+
       # Quickshell wrapped with the QtWebSockets QML module (see let binding) so
       # the Home Assistant plugin can `import QtWebSockets`.
       quickshell.package = quickshellWithWebSockets;
