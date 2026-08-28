@@ -15,6 +15,7 @@ let
     ;
   inherit (lib.${namespace}) mkOpt mkBoolOpt;
   cfg = config.${namespace}.nix;
+  max-jobs-type = with types; either int (enum [ "auto" ]);
   substituters-submodule = types.submodule (_: {
     options = with types; {
       key = mkOpt (nullOr str) null "The trusted public key for this substituter.";
@@ -26,6 +27,18 @@ in
     enable = mkBoolOpt true "Whether or not to manage nix configuration.";
     nh.enable = mkBoolOpt false "Whether or not to enable nh.";
     package = mkOpt package pkgs.nixVersions.latest "Which nix package to use.";
+
+    # Build parallelism, per host. The defaults mirror nix's own — one job per
+    # logical core, every core handed to each build — which is what you want on
+    # a desktop and far too greedy on a small box that is also serving
+    # something. nh has no knob of its own here; it shells out to nix, so these
+    # cover nh, nixos-rebuild and deploy-rs alike.
+    max-jobs =
+      mkOpt max-jobs-type "auto"
+        "How many derivations nix builds at once (nix.conf max-jobs).";
+    cores =
+      mkOpt int 0
+        "How many cores nix hands to an individual build (nix.conf cores); 0 means all of them.";
 
     default-substituter = {
       url = mkOpt str "https://cache.nixos.org" "The url for the substituter.";
@@ -89,6 +102,7 @@ in
 
         settings = {
           experimental-features = "nix-command flakes pipe-operators";
+          inherit (cfg) max-jobs cores;
           http-connections = 50;
           warn-dirty = false;
           log-lines = 50;

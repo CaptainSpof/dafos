@@ -55,6 +55,15 @@ in
 
     desktop.niri.enable = mkForce false;
 
+    # The i7-8550U is 4 cores / 8 threads at 15 W, and the box is also serving
+    # home-assistant, immich and ollama off ~8 GB of free RAM. Two builds of two
+    # cores keeps a rebuild to half the threads instead of all of them, so the
+    # services stay responsive while it churns.
+    nix = {
+      max-jobs = 2;
+      cores = 2;
+    };
+
     display-managers = {
       enable = true;
       defaultSession = "plasma";
