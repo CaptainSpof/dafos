@@ -19,6 +19,7 @@ in
     desktop = {
       niri.enable = mkForce false;
       dms.enable = mkForce false;
+      dankcalendar.enable = mkForce false;
 
       plasma = {
         theme.wallpaper = disabled;

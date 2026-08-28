@@ -31,6 +31,7 @@ in
         niri = enabled;
         noctalia-shell = disabled;
         dms = enabled;
+        dankcalendar = enabled;
         plasma = {
           enable = true;
           config = enabled;

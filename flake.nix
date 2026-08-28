@@ -183,6 +183,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    dank-calendar = {
+      url = "github:AvengeMedia/DankCalendar";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -275,6 +280,7 @@
         vicinae.homeManagerModules.default
         dank-material-shell.homeModules.dank-material-shell
         dank-material-shell.homeModules.niri
+        dank-calendar.homeModules.dank-calendar
       ];
 
       systems.modules.nixos = with inputs; [

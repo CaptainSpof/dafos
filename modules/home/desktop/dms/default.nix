@@ -76,6 +76,10 @@ let
     useFahrenheit = false;
     windSpeedUnit = "kmh";
 
+    # Calendar events come from DankCalendar's dcal daemon over IPC
+    # (dafos.desktop.dankcalendar), not khal.
+    calendarBackend = "dankcal";
+
     # Theming
     currentThemeName = "dynamic";
     currentThemeCategory = "dynamic";
@@ -343,7 +347,11 @@ in
       enableVPN = true; # VPN management widget
       enableDynamicTheming = true; # Wallpaper-based theming (matugen)
       enableAudioWavelength = true; # Audio visualizer (cava)
-      enableCalendarEvents = true; # Calendar integration (khal)
+      # khal backend: off. The calendar card is fed by DankCalendar (dcal) via
+      # calendarBackend = "dankcal" above; this option only installs khal, which
+      # was never configured (no ~/.config/khal/config) and so always reported
+      # itself unavailable.
+      enableCalendarEvents = false;
     };
   };
 }
