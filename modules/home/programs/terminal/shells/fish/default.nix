@@ -54,6 +54,12 @@ in
               end
               vterm_printf '51;E'(string join "" $vterm_elisp)
           end
+
+          # The bootdev kubernetes devenv shell ships a `k` wrapper around kubectl
+          # on PATH. Teaching fish that it forwards to kubectl is shell state, so
+          # it cannot come from the devenv module; it is inert in directories
+          # where k does not exist.
+          complete -c k -w kubectl
         '';
 
         functions = {

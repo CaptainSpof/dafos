@@ -75,7 +75,6 @@ in
 
     services = {
       audiobookshelf = disabled;
-      bar-assistant = disabled;
       paperless = disabled;
       # caddy = enabled;
       # calibre = enabled;

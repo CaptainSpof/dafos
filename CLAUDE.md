@@ -23,8 +23,8 @@ User is `daf` / Cédric Da Fonseca, uid 1000, shell fish, single-user boxes (uid
 differ). Per-host authorized SSH keys and per-host sops key are declared in
 `modules/nixos/user/default.nix` and `.sops.yaml`.
 
-`dafoltop` is the de facto home server: home-assistant, ollama (local LLM), immich +
-immich-kiosk, authelia, traefik, lldap, glance, calibre, donetick, grimmory, it-tools, norish,
+`dafoltop` is the de facto home server: home-assistant, ollama (local LLM), immich + immich-kiosk,
+authelia, bar-assistant, traefik, lldap, glance, calibre, donetick, grimmory, it-tools, norish,
 papra, reactive-resume, shelfmark, streaming. It replaced ChatGPT-based HA notification
 generation with a local ollama model (`qwen2.5:3b` via `ollama-cpu`, `127.0.0.1:11434`,
 `OLLAMA_KEEP_ALIVE=5m`) — see `modules/nixos/services/ollama/README.md` for the one-time HA UI

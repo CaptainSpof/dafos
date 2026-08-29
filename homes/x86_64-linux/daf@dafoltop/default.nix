@@ -49,6 +49,7 @@ in
       sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafoltop" ];
 
       authelia = enabled;
+      bar-assistant = enabled;
       grimmory = enabled;
       calibre = enabled;
       donetick = enabled;
