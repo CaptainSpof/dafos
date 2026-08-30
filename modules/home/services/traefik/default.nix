@@ -35,12 +35,14 @@ in
             rule = "Host(`immich.${cfg.base-url}`) || Host(`photos.${cfg.base-url}`)";
             service = "immich-service";
             entryPoints = [ "websecure" ];
+            middlewares = [ "public@file" ];
             tls.certResolver = "letsencrypt"; # NPS default resolver name
           };
           home-assistant-nix = {
             rule = "Host(`home.${cfg.base-url}`)";
             service = "home-assistant-service";
             entryPoints = [ "websecure" ];
+            middlewares = [ "public@file" ];
             tls.certResolver = "letsencrypt"; # NPS default resolver name
           };
           zigbee2mqtt-nix = {
