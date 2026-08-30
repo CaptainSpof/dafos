@@ -71,13 +71,14 @@ in
 
     environment.systemPackages = with pkgs; [
       deploy-rs
+      flake-checker
+      nil
       nix-index
       nix-init
-      nix-prefetch-git
       nix-output-monitor
-      flake-checker
+      nix-prefetch-git
+      openssl
       yaml2nix
-      nil
     ];
 
     programs.nh = mkIf cfg.nh.enable {
