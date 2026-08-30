@@ -77,7 +77,6 @@ in
       nix-init
       nix-output-monitor
       nix-prefetch-git
-      openssl
       yaml2nix
     ];
 
