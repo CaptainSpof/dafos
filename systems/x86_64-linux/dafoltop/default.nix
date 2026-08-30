@@ -25,7 +25,7 @@ in
 
   # we don't need no education
   documentation.enable = false;
-  documentation.man.generateCaches = false;
+  documentation.man.cache.enable = false;
   documentation.nixos.enable = false;
 
   # disable sleep
