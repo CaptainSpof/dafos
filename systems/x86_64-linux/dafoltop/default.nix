@@ -14,6 +14,15 @@ in
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
+  # Rootless Traefik owns :80 and :443 on this host (see the matching
+  # ip_unprivileged_port_start in hardware.nix). Home-manager cannot open the
+  # system firewall, so the ports are declared here rather than riding along
+  # with whichever service module happens to want them.
+  networking.firewall.allowedTCPPorts = [
+    80
+    443
+  ];
+
   # we don't need no education
   documentation.enable = false;
   documentation.man.generateCaches = false;
