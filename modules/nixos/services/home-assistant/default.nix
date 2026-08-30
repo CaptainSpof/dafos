@@ -64,10 +64,19 @@ in
     #   requiredBy = [ "home-assistant.service" ];
     # };
 
+    # The zigbee2mqtt frontend is admin-equivalent (pair, remove, OTA, MQTT
+    # passthrough), so give it a token of its own rather than relying purely on
+    # Traefik. It is passed as an env override instead of `settings.frontend
+    # .auth_token` because the module renders `settings` into the world-readable
+    # nix store. systemd reads EnvironmentFile as root, before dropping privileges.
+    sops.secrets."zigbee2mqtt-auth-token-env".sopsFile =
+      lib.snowfall.fs.get-file "secrets/daf/zigbee2mqtt.yaml";
+
     systemd.services.zigbee2mqtt.serviceConfig = {
       # WatchdogSec = "30s";
       Restart = mkForce "always";
       # RestartSec = "10s";
+      EnvironmentFile = config.sops.secrets."zigbee2mqtt-auth-token-env".path;
     };
 
     services = {
@@ -94,7 +103,7 @@ in
           homeassistant.enabled = config.services.home-assistant.enable;
           availability = true;
           advanced.transmit_power = 20;
-          permit_join = true;
+          permit_join = false;
           mqtt = {
             server = "mqtt://127.0.0.1:1883";
             base_topic = "zigbee2mqtt";
@@ -365,7 +374,6 @@ in
       allowedTCPPorts = [
         80
         443
-        8090
         8123
       ];
     };

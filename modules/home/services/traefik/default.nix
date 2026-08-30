@@ -47,9 +47,21 @@ in
             rule = "Host(`z2m.${cfg.base-url}`)";
             service = "zigbee2mqtt-service";
             entryPoints = [ "websecure" ];
+            # zigbee2mqtt has no authentication of its own and can pair/remove
+            # devices on the mesh, so keep it source-IP gated. Traefik matches
+            # routers on the Host header, not on the address the client dialled,
+            # so a public DNS record pointing elsewhere is not a control here.
+            middlewares = [ "private@file" ];
             tls.certResolver = "letsencrypt"; # NPS default resolver name
           };
         };
+
+        middlewares = {
+          # nps ships `private` as an RFC1918-only ipAllowList; the tailnet lives in
+          # CGNAT space, so without this our own tailscale clients get a 403.
+          ipwhitelist-internal.ipAllowList.sourceRange = lib.mkAfter [ "100.64.0.0/10" ];
+        };
+
         services = {
           immich-service = {
             loadBalancer.servers = [
