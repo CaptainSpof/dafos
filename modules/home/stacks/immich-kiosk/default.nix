@@ -71,7 +71,7 @@ in
       # renovate: versioning=semver
       # 0.40.0+ is required for Immich v3 (older versions expect assets
       # embedded in the album response and log "no assets found").
-      image = "ghcr.io/damongolding/immich-kiosk:0.41.0";
+      image = "ghcr.io/damongolding/immich-kiosk:0.43.1";
 
       port = 3000;
 
@@ -83,10 +83,6 @@ in
       environment.KIOSK_IMMICH_URL = cfg.immichUrl;
       environmentFile = cfg.environmentFiles;
 
-      # Kiosk >=0.41 only honors the _FILE pattern for the weather key: it
-      # fills the key into every weather location whose `api` field is empty.
-      # The plain KIOSK_WEATHER_API_KEY env var is ignored for the nested
-      # weather.locations config.
       fileEnvMount = lib.optionalAttrs (cfg.weatherApiKeyFile != null) {
         KIOSK_WEATHER_API_KEY_FILE = toString cfg.weatherApiKeyFile;
       };
