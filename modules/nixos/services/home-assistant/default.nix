@@ -380,7 +380,6 @@ in
 
     systemd.tmpfiles.rules = [
       "d /var/lib/hass 0775 hass hass -"
-      "d /var/lib/hass/pixelart 0775 hass hass -"
       "d /var/lib/hass/scripts 0775 hass hass -"
       "d /var/lib/hass/custom_templates 0775 hass hass -"
     ];
