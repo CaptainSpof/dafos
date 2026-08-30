@@ -299,7 +299,14 @@ in
             temperature_unit = "C";
           };
 
-          lovelace.mode = "yaml";
+          lovelace.dashboards.lovelace = {
+            title = "Overview";
+            icon = "mdi:view-dashboard";
+            show_in_sidebar = true;
+            require_admin = false;
+            mode = "yaml";
+            filename = "ui-lovelace.yaml";
+          };
 
           "automation manual" = [ ];
           "automation ui" = "!include automations.yaml";
