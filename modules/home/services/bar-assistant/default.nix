@@ -21,8 +21,11 @@ in
   };
 
   config = mkIf cfg.enable {
-    sops.secrets."bar-assistant/meili-master-key" = {
-      sopsFile = lib.snowfall.fs.get-file "secrets/daf/bar-assistant.yaml";
+    sops.secrets = {
+      "bar-assistant/meili-master-key".sopsFile =
+        lib.snowfall.fs.get-file "secrets/daf/bar-assistant.yaml";
+      "bar-assistant/authelia/client-secret".sopsFile =
+        lib.snowfall.fs.get-file "secrets/daf/bar-assistant.yaml";
     };
 
     nps.stacks.bar-assistant = {
@@ -30,6 +33,11 @@ in
 
       meiliMasterKeyFile = config.sops.secrets."bar-assistant/meili-master-key".path;
       defaultLocale = "fr-FR";
+
+      oidc = {
+        enable = true;
+        clientSecretFile = config.sops.secrets."bar-assistant/authelia/client-secret".path;
+      };
       # Kept open to match the pre-migration deployment; flip to false once
       # every account that needs one exists.
       allowRegistration = true;

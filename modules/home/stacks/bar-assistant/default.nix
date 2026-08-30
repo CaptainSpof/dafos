@@ -53,14 +53,99 @@ in
       description = "Whether anyone reaching the instance may create an account.";
     };
 
+    enablePasswordLogin = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Whether the email/password login form is offered. Set to false to leave
+        only the SSO buttons — do this after every account has been linked, or
+        nobody can get in.
+      '';
+    };
+
     defaultLocale = lib.mkOption {
       type = lib.types.str;
       default = "en-US";
       description = "Locale Salt Rim starts in before a user picks their own.";
     };
+
+    oidc = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Whether to enable OIDC login with Authelia. This will register an OIDC
+          client in Authelia and set up the necessary configuration.
+
+          Bar Assistant matches the SSO identity to a local account **by email
+          address**, so an Authelia user whose email matches an existing account
+          is linked to it rather than getting a second one.
+
+          For details, see <https://docs.barassistant.app/setup/sso/>
+        '';
+      };
+
+      inherit ((import "${inputs.nix-podman-stacks}/modules/authelia/options.nix" lib)) clientSecretFile;
+      clientSecretHash = (import "${inputs.nix-podman-stacks}/modules/authelia/options.nix" lib).derivableClientSecretHash cfg.oidc.clientSecretFile;
+
+      userGroup = lib.mkOption {
+        type = lib.types.str;
+        default = "${name}_user";
+        description = "Users of this group will be able to log in";
+      };
+
+      redirectToSso = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Skip the Salt Rim login page and start the SSO flow immediately.
+          Only takes effect when exactly one provider is configured.
+        '';
+      };
+    };
   };
 
   config = lib.mkIf cfg.enable {
+    nps.stacks.lldap.bootstrap.groups = lib.mkIf cfg.oidc.enable {
+      ${cfg.oidc.userGroup} = { };
+    };
+
+    nps.stacks.authelia = lib.mkIf cfg.oidc.enable {
+      oidc.clients.${name} = {
+        client_name = displayName;
+        client_secret = cfg.oidc.clientSecretHash;
+        public = false;
+        authorization_policy = name;
+        # Laravel Socialite drives this flow: no PKCE, and it puts the client
+        # credentials in the token request body rather than the Basic header.
+        require_pkce = false;
+        pkce_challenge_method = "";
+        token_endpoint_auth_method = "client_secret_post";
+        pre_configured_consent_duration = config.nps.stacks.authelia.oidc.defaultConsentDuration;
+        scopes = [
+          "openid"
+          "profile"
+          "email"
+          "groups"
+        ];
+        # Salt Rim owns the callback route: it pulls the `code` out of the URL
+        # and hands it to the API, which does the token exchange.
+        redirect_uris = [ "${cfg.containers.${saltRimName}.traefik.serviceUrl}/oauth/callback" ];
+      };
+
+      # Bar Assistant links accounts by email and has no group-based RBAC of its
+      # own, so access is gated on the Authelia side.
+      settings.identity_providers.oidc.authorization_policies.${name} = {
+        default_policy = "deny";
+        rules = [
+          {
+            policy = config.nps.stacks.authelia.defaultAllowPolicy;
+            subject = "group:${cfg.oidc.userGroup}";
+          }
+        ];
+      };
+    };
+
     services.podman.containers = {
       # API server. Its entrypoint runs the Laravel migrations, (re)generates
       # the Meilisearch scoped tokens and publishes the starter media on every
@@ -79,10 +164,19 @@ in
           CACHE_DRIVER = "redis";
           SESSION_DRIVER = "redis";
           ALLOW_REGISTRATION = lib.boolToString cfg.allowRegistration;
+          ENABLE_PASSWORD_LOGIN = lib.boolToString cfg.enablePasswordLogin;
         };
 
         extraEnv = {
           MEILISEARCH_KEY.fromFile = cfg.meiliMasterKeyFile;
+        }
+        // lib.optionalAttrs cfg.oidc.enable {
+          # The API does the token exchange and the userinfo call server-side,
+          # so it reaches Authelia the same way a browser would.
+          AUTHELIA_BASE_URL = config.nps.containers.authelia.traefik.serviceUrl;
+          AUTHELIA_CLIENT_ID = name;
+          AUTHELIA_CLIENT_SECRET.fromFile = cfg.oidc.clientSecretFile;
+          AUTHELIA_REDIRECT_URI = "${cfg.containers.${saltRimName}.traefik.serviceUrl}/oauth/callback";
         };
 
         # serversideup/php:8.4-fpm-nginx is Debian based, so the image runs as
@@ -120,6 +214,7 @@ in
           MEILISEARCH_URL = cfg.containers.${meilisearchName}.traefik.serviceUrl;
           DEFAULT_LOCALE = cfg.defaultLocale;
           ALLOW_REGISTRATION = lib.boolToString cfg.allowRegistration;
+          REDIRECT_TO_SSO = lib.boolToString (cfg.oidc.enable && cfg.oidc.redirectToSso);
         };
 
         dependsOnContainer = [ name ];

@@ -35,6 +35,7 @@ let
 
         # No group-based admin access supported yet, just user-roles
         "home-assistant_user"
+        bar-assistant.oidc.userGroup
         grimmory.oidc.userGroup
         donetick.oidc.userGroup
         karakeep.oidc.userGroup
