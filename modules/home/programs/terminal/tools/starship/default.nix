@@ -58,11 +58,11 @@ in
 
           battery = {
             format = "[$symbol $percentage]($style) ";
-            full_symbol = " ";
-            charging_symbol = " ";
-            discharging_symbol = " ";
-            unknown_symbol = " ";
-            empty_symbol = " ";
+            full_symbol = "󰁹 ";
+            charging_symbol = "󰂄 ";
+            discharging_symbol = "󰁾 ";
+            unknown_symbol = "󰂑 ";
+            empty_symbol = "󰂎 ";
           };
 
           directory = {
@@ -105,7 +105,7 @@ in
             renamed = "[ $count ](fg:#999cb2 bg:#2d2f40)";
             deleted = "[󰗨 $count ](fg:#999cb2 bg:#2d2f40)";
             untracked = "[ $count ](fg:#999cb2 bg:#2d2f40)";
-            stashed = "[ $count ](fg:#999cb2 bg:#2d2f40)";
+            stashed = "[󰌨 $count ](fg:#999cb2 bg:#2d2f40)";
             ahead = "[󰳡 $count ](fg:#523333 bg:#2d2f40)";
             behind = "[󰳛 $count ](fg:#999cb2 bg:#2d2f40)";
             diverged = "[󱓌 ](fg:88 bg:#2d2f40)[ נּ ](fg:#999cb2 bg:#2d2f40)[ $ahead_count ](fg:#999cb2 bg:#2d2f40)[ $behind_count ](fg:#999cb2 bg:#2d2f40)";
