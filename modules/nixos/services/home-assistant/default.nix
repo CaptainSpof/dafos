@@ -57,6 +57,7 @@ in
     environment.systemPackages = with pkgs; [
       zlib-ng
       home-assistant-cli
+      esphome
     ];
 
     # systemd.services.partOf = {
@@ -92,11 +93,7 @@ in
         ];
       };
 
-      esphome = {
-        enable = true;
-        address = "0.0.0.0";
-        port = 6052;
-      };
+      esphome.enable = false;
 
       zigbee2mqtt = {
         enable = true;
