@@ -7,8 +7,8 @@
 }:
 
 let
-  inherit (lib) mkIf;
-  inherit (lib.${namespace}) mkBoolOpt;
+  inherit (lib) mkIf types;
+  inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
   cfg = config.${namespace}.apps.qbittorrent;
 in
@@ -16,6 +16,7 @@ in
   options.${namespace}.apps.qbittorrent = {
     enable = mkBoolOpt false "Whether or not to enable qbittorent.";
     nox.enable = mkBoolOpt false "Whether or not to enable qbittorent-nox.";
+    port = mkOpt types.port 9080 "The port the WebUI listens on.";
   };
 
   config = mkIf cfg.enable {
@@ -25,7 +26,7 @@ in
       enable = true;
       group = "yahrr";
       openFirewall = true;
-      webuiPort = 8080;
+      webuiPort = cfg.port;
       serverConfig = {
         BitTorrent = {
           Session.Interface = "tun0";
@@ -50,7 +51,7 @@ in
 
     services.caddy.virtualHosts = {
       "torrent.daftdaf.dev".extraConfig = ''
-        reverse_proxy http://0.0.0.0:8080
+        reverse_proxy http://0.0.0.0:${toString cfg.port}
         import cloudflare
       '';
     };
