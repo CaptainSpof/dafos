@@ -143,7 +143,30 @@ in
             "browser.uiCustomization.state" = builtins.toJSON {
               placements = {
                 widget-overflow-fixed-list = [ ];
-                unified-extensions-area = [ ];
+                # Order of the extension buttons inside the unified extensions
+                # panel (the puzzle-piece popup). Anything not listed here gets
+                # appended at the bottom in registration order.
+                unified-extensions-area = [
+                  "vpn_proton_ch-browser-action" # Proton VPN
+                  "frankerfacez_frankerfacez_com-browser-action" # FrankerFaceZ
+                  "gdpr_cavi_au_dk-browser-action" # Consent-O-Matic
+                  "uget-integration_slgobinath-browser-action" # uGet Integration
+                  "_e9090647-32ff-48e4-9c3c-1361e8fd270e_-browser-action" # Modern for Wikipedia
+                  "adnauseam_rednoise_org-browser-action" # AdNauseam
+                  "newtaboverride_agenedia_com-browser-action" # New Tab Override
+                  "_287dcf75-bec6-4eec-b4f6-71948a2eea29_-browser-action" # View Image
+                  "_762f9885-5a13-4abd-9c77-433dcd38b8fd_-browser-action" # Return YouTube Dislike
+                  "_ddc359d1-844a-42a7-9aa1-88a850a938a8_-browser-action" # DownThemAll!
+                  "_3c6bf0cc-3ae2-42fb-9993-0d33104fdcaf_-browser-action" # Improve YouTube!
+                  "adguardadblocker_adguard_com-browser-action" # AdGuard AdBlocker
+                  "_aecec67f-0d10-4fa7-b7c7-609a2db280cf_-browser-action" # Violentmonkey
+                  "_a4c4eda4-fb84-4a84-b4a1-f7c1cbf2a1ad_-browser-action" # Refined GitHub
+                  "dearrow_ajay_app-browser-action" # DeArrow
+                  "_a6c4a591-f1b2-4f03-b3ff-767e5bedf4e7_-browser-action" # User-Agent Switcher and Manager
+                  "plasma-browser-integration_kde_org-browser-action" # Plasma Integration
+                  "sponsorblocker_ajay_app-browser-action" # SponsorBlock
+                  "tridactyl_vim_cmcaine_co_uk-browser-action" # Tridactyl (hidden via userChrome below)
+                ];
 
                 nav-bar = [
                   "sidebar-button"
@@ -310,7 +333,9 @@ in
           })
         ];
 
-        # inherit (cfg) userChrome;
+        userChrome = ''
+        ''
+        + cfg.userChrome;
       };
     };
   };
