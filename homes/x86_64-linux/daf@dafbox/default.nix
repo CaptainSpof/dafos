@@ -108,6 +108,7 @@ in
       games = {
         enable = true;
         lutris = enabled;
+        ryubing = enabled;
       };
 
       graphics = {
