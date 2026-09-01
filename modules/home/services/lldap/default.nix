@@ -33,6 +33,8 @@ let
         lldap.adminGroup
         streaming.jellyfin.oidc.adminGroup
 
+        "immich_admin"
+
         # No group-based admin access supported yet, just user-roles
         "home-assistant_user"
         bar-assistant.oidc.userGroup
@@ -129,6 +131,12 @@ in
         bootstrap = {
           users = cfg.lldapUsers;
           groups.home-assistant_user = { };
+
+          # Immich runs as a native NixOS service, so its groups and the quota
+          # attribute are declared here instead of by `nps.stacks.immich`.
+          groups.immich_admin = { };
+          groups.immich_user = { };
+          userSchemas.immich-quota.attributeType = "INTEGER";
         };
       };
     };

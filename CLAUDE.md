@@ -57,6 +57,15 @@ unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` 
   `podman+` interfaces. Rootless containers are unaffected (their networking lives in a user
   namespace). Also: Immich server ≥ v3 requires immich-kiosk ≥ 0.40 (v3 stopped embedding
   `assets` in the album response; older kiosks log "no assets found" for every album).
+- **OIDC for native NixOS services**: Authelia (and lldap) are nps stacks in daf's *home-manager*
+  config, so services that run as NixOS services can't be wired up by `nps.stacks.<name>.oidc`.
+  Home Assistant and Immich are registered by hand instead: the client, claims/authorization
+  policies and lldap groups live in `modules/home/services/{authelia,lldap}`, the app-side config
+  lives in `modules/nixos/services/<name>`, and both halves read the same `secrets/daf/*.yaml`
+  entry (decryptable by the user *and* host key). For Immich the module mirrors what
+  `nps.stacks.immich.oidc` would generate (custom `immich` scope, `immich_role`/`immich_quota`
+  claims, `immich_{admin,user}` groups); its client secret reaches immich through
+  `settings.oauth.clientSecret._secret`, i.e. systemd `LoadCredential`, never the nix store.
 - **dafbox audio**: the Navi 31 GPU exposes multiple HDMI/DP audio profiles but only one active
   at a time; WirePlumber defaults to the higher-priority M27Q port, which has no speakers (only
   the LG monitor does). Fixed declaratively via a `wireplumber.extraConfig` ALSA rule in

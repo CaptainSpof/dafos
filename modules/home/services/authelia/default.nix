@@ -28,6 +28,7 @@ in
       "authelia/oidc-hmac-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/authelia.yaml";
       "authelia/oidc-rsa-pk".sopsFile = lib.snowfall.fs.get-file "secrets/daf/authelia.yaml";
       "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
+      "immich/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/immich.yaml";
     };
 
     nps.stacks.authelia = {
@@ -78,6 +79,37 @@ in
           response_types = [ "code" ];
           grant_types = [ "authorization_code" ];
         };
+
+        # Immich (native NixOS service, not an nps stack) — confidential client
+        # mirroring what `nps.stacks.immich.oidc` registers for the containerised
+        # stack. Immich has no way to refuse users that are in no group, so the
+        # gating happens in the authorization policy below.
+        clients.immich = {
+          client_name = "Immich";
+          client_secret.toHash = config.sops.secrets."immich/authelia/client-secret".path;
+          public = false;
+          authorization_policy = "immich";
+          require_pkce = false;
+          pkce_challenge_method = "";
+          pre_configured_consent_duration = config.nps.stacks.authelia.oidc.defaultConsentDuration;
+          redirect_uris = [
+            # Both hostnames are routed to the native immich by Traefik, and
+            # Immich derives its redirect uri from the origin it was opened on.
+            "https://immich.daftdaf.dev/auth/login"
+            "https://immich.daftdaf.dev/user-settings"
+            "https://photos.daftdaf.dev/auth/login"
+            "https://photos.daftdaf.dev/user-settings"
+            "app.immich:///oauth-callback"
+          ];
+          token_endpoint_auth_method = "client_secret_post";
+          scopes = [
+            "openid"
+            "profile"
+            "email"
+            "immich"
+          ];
+          claims_policy = "immich";
+        };
       };
 
       containers.authelia = {
@@ -108,6 +140,38 @@ in
               }
             ];
           };
+
+          # Immich OIDC client: hand off the custom `immich` scope carrying the
+          # role and quota claims, and gate access on the immich_{admin,user}
+          # groups (deny-by-default).
+          claims_policies.immich.custom_claims = {
+            immich_quota.attribute = "immich_quota";
+            immich_role.attribute = "immich_role";
+          };
+          scopes.immich.claims = [
+            "immich_quota"
+            "immich_role"
+          ];
+          authorization_policies.immich = {
+            default_policy = "deny";
+            rules = [
+              {
+                policy = config.nps.stacks.authelia.defaultAllowPolicy;
+                subject = [
+                  "group:immich_admin"
+                  "group:immich_user"
+                ];
+              }
+            ];
+          };
+        };
+
+        # Derive the Immich role from group membership, and surface the
+        # per-user quota (in GiB) stored on the LLDAP `immich-quota` attribute.
+        definitions.user_attributes.immich_role.expression = ''"immich_admin" in groups ? "admin" : "user"'';
+        authentication_backend.ldap.attributes.extra.immich-quota = {
+          name = "immich_quota";
+          value_type = "integer";
         };
       };
     };
