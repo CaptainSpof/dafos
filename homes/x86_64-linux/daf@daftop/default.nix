@@ -51,7 +51,7 @@ in
             };
           };
         };
-        instant-messengers.teamspeak = enabled;
+        instant-messengers.teamspeak = disabled;
       };
 
       terminal = {
