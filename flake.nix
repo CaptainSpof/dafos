@@ -139,11 +139,6 @@
       flake = false;
     };
 
-    hass-oidc-auth = {
-      url = "github:christiaangoossens/hass-oidc-auth";
-      flake = false;
-    };
-
     # Companion integration for the lovelace-idf-mobilite card. Pinned to the
     # v0.1.0 tag (early release) so the code matches manifest.json's version.
     idf-mobilite-assistant = {

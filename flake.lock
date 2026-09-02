@@ -639,22 +639,6 @@
         "type": "github"
       }
     },
-    "hass-oidc-auth": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788156384,
-        "narHash": "sha256-gDhgPFyT4F5DZrbjDAsgt4p8A8IX14muI/8+/BfrU7s=",
-        "owner": "christiaangoossens",
-        "repo": "hass-oidc-auth",
-        "rev": "f8e5dffbca34640c70b3b970003c6e47c733aa0b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "christiaangoossens",
-        "repo": "hass-oidc-auth",
-        "type": "github"
-      }
-    },
     "hass-tapo-control": {
       "flake": false,
       "locked": {
@@ -1389,7 +1373,6 @@
         "firefox": "firefox",
         "flake-utils": "flake-utils_2",
         "git-hooks-nix": "git-hooks-nix",
-        "hass-oidc-auth": "hass-oidc-auth",
         "hass-tapo-control": "hass-tapo-control",
         "home-manager": "home-manager",
         "idf-mobilite-assistant": "idf-mobilite-assistant",

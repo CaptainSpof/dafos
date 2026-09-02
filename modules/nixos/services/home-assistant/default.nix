@@ -150,6 +150,9 @@ in
           average
           alarmo
           adaptive_lighting
+          # nixpkgs' auth_oidc runs `npm run css` to build the login page
+          # stylesheet, which a hand-rolled dontBuild derivation skips.
+          auth_oidc
           better_thermostat
           # frigate
           samsungtv-smart
@@ -177,21 +180,6 @@ in
               pytapo
               aiohttp
               requests
-            ];
-          })
-          (pkgs.buildHomeAssistantComponent {
-            owner = "christiaangoossens";
-            domain = "auth_oidc";
-            version = "1.1.1";
-            src = inputs.hass-oidc-auth;
-            dontConfigure = true;
-            dontBuild = true;
-            doCheck = false;
-
-            propagatedBuildInputs = with hassPythonPkgs; [
-              joserfc
-              aiofiles
-              jinja2
             ];
           })
           # Companion integration for the lovelace-idf-mobilite card (config-flow,
