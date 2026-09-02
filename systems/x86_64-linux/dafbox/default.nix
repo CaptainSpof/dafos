@@ -6,7 +6,8 @@
 }:
 
 let
-  inherit (lib.${namespace}) enabled disabled;
+  inherit (lib) mkForce;
+  inherit (lib.${namespace}) enabled;
 in
 {
   imports = [
@@ -18,6 +19,19 @@ in
 
   # vsock transport for Claude Desktop's Cowork VM (claude-desktop-fhs)
   boot.kernelModules = [ "vhost_vsock" ];
+
+  # Both off, not merely relaxed. blocky serves plain DNS on :53 with no
+  # listener on 853, and dafoltop's firewall DROPS 853 rather than rejecting
+  # it — measured at 6s to time out versus 5ms for a refused port. So
+  # "opportunistic" is no better than "true" here: resolved probes 853 on
+  # every lookup and waits out a full TCP timeout instead of downgrading.
+  # Encryption to the internet is unaffected, since blocky is the DoT
+  # terminator and forwards upstream over tcp-tls:1.1.1.1:853; only this LAN
+  # hop is plaintext, and Cloudflare still validates DNSSEC on blocky's behalf.
+  services.resolved.settings.Resolve = {
+    DNSOverTLS = mkForce false;
+    DNSSEC = mkForce false;
+  };
 
   dafos = {
     archetypes = {
@@ -81,6 +95,7 @@ in
       networking = {
         enable = true;
         optimizeTcp = true;
+        nameservers = [ "192.168.0.10" ];
       };
     };
   };

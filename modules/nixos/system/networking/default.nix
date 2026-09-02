@@ -22,6 +22,13 @@ in
     enable = mkBoolOpt false "Whether or not to enable networking support";
     hosts = mkOpt attrs { } "An attribute set to merge with <option>networking.hosts</option>";
     optimizeTcp = mkBoolOpt false "Optimize TCP connections";
+    nameservers = mkOpt (listOf str) [
+      "1.1.1.1"
+      "1.0.0.1"
+      "100.100.100.100"
+      "2606:4700:4700::1111"
+      "2606:4700:4700::1001"
+    ] "Resolvers to configure globally.";
     dns = mkOpt (types.enum [
       "dnsmasq"
       "systemd-resolved"
@@ -32,12 +39,13 @@ in
     boot = {
       extraModprobeConfig = "options bonding max_bonds=0";
 
-      kernelModules =
-        [ "af_packet" ]
-        ++ lib.optionals cfg.optimizeTcp [
-          "tls"
-          "tcp_bbr"
-        ];
+      kernelModules = [
+        "af_packet"
+      ]
+      ++ lib.optionals cfg.optimizeTcp [
+        "tls"
+        "tcp_bbr"
+      ];
 
       kernel.sysctl = {
         # TCP hardening
@@ -122,7 +130,8 @@ in
     networking = {
       hosts = {
         "127.0.0.1" = cfg.hosts."127.0.0.1" or [ ];
-      } // cfg.hosts;
+      }
+      // cfg.hosts;
 
       firewall = {
         allowedUDPPorts = [ 5353 ];
@@ -135,13 +144,7 @@ in
         logRefusedConnections = true;
       };
 
-      nameservers = [
-        "1.1.1.1"
-        "1.0.0.1"
-        "100.100.100.100"
-        "2606:4700:4700::1111"
-        "2606:4700:4700::1001"
-      ];
+      inherit (cfg) nameservers;
 
       useDHCP = mkForce false;
       usePredictableInterfaceNames = mkForce true;
