@@ -118,6 +118,11 @@ in
         pkgs.xdg-desktop-portal-gtk
         pkgs.xdg-desktop-portal-gnome
         pkgs.xdg-desktop-portal-wlr
+        # RemoteDesktop backend only (see config.common below); deliberately
+        # kept out of configPackages so its own portals.conf — which claims
+        # ScreenCast, Screenshot, Settings and more — can't take over the
+        # interfaces the kde/gnome/wlr backends already serve here.
+        pkgs.xdg-desktop-portal-luminous
       ];
       configPackages = [
         pkgs.kdePackages.xdg-desktop-portal-kde
@@ -143,6 +148,15 @@ in
         # consumes fine.
         "org.freedesktop.impl.portal.ScreenCast" = "wlr";
         "org.freedesktop.impl.portal.Screenshot" = "gnome";
+        # KDE Connect's remote input (and anything else asking for
+        # RemoteDesktop) has no backend under Niri: xdg-desktop-portal-kde
+        # only registers the interface when it can reach KWin, -gnome when it
+        # can reach mutter, and -wlr never implemented it — so kdeconnectd
+        # got "No such interface org.freedesktop.impl.portal.RemoteDesktop"
+        # and then spammed NotifyPointerMotion at an invalid session path.
+        # luminous injects through zwlr_virtual_pointer_v1 and
+        # zwp_virtual_keyboard_v1, both of which Niri implements.
+        "org.freedesktop.impl.portal.RemoteDesktop" = "luminous";
       };
     };
 
