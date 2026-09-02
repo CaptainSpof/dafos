@@ -65,10 +65,15 @@ in
       lib.snowfall.fs.get-file "secrets/daf/zigbee2mqtt.yaml";
 
     systemd.services.zigbee2mqtt.serviceConfig = {
-      # WatchdogSec = "30s";
       Restart = mkForce "always";
-      # RestartSec = "10s";
       EnvironmentFile = config.sops.secrets."zigbee2mqtt-auth-token-env".path;
+
+      # Zigbee2mqtt 2.x dropped the old Z2M_WATCHDOG env var; the only watchdog
+      # left is sd_notify (dist/util/sd-notify.js reads WATCHDOG_USEC and pings
+      # at half the interval). It needs Type=notify to get NOTIFY_SOCKET, and
+      # the `unix-dgram` native module it uses is bundled in the package.
+      Type = "notify";
+      WatchdogSec = "60s";
     };
 
     services = {
@@ -349,17 +354,6 @@ in
           # network on the remote zstack coordinator (serialPortZigbee2Mqtt).
         };
       };
-    };
-
-    # Zigbee2mqtt: enable watchdog
-    environment.sessionVariables = {
-      Z2M_WATCHDOG = [
-        "0.5"
-        "3"
-        "6"
-        "15"
-        "30"
-      ];
     };
 
     networking.firewall = {
