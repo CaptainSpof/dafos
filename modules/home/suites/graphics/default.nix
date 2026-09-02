@@ -16,10 +16,11 @@ in
   options.${namespace}.suites.graphics = {
     enable = mkBoolOpt false "Whether or not to enable art configuration.";
     drawing.enable = mkBoolOpt false "Whether or not to enable art drawing configuration.";
-    vector.enable = mkBoolOpt false "Whether or not to enable art vector configuration.";
     graphics3d.enable = mkBoolOpt false "Whether or not to enable art graphics 3D configuration.";
-    upscaling.enable = mkBoolOpt false "Whether or not to enable art upscaling configuration.";
     raster.enable = mkBoolOpt false "Whether or not to enable art raster configuration.";
+    upscaling.enable = mkBoolOpt false "Whether or not to enable art upscaling configuration.";
+    vector.enable = mkBoolOpt false "Whether or not to enable art vector configuration.";
+    whiteboard.enable = mkBoolOpt false "Whether or not to enable art whiteboard configuration.";
   };
 
   config = mkIf cfg.enable {
@@ -30,8 +31,9 @@ in
         (inkscape-with-extensions.override { inkscapeExtensions = [ inkscape-extensions.silhouette ]; })
       ]
       ++ lib.optionals cfg.graphics3d.enable [ blender ]
-      ++ lib.optionals cfg.upscaling.enable [ upscayl ]
       ++ lib.optionals cfg.raster.enable [ gimp ]
+      ++ lib.optionals cfg.upscaling.enable [ upscayl ]
+      ++ lib.optionals cfg.whiteboard.enable [ drawy ]
       ++ [ libwebp ];
   };
 }

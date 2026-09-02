@@ -113,7 +113,8 @@ in
 
       graphics = {
         enable = true;
-        drawing.enable = true;
+        drawing = enabled;
+        whiteboard = enabled;
       };
 
       music = enabled;
