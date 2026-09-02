@@ -13,29 +13,11 @@ let
 
   cfg = config.${namespace}.services.home-assistant;
 
-  customPythonPkgs = pkgs.python314Packages.override {
-    overrides = _self: super: {
-      pytapo = super.pytapo.overrideAttrs (_oldAttrs: rec {
-        # tapo_control pins an exact pytapo version in its manifest; keep this in
-        # sync or the component's manifestCheckPhase fails the HA build.
-        # (inputs.hass-tapo-control is unpinned, so upstream bumps surface here.)
-        version = "3.4.18";
-        src = pkgs.fetchPypi {
-          pname = "pytapo";
-          inherit version;
-          hash = "sha256-N8s4L8quSWlChU4BSKnLDqY6WboJbcuYLNaFwPEeNnI=";
-        };
-        propagatedBuildInputs = with pkgs.python314Packages; [
-          aiohttp
-          pycryptodome
-          requests
-          python-kasa
-          rtp
-          urllib3
-        ];
-      });
-    };
-  };
+  # Custom components must be built against the same interpreter/package set as
+  # the home-assistant package itself (this is what buildHomeAssistantComponent
+  # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
+  # splits the package set the day HA moves to a new interpreter.
+  hassPythonPkgs = pkgs.home-assistant.python3Packages;
 
 in
 {
@@ -161,10 +143,8 @@ in
           "zha"
         ];
 
-        extraPackages =
-          ps: with ps; [
-            isal
-          ];
+        # `isal` is already in extraComponents and its manifest requires the
+        # isal python package, so the module pulls it in on its own.
 
         customComponents = with pkgs.home-assistant-custom-components; [
           average
@@ -181,17 +161,22 @@ in
           (pkgs.buildHomeAssistantComponent {
             owner = "JurajNyiri";
             domain = "tapo_control";
-            version = "7.0.12";
+            # inputs.hass-tapo-control is unpinned, so keep this in sync with
+            # the version in the source's manifest.json after an input bump.
+            version = "7.1.25";
             src = inputs.hass-tapo-control;
             dontConfigure = true;
             dontBuild = true;
             doCheck = false;
 
-            propagatedBuildInputs = [
-              customPythonPkgs.pytapo
-              # pkgs.python313Packages.pytapo
-              pkgs.python314Packages.aiohttp
-              pkgs.python314Packages.requests
+            # manifest.json pins `pytapo==3.4.18`, which nixpkgs currently
+            # ships; if an upstream bump moves that pin ahead of nixpkgs,
+            # manifestRequirementsCheckHook will fail the build and an
+            # overrideAttrs on pytapo goes here.
+            propagatedBuildInputs = with hassPythonPkgs; [
+              pytapo
+              aiohttp
+              requests
             ];
           })
           (pkgs.buildHomeAssistantComponent {
@@ -203,7 +188,7 @@ in
             dontBuild = true;
             doCheck = false;
 
-            propagatedBuildInputs = with pkgs.python314Packages; [
+            propagatedBuildInputs = with hassPythonPkgs; [
               joserfc
               aiofiles
               jinja2
