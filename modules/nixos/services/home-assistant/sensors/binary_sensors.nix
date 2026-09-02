@@ -12,20 +12,20 @@
     unique_id = "dafos.binary_sensor.global_maybe_home_occupied";
     default_entity_id = "binary_sensor.global_maybe_home_occupied";
     device_class = "occupancy";
-    state = ''{{ states('zone.home') | int > 0 }}'';
+    state = "{{ states('zone.home') | int > 0 }}";
   }
   {
     name = "Véranda · daftv is running";
     unique_id = "dafos.binary_sensor.veranda_maybe_daftv_running";
     default_entity_id = "binary_sensor.veranda_maybe_daftv_running";
     device_class = "running";
-    state = ''{{ not(states('sensor.veranda_tv_plug_power') | float < 30 and states('media_player.daftv') == 'off') }}'';
+    state = "{{ not(states('sensor.veranda_tv_plug_power') | float(0) < 30 and states('media_player.daftv') == 'off') }}";
   }
   {
     name = "Desk · dafbox is running";
     unique_id = "dafos.binary_sensor.desk_maybe_dafbox_running";
     default_entity_id = "binary_sensor.desk_maybe_dafbox_running";
     device_class = "running";
-    state = ''{{ not(states('sensor.desk_plug_power') | float < 30 and states('device_tracker.dafbox') == 'not_home') }}'';
+    state = "{{ not(states('sensor.desk_plug_power') | float(0) < 30 and states('device_tracker.dafbox') == 'not_home') }}";
   }
 ]
