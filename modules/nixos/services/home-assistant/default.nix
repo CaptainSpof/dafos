@@ -41,10 +41,6 @@ in
 {
   options.${namespace}.services.home-assistant = {
     enable = mkBoolOpt false "Whether or not to enable home-assistant.";
-    serialPort =
-      mkOpt types.str
-        "/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20230803143100-if00"
-        "The serial port to use with ZHA.";
     serialPortZigbee2Mqtt =
       mkOpt types.str "tcp://192.168.0.100:6638"
         "The serial port to use with Zigbee2mqtt.";
@@ -59,11 +55,6 @@ in
       home-assistant-cli
       esphome
     ];
-
-    # systemd.services.partOf = {
-    #   zigbee2mqtt = [ "home-assistant.service" ];
-    #   requiredBy = [ "home-assistant.service" ];
-    # };
 
     # The zigbee2mqtt frontend is admin-equivalent (pair, remove, OTA, MQTT
     # passthrough), so give it a token of its own rather than relying purely on
@@ -101,7 +92,6 @@ in
           homeassistant.enabled = config.services.home-assistant.enable;
           availability = true;
           advanced.transmit_power = 20;
-          permit_join = false;
           mqtt = {
             server = "mqtt://127.0.0.1:1883";
             base_topic = "zigbee2mqtt";
@@ -257,20 +247,13 @@ in
         config = {
           default_config = { };
 
-          http = {
-            use_x_forwarded_for = true;
-            trusted_proxies = [
-              "10.80.0.1"
-              "192.168.0.10"
-              "127.0.0.1"
-            ];
-            server_host = [
-              "0.0.0.0"
-              "::"
-            ];
-          };
+          # No `http:` block on purpose. HA 2026.8 migrated http config into
+          # .storage/http and now ignores YAML entirely — leaving the block in
+          # only raised the `yaml_still_present_after_migration` repair. The
+          # reverse-proxy settings (use_x_forwarded_for + the Traefik/Tailscale
+          # trusted_proxies) were migrated on 2026-08-18 and are now managed in
+          # Settings > System > Network.
 
-          bluetooth = { };
           smartir = { };
 
           # OIDC/SSO login via Authelia (github.com/christiaangoossens/hass-oidc-auth).
@@ -359,7 +342,11 @@ in
           ]
           ++ (import ./sensors/sensors.nix);
 
-          zha.zigpy_config.device = cfg.serialPort;
+          # No `zha:` block: ZHA is config-flow only. It reads the coordinator
+          # from the config entry and `create_zha_config` overwrites whatever
+          # YAML put in zigpy_config.device, so setting it here did nothing.
+          # The local SONOFF dongle is ZHA's; zigbee2mqtt drives the separate
+          # network on the remote zstack coordinator (serialPortZigbee2Mqtt).
         };
       };
     };
@@ -381,8 +368,15 @@ in
       ];
     };
 
+    # NOTE: the mode on /var/lib/hass itself is not actually 0775 — it is the
+    # hass user's home and `createHome` re-chmods it to 0700 on every
+    # activation, after tmpfiles has run. Combined with the unit's UMask=0077
+    # that also makes `dafos.user.extraGroups = [ "hass" ]` above a no-op. To
+    # genuinely give daf read access it would take
+    # `users.users.hass.homeMode = "750"` plus a UMask override, which is a
+    # deliberate weakening of upstream's hardening — left alone for now. The
+    # two subdirectories are still worth creating; HA needs them to exist.
     systemd.tmpfiles.rules = [
-      "d /var/lib/hass 0775 hass hass -"
       "d /var/lib/hass/scripts 0775 hass hass -"
       "d /var/lib/hass/custom_templates 0775 hass hass -"
     ];
