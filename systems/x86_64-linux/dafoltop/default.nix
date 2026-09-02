@@ -90,6 +90,10 @@ in
       # calibre-web-automated = enabled;
       # karakeep = enabled;
       glance = disabled;
+      blocky = {
+        enable = true;
+        hostAddress = "192.168.0.10";
+      };
       home-assistant = enabled;
       ollama = enabled;
       immich = enabled;
