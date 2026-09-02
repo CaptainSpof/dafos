@@ -46,9 +46,20 @@ in
     sops.secrets."zigbee2mqtt-auth-token-env".sopsFile =
       lib.snowfall.fs.get-file "secrets/daf/zigbee2mqtt.yaml";
 
-    systemd.services.zigbee2mqtt.serviceConfig = {
-      Restart = mkForce "always";
-      EnvironmentFile = config.sops.secrets."zigbee2mqtt-auth-token-env".path;
+    systemd.services.zigbee2mqtt = {
+      serviceConfig = {
+        Restart = mkForce "always";
+        EnvironmentFile = config.sops.secrets."zigbee2mqtt-auth-token-env".path;
+      };
+
+      # The launcher (index.js:14) supervises the z2m process itself: on an
+      # unsolicited stop it restarts the child after the next delay in this
+      # list, which is a CSV of MINUTES. Setting it through
+      # environment.sessionVariables never reached the service at all — and
+      # would have been fatal if it had, because sessionVariables joins a list
+      # with colons and the launcher rejects anything but comma-separated
+      # digits with `process.exit(1)`.
+      environment.Z2M_WATCHDOG = "0.5,3,6,15,30";
     };
 
     services = {
