@@ -95,8 +95,14 @@ in
       home-assistant = {
         enable = true;
 
+        # The three entries marked "discovered on the LAN" are not used
+        # directly: zeroconf/bluetooth discovery kept trying to open a config
+        # flow for them and failing with `No module named ...` on every start
+        # (homekit_controller alone was ~30 tracebacks per boot). Building them
+        # in is what makes the discovery flow work instead of erroring.
         extraComponents = [
           # "apple_tv"
+          "androidtv_remote" # discovered on the LAN
           "backup"
           "bluetooth"
           "bluetooth_adapters"
@@ -110,11 +116,13 @@ in
           "google"
           "google_translate"
           "google_tasks"
+          "homekit_controller" # discovered on the LAN
           "ibeacon"
           "ipp"
           "isal"
           "improv_ble"
           "ld2410_ble"
+          "led_ble" # discovered on the LAN
           "local_calendar"
           "mealie"
           "met"
