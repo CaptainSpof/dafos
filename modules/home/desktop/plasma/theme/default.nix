@@ -64,12 +64,12 @@ in
         kdeglobals = {
           KDE.widgetStyle = "Darkly";
           General.AccentColorFromWallpaper = true;
+          UiSettings.ColorScheme = "*";
         };
-        # Make Dolphin follow the global color scheme. Under the qt6ct platform
-        # theme (vs full Plasma), KColorSchemeManager doesn't see a "system"
-        # scheme, so without this Dolphin falls back to its light default while
-        # other KDE apps stay dark. "*" is KDE's "follow system scheme" sentinel.
-        dolphinrc.UiSettings.ColorScheme = "*";
+
+        kcminputrc.Mouse.cursorTheme = "breeze_cursors";
+
+        kdedrc."Module-gtkconfig".autoload = false;
 
         # Darkly widget-style settings (the "Application Style -> Darkly ->
         # Configure" page). Captured from ~/.config/darklyrc; plasma-manager
@@ -110,6 +110,23 @@ in
       # "Basic" style outside Plasma. Force the KDE style so they follow the
       # color scheme (provided by qqc2-desktop-style, in home.packages below).
       QT_QUICK_CONTROLS_STYLE = "org.kde.desktop";
+    };
+
+    systemd.user.paths.dms-kde-colorscheme = {
+      Unit.Description = "Watch for DMS colour scheme regeneration";
+      Path = {
+        PathChanged = "${home}/.local/share/color-schemes/DankMatugen.colors";
+        Unit = "dms-kde-colorscheme.service";
+      };
+      Install.WantedBy = [ "paths.target" ];
+    };
+
+    systemd.user.services.dms-kde-colorscheme = {
+      Unit.Description = "Apply the DMS colour scheme to kdeglobals";
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.kdePackages.plasma-workspace}/bin/plasma-apply-colorscheme DankMatugen";
+      };
     };
 
     home.packages = with pkgs; [

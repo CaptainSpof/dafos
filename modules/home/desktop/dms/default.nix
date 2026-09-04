@@ -86,18 +86,8 @@ let
     matugenScheme = "scheme-fidelity";
     matugenContrast = 0;
     runUserMatugenTemplates = true;
-    # DMS's built-in per-app matugen templates default ON (runDmsMatugenTemplates
-    # + matugenTemplate*). We let DMS own the qt6ct and wezterm palettes — its
-    # built-ins write the same files we used to (qt6ct/colors/matugen.conf,
-    # wezterm/colors/dank-theme.toml) and it self-touches qt6ct.conf to trigger
-    # reloads. Only GTK is still hand-rolled (see gtk-colors.css below), so
-    # disable just that one to avoid a redundant second write; everything else
-    # (vesktop/vencord dank-discord.css, etc.) stays on.
     matugenTemplateGtk = false;
-    # Don't let DMS follow the xdg portal's appearance signal: the kde Settings
-    # backend always reports "light" under Niri, which would drag DMS back to
-    # light on every change. DMS owns light/dark directly (theme dark/light).
-    syncModeWithPortal = false;
+    syncModeWithPortal = true;
     terminalsAlwaysDark = true;
     iconTheme = "System Default";
     nightModeEnabled = false;
