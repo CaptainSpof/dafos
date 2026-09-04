@@ -82,6 +82,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Sonora — native music streaming client (Spotify/YouTube Music/local)
+    sonora = {
+      url = "github:nolight132/sonora";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Comma
     comma = {
       url = "github:nix-community/comma";
