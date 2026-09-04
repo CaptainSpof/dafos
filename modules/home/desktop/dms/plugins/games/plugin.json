@@ -1,0 +1,13 @@
+{
+	"id": "gamesFolder",
+	"name": "Games",
+	"description": "Browse installed games (Steam, Lutris, ...) as a single launcher folder",
+	"version": "1.0.0",
+	"author": "CaptainSpof",
+	"icon": "sports_esports",
+	"type": "launcher",
+	"capabilities": ["launcher"],
+	"component": "./GamesLauncher.qml",
+	"trigger": ":g",
+	"permissions": []
+}

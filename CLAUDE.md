@@ -99,6 +99,18 @@ unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` 
 - Firefox package differs per host on purpose: dafbox/daftop use `firefox-beta`, daftop was
   switched to `inputs.firefox` nightly — check the specific host file before assuming which
   channel is live.
+- **DMS "Games" folder** (`dafos.desktop.dms.gamesFolder`, on wherever `suites.games` is): DMS
+  has no notion of a folder in the app drawer, so this is faked with two halves that must agree
+  on what a game is — `dms-games-sync` (a user service + path unit on
+  `~/.local/share/applications`) classifies desktop entries, writes `~/.local/state/dms-games/
+  games.json`, and pushes those ids into DMS's `session.json` `hiddenApps`; the `gamesFolder`
+  launcher plugin (`modules/home/desktop/dms/plugins/games`) reads that JSON back. The rule
+  lives only in the script. Hiding an app also removes it from DMS's built-in *Games* category
+  chip (both go through `getVisibleApplications`), which is why the plugin enumerates
+  `DesktopEntries` rather than reusing that filter, and why `NoDisplay=true` is the wrong lever
+  (quickshell drops NoDisplay entries from `DesktopEntries.applications` entirely). Plugin
+  enable-state is seeded once into the runtime-owned `plugin_settings.json`; turning the option
+  off runs `dms-games-sync --unhide` from activation to put the games back.
 
 ## dafbox disk layout — applied (2026-06)
 
