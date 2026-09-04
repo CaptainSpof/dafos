@@ -17,7 +17,7 @@ in
   options.${namespace}.suites.music = {
     enable = mkBoolOpt false "Whether or not to enable music configuration.";
     mixing.enable = mkBoolOpt false "Whether or not to enable music mixing configuration.";
-    sonora.enable = mkBoolOpt true "Whether or not to enable the Sonora music streaming client.";
+    sonora.enable = mkBoolOpt false "Whether or not to enable the Sonora music streaming client.";
   };
 
   config = mkIf cfg.enable {

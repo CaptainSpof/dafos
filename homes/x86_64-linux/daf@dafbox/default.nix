@@ -7,7 +7,7 @@
 }:
 
 let
-  inherit (lib.${namespace}) enabled disabled;
+  inherit (lib.${namespace}) enabled;
 
   firefox-pkg = config.${namespace}.programs.graphical.browsers.firefox.package;
 in
@@ -117,7 +117,10 @@ in
         whiteboard = enabled;
       };
 
-      music = enabled;
+      music = {
+        enable = true;
+        sonora = enabled;
+      };
       office = enabled;
       social = enabled;
       video = enabled;
