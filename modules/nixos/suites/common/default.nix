@@ -53,7 +53,9 @@ in
       security = {
         doas = disabled;
         gpg = disabled;
-        keyring.enable = config.${namespace}.desktop.gnome.enable;
+        # niri and gnome both run gnome-keyring; plasma uses kwallet instead.
+        keyring.enable =
+          config.${namespace}.desktop.gnome.enable || config.${namespace}.desktop.niri.enable;
       };
 
       services = {
