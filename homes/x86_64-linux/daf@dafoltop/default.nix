@@ -58,7 +58,11 @@ in
       immich-kiosk = enabled;
       it-tools = enabled;
       lldap = enabled;
-      norish = enabled;
+      norish = {
+        enable = true;
+        # Points at dafoltop's local ollama (see dafos.services.ollama there).
+        ai = enabled;
+      };
       papra = enabled;
       reactive-resume = enabled;
       shelfmark = enabled;

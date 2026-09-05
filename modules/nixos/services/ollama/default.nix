@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib.${namespace}) mkOpt;
+  inherit (lib.${namespace}) mkOpt mkBoolOpt;
   inherit (lib) mkEnableOption mkIf types;
 
   cfg = config.${namespace}.services.ollama;
@@ -22,6 +22,7 @@ in
     keepAlive =
       mkOpt types.str "5m"
         "How long a model stays resident in RAM after a request. Short keeps RAM free on this box; '-1' would pin it permanently.";
+    openFirewallForPodman = mkBoolOpt false "Open `port` on `podman+` interfaces so containers can reach the API. Needs `host` to be a non-loopback address -- rootless containers reach the host via `host.containers.internal`, which never lands on 127.0.0.1.";
   };
 
   config = mkIf cfg.enable {
@@ -38,5 +39,13 @@ in
     # Unload the model after a short idle so it doesn't permanently hold ~3 GB
     # of RAM next to Home Assistant + Immich. Notification generation is bursty.
     services.ollama.environmentVariables.OLLAMA_KEEP_ALIVE = cfg.keepAlive;
+
+    # Rootless podman containers (the nps stacks) reach the host through
+    # `host.containers.internal`, which is forwarded to a non-loopback host
+    # address -- so a 127.0.0.1 bind is unreachable from them. Mirrors the
+    # `podman+` DNS rule in modules/nixos/virtualisation/podman.
+    networking.firewall.interfaces."podman+".allowedTCPPorts = mkIf cfg.openFirewallForPodman [
+      cfg.port
+    ];
   };
 }

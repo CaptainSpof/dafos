@@ -45,7 +45,7 @@ in
   # Scoped to this host so the rest of the fleet keeps its defaults.
 
   # Cap the systemd journal (was uncapped -> grew to ~4G).
-  services.journald.extraConfig = "SystemMaxUse=500M";
+  services.journald.settings.Journal.SystemMaxUse = "500M";
 
   # Keep fewer generations than the module default (--keep 15 --keep-since 14d).
   programs.nh.clean.extraArgs = mkForce "--keep 5 --keep-since 7d";
@@ -95,7 +95,17 @@ in
         hostAddress = "192.168.0.10";
       };
       home-assistant = enabled;
-      ollama = enabled;
+      ollama = {
+        enable = true;
+        # Bound wide (not 127.0.0.1) so the rootless norish container can reach it
+        # via host.containers.internal; the firewall keeps it to podman+ only.
+        host = "0.0.0.0";
+        openFirewallForPodman = true;
+        models = [
+          "qwen2.5:3b" # Home Assistant notification blurbs
+          "qwen2.5:7b" # norish AI (needs stricter JSON-schema adherence)
+        ];
+      };
       immich = enabled;
       # immich-frame = enabled;
       # immich-kiosk: migrated to the rootless nps stack (home-manager module)
