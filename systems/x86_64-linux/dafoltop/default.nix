@@ -95,6 +95,16 @@ in
         hostAddress = "192.168.0.10";
       };
       home-assistant = enabled;
+      # Zone/room editor for the Everything Presence Lite sensors; talks to the
+      # local home-assistant over its API (token in
+      # secrets/daf/everything-presence.yaml).
+      everything-presence-zone-configurator = {
+        enable = true;
+        # Pinned because upstream's auto-detection only skips docker/br-/veth/tun/wg
+        # interfaces: on this host it can just as easily hand a sensor the podman
+        # bridge or tailnet address for an OTA download.
+        firmware.lanIp = "192.168.0.10";
+      };
       ollama = {
         enable = true;
         # Bound wide (not 127.0.0.1) so the rootless norish container can reach it

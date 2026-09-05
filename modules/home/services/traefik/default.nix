@@ -45,6 +45,16 @@ in
             middlewares = [ "public@file" ];
             tls.certResolver = "letsencrypt"; # NPS default resolver name
           };
+          zone-configurator-nix = {
+            rule = "Host(`zones.${cfg.base-url}`)";
+            service = "zone-configurator-service";
+            entryPoints = [ "websecure" ];
+            # The zone configurator has no authentication of its own and can
+            # rewrite sensor zones and push OTA firmware, so keep it on the
+            # same source-IP gate as zigbee2mqtt.
+            middlewares = [ "private@file" ];
+            tls.certResolver = "letsencrypt"; # NPS default resolver name
+          };
           zigbee2mqtt-nix = {
             rule = "Host(`z2m.${cfg.base-url}`)";
             service = "zigbee2mqtt-service";
@@ -76,6 +86,13 @@ in
             loadBalancer.servers = [
               {
                 url = "http://host.containers.internal:8123";
+              }
+            ];
+          };
+          zone-configurator-service = {
+            loadBalancer.servers = [
+              {
+                url = "http://host.containers.internal:42069";
               }
             ];
           };

@@ -25,8 +25,9 @@ differ). Per-host authorized SSH keys and per-host sops key are declared in
 
 `dafoltop` is the de facto home server: home-assistant, ollama (local LLM), immich + immich-kiosk,
 authelia, bar-assistant, traefik, lldap, glance, calibre, donetick, grimmory, it-tools, norish,
-papra, reactive-resume, shelfmark, streaming. It replaced ChatGPT-based HA notification
-generation with a local ollama model (`qwen2.5:3b` via `ollama-cpu`, `127.0.0.1:11434`,
+papra, reactive-resume, shelfmark, streaming, everything-presence-zone-configurator.
+It replaced ChatGPT-based HA notification generation with a local ollama model
+(`qwen2.5:3b` via `ollama-cpu`, `127.0.0.1:11434`,
 `OLLAMA_KEEP_ALIVE=5m`) — see `modules/nixos/services/ollama/README.md` for the one-time HA UI
 integration step (config-flow, not YAML) and the `ai_task.generate_data` automation pattern
 that replaced the OpenAI conversation call.
@@ -57,6 +58,17 @@ unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` 
   `podman+` interfaces. Rootless containers are unaffected (their networking lives in a user
   namespace). Also: Immich server ≥ v3 requires immich-kiosk ≥ 0.40 (v3 stopped embedding
   `assets` in the album response; older kiosks log "no assets found" for every album).
+- **Everything Presence Zone Configurator**: upstream ships it only as a Supervisor add-on or a
+  Docker image, so `packages/everything-presence-zone-configurator` builds the npm workspace the
+  way the Dockerfile's `standalone` stage does, and `modules/nixos/services/
+  everything-presence-zone-configurator` runs it as a plain node service beside the native
+  home-assistant. Two non-obvious bits: the backend finds its device profiles and version string
+  relative to the *working directory* (hence the wrapper's `--chdir`), and it `process.exit`s
+  when HA is unreachable at startup, so `Restart=always` + `RestartSec=30` is the reconnect
+  strategy. The HA long-lived token lives in `secrets/daf/everything-presence.yaml` and reaches
+  the service through systemd `LoadCredential` (`HA_LONG_LIVED_TOKEN_FILE=%d/ha-token`), so
+  `DynamicUser` never needs to read /run/secrets. Its OTA LAN IP is pinned on dafoltop because
+  upstream auto-detection only skips docker/br-/veth/tun/wg interfaces.
 - **OIDC for native NixOS services**: Authelia (and lldap) are nps stacks in daf's *home-manager*
   config, so services that run as NixOS services can't be wired up by `nps.stacks.<name>.oidc`.
   Home Assistant and Immich are registered by hand instead: the client, claims/authorization
