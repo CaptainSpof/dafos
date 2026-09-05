@@ -91,50 +91,17 @@ in
       gnome-maps
     ];
 
-    systemd.tmpfiles.rules =
-      [ "d ${gdmHome}/.config 0711 gdm gdm" ]
-      ++ (
-        # "./monitors.xml" comes from ~/.config/monitors.xml when GNOME
-        # display information is updated.
-        lib.optional (cfg.monitors != null) "L+ ${gdmHome}/.config/monitors.xml - - - - ${cfg.monitors}"
-      );
+    systemd.tmpfiles.rules = [
+      "d ${gdmHome}/.config 0711 gdm gdm"
+    ]
+    ++ (
+      # "./monitors.xml" comes from ~/.config/monitors.xml when GNOME
+      # display information is updated.
+      lib.optional (cfg.monitors != null) "L+ ${gdmHome}/.config/monitors.xml - - - - ${cfg.monitors}"
+    );
 
-    systemd.services.dafos-user-icon = {
-      before = [ "display-manager.service" ];
-      wantedBy = [ "display-manager.service" ];
-
-      serviceConfig = {
-        Type = "simple";
-        User = "root";
-        Group = "root";
-      };
-
-      script = ''
-        config_file=/var/lib/AccountsService/users/${config.${namespace}.user.name}
-        icon_file=/run/current-system/sw/share/dafos-icons/user/${config.${namespace}.user.name}/${
-          config.${namespace}.user.icon.fileName
-        }
-
-        if ! [ -d "$(dirname "$config_file")"]; then
-          mkdir -p "$(dirname "$config_file")"
-        fi
-
-        if ! [ -f "$config_file" ]; then
-          echo "[User]
-          Session=gnome
-          SystemAccount=false
-          Icon=$icon_file" > "$config_file"
-        else
-          icon_config=$(sed -E -n -e "/Icon=.*/p" $config_file)
-
-          if [[ "$icon_config" == "" ]]; then
-            echo "Icon=$icon_file" >> $config_file
-          else
-            sed -E -i -e "s#^Icon=.*$#Icon=$icon_file#" $config_file
-          fi
-        fi
-      '';
-    };
+    # The user avatar (AccountsService `Icon=`) used to be set from here; it's
+    # desktop-agnostic and DMS needs it too, so it moved to modules/nixos/user.
 
     # Required for app indicators
     services.udev.packages = with pkgs; [ gnome3.gnome-settings-daemon ];
@@ -166,12 +133,13 @@ in
                 "drive-menu@gnome-shell-extensions.gcampax.github.com"
                 "user-theme@gnome-shell-extensions.gcampax.github.com"
               ];
-            favorite-apps =
-              [ "org.gnome.Nautilus.desktop" ]
-              ++ optional config.${namespace}.apps.kitty.enable "kitty.desktop"
-              ++ optional config.${namespace}.apps.discord.enable "discord.desktop"
-              ++ optional config.${namespace}.apps.element.enable "element-desktop.desktop"
-              ++ optional config.${namespace}.apps.steam.enable "steam.desktop";
+            favorite-apps = [
+              "org.gnome.Nautilus.desktop"
+            ]
+            ++ optional config.${namespace}.apps.kitty.enable "kitty.desktop"
+            ++ optional config.${namespace}.apps.discord.enable "discord.desktop"
+            ++ optional config.${namespace}.apps.element.enable "element-desktop.desktop"
+            ++ optional config.${namespace}.apps.steam.enable "steam.desktop";
           };
 
           "org/gnome/desktop/background" = {

@@ -71,6 +71,10 @@ in
       dms-greeter.enable = true;
     };
 
+    # Avatar shown by DMS (control centre header, dash user card, lock screen)
+    # and the DMS greeter, via AccountsService. See modules/nixos/user.
+    user.icon = ./avatar.jpg;
+
     hardware = {
       cpu.amd = enabled;
       gpu.amd = enabled;
