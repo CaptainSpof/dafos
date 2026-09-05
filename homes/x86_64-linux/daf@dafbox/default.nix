@@ -67,7 +67,7 @@ in
         enable = true;
         claude.code = enabled;
         claude.desktop = enabled;
-        gemini.cli = enabled;
+        antigravity.cli = enabled;
       };
 
       graphical = {

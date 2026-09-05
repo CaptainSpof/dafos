@@ -9,7 +9,10 @@
   gst_all_1,
   webkitgtk_6_0,
   wayland,
-  xorg,
+  libx11,
+  libxext,
+  libxtst,
+  libxscrnsaver,
   openxr-loader,
   libglvnd,
   ...
@@ -46,10 +49,10 @@ stdenv.mkDerivation rec {
     gst_all_1.gst-plugins-good
     webkitgtk_6_0
     wayland
-    xorg.libX11
-    xorg.libXext
-    xorg.libXtst
-    xorg.libXScrnSaver
+    libx11
+    libxext
+    libxtst
+    libxscrnsaver
     openxr-loader
     stdenv.cc.cc.lib
   ];

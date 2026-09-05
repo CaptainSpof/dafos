@@ -7,7 +7,12 @@
 }:
 
 let
-  inherit (lib) mkIf mkMerge getExe getExe';
+  inherit (lib)
+    mkIf
+    mkMerge
+    getExe
+    getExe'
+    ;
 
   inherit (lib.${namespace}) mkBoolOpt;
 
@@ -59,12 +64,21 @@ let
     '';
 in
 {
+  # nixpkgs marked gemini-cli for removal (Google replaced it with the
+  # Antigravity CLI); keep the old option name working for a while.
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ namespace "programs" "ai" "gemini" "cli" "enable" ]
+      [ namespace "programs" "ai" "antigravity" "cli" "enable" ]
+    )
+  ];
+
   options.${namespace}.programs.ai = {
     enable = mkBoolOpt false "Whether or not to enable AI tools.";
 
     claude.code.enable = mkBoolOpt false "Whether or not to enable Claude Code CLI.";
     claude.desktop.enable = mkBoolOpt false "Whether or not to enable Claude Desktop.";
-    gemini.cli.enable = mkBoolOpt false "Whether or not to enable Gemini CLI.";
+    antigravity.cli.enable = mkBoolOpt false "Whether or not to enable Antigravity CLI.";
   };
 
   config = mkIf cfg.enable {
@@ -73,7 +87,7 @@ in
       # FHS variant: Cowork's VM probe needs qemu/OVMF/virtiofsd at FHS paths,
       # which only the fhs wrapper provides. Host must also load vhost_vsock.
       (mkIf cfg.claude.desktop.enable [ claudeDesktopFhs ])
-      (mkIf cfg.gemini.cli.enable [ pkgs.gemini-cli ])
+      (mkIf cfg.antigravity.cli.enable [ pkgs.antigravity-cli ])
       (mkIf anyClaude [ pkgs.mcp-nixos ])
     ];
 
