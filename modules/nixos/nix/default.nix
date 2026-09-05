@@ -101,7 +101,11 @@ in
         inherit (cfg) package;
 
         settings = {
-          experimental-features = "nix-command flakes pipe-operators";
+          experimental-features = [
+            "nix-command"
+            "flakes"
+            "pipe-operators"
+          ];
           inherit (cfg) max-jobs cores;
           http-connections = 50;
           warn-dirty = false;
