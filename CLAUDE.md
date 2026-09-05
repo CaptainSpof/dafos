@@ -67,8 +67,10 @@ unless the old key is restored first (see dafbox runbook below) or `.sops.yaml` 
   when HA is unreachable at startup, so `Restart=always` + `RestartSec=30` is the reconnect
   strategy. The HA long-lived token lives in `secrets/daf/everything-presence.yaml` and reaches
   the service through systemd `LoadCredential` (`HA_LONG_LIVED_TOKEN_FILE=%d/ha-token`), so
-  `DynamicUser` never needs to read /run/secrets. Its OTA LAN IP is pinned on dafoltop because
-  upstream auto-detection only skips docker/br-/veth/tun/wg interfaces.
+  `DynamicUser` never needs to read /run/secrets. Its in-app OTA button needs device
+  firmware ≥1.4.x (it calls the ESPHome `set_update_manifest` action). Its OTA LAN IP is
+  pinned on dafoltop because upstream auto-detection only skips docker/br-/veth/tun/wg
+  interfaces.
 - **OIDC for native NixOS services**: Authelia (and lldap) are nps stacks in daf's *home-manager*
   config, so services that run as NixOS services can't be wired up by `nps.stacks.<name>.oidc`.
   Home Assistant and Immich are registered by hand instead: the client, claims/authorization

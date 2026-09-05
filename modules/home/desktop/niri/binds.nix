@@ -71,7 +71,11 @@ lib.mkForce {
   "Mod+Z".action = switch-preset-column-width;
   # A single tap of the physical Super key emits F23 (via the kanata @met
   # tap-hold overload); hold/combo stays Super. So tap Super -> overview.
-  "F23".action = toggle-overview;
+  # repeat = false: a held F23 must never auto-repeat the toggle.
+  "F23" = {
+    repeat = false;
+    action = toggle-overview;
+  };
   # Super + the mouse forward (front side) button also toggles the overview.
   "Mod+MouseForward".action = toggle-overview;
 

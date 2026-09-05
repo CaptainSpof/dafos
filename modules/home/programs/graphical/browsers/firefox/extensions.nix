@@ -17,6 +17,7 @@ in
       packages = mkOpt (with lib.types; listOf package) (with pkgs.firefoxAddons; [
         adnauseam
         adguard-adblocker
+        alternate-player-for-twitch
         # adaptive-tab-bar-colour
         # absolute-enable-right-click
         # auto-tab-discard
