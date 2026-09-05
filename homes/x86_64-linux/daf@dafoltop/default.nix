@@ -57,6 +57,7 @@ in
       glance = enabled;
       immich-kiosk = enabled;
       it-tools = enabled;
+      kaneo = enabled;
       lldap = enabled;
       norish = {
         enable = true;

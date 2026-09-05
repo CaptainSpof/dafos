@@ -40,6 +40,7 @@ let
         bar-assistant.oidc.userGroup
         grimmory.oidc.userGroup
         donetick.oidc.userGroup
+        kaneo.oidc.userGroup
         karakeep.oidc.userGroup
         norish.oidc.userGroup
         papra.oidc.userGroup
