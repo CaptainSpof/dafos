@@ -48,6 +48,11 @@ in
                 type = "reddit";
                 subreddit = "selfhosted";
                 collapse-after = 3;
+                # Reddit resets glance's connections when it refreshes its loid
+                # cookie, and the refresh is synchronous, so whichever page load
+                # hits an expired cache stalls for ~1s. Default TTL made that
+                # roughly every 40 minutes.
+                cache = "6h";
               }
             ];
           };
