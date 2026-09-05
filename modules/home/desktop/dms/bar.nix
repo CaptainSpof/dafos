@@ -25,6 +25,8 @@
       clickThrough = false;
       maximizeDetection = true;
       openOnOverview = false;
+      attachToScreenEdge = false;
+      hoverPopouts = false;
 
       leftWidgets = [
         "launcherButton"
@@ -34,8 +36,16 @@
           enabled = true;
           focusedWindowCompactMode = true;
         }
+        {
+          id = "dankPomodoroTimer";
+          enabled = true;
+        }
       ];
       centerWidgets = [
+        {
+          id = "timeManager";
+          enabled = false;
+        }
         {
           id = "music";
           enabled = true;
@@ -100,7 +110,7 @@
 
       # Appearance
       noBackground = true;
-      transparency = 0.8;
+      transparency = 0.75;
       squareCorners = false;
       borderEnabled = false;
       borderColor = "surfaceText";
@@ -114,7 +124,7 @@
       shadowOpacity = 40;
       widgetOutlineEnabled = false;
       widgetPadding = 5;
-      widgetTransparency = 0.75;
+      widgetTransparency = 0.8;
     }
 
     {
@@ -123,11 +133,16 @@
       enabled = true;
       visible = true;
       position = 3; # right
-      # Pinned to the laptop's internal panel; only present on daftop.
+      # Pinned to specific panels: daftop's internal display and dafbox's LG
+      # monitor. Hosts without either of those never show this bar.
       screenPreferences = [
         {
           name = "eDP-1";
           model = "0x8A98";
+        }
+        {
+          name = "HDMI-A-1";
+          model = "LG IPS FULLHD";
         }
       ];
       showOnLastDisplay = false;
@@ -136,7 +151,8 @@
       autoHide = true;
       autoHideDelay = 250;
       maximizeDetection = false;
-      openOnOverview = true;
+      openOnOverview = false;
+      attachToScreenEdge = false;
       scrollEnabled = false;
 
       leftWidgets = [ ];
@@ -265,6 +281,11 @@
       width = 100;
     }
     {
+      id = "plugin_dankKDEConnect";
+      enabled = true;
+      width = 100;
+    }
+    {
       id = "nightMode";
       enabled = true;
       width = 50;
@@ -277,27 +298,17 @@
     {
       id = "idleInhibitor";
       enabled = true;
+      width = 25;
+    }
+    {
+      id = "colorPicker";
+      enabled = true;
       width = 50;
     }
     {
       id = "doNotDisturb";
       enabled = true;
-      width = 50;
-    }
-    {
-      id = "colorPicker";
-      enabled = true;
-      width = 100;
-    }
-    {
-      id = "battery";
-      enabled = true;
-      width = 100;
-    }
-    {
-      id = "plugin_dankKDEConnect";
-      enabled = true;
-      width = 100;
+      width = 25;
     }
   ];
 }

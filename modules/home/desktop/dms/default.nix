@@ -54,8 +54,6 @@ let
   # location instead of DMS's IP-based auto location.
   userLocation = config.${namespace}.user.location;
 
-  # DMS settings baseline. The bulky structural config (widgets, desktop widget
-  # instances) lives in the ./settings.json snapshot;
   dmsSettings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
     barConfigs = cfg.bar.configs;
     controlCenterWidgets = cfg.bar.controlCenterWidgets;
