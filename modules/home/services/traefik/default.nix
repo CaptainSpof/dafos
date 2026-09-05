@@ -72,6 +72,13 @@ in
           # nps ships `private` as an RFC1918-only ipAllowList; the tailnet lives in
           # CGNAT space, so without this our own tailscale clients get a 403.
           ipwhitelist-internal.ipAllowList.sourceRange = lib.mkAfter [ "100.64.0.0/10" ];
+
+          # Traefik was returning no content-encoding at all, even when the client
+          # offered gzip/br: the glance dashboard shipped 72kB of JSON per page
+          # load that gzips to 6kB. mkBefore puts this outermost so it wraps the
+          # response from the rest of the chain.
+          compress.compress = { };
+          public.chain.middlewares = lib.mkBefore [ "compress" ];
         };
 
         services = {
