@@ -69,7 +69,21 @@ in
 
         kcminputrc.Mouse.cursorTheme = "breeze_cursors";
 
-        kdedrc."Module-gtkconfig".autoload = false;
+        # kded6 still opens its module config as *kded5rc* (KConfig derives the
+        # name from the app name, which upstream left at "kded5" for config
+        # compatibility) — the obvious-looking "kdedrc"/"kded6rc" are read by
+        # nobody, so writing there silently does nothing.
+        #
+        # gtkconfig must stay off: any KDE/KIO app (gwenview, Dolphin, Ark, ...)
+        # D-Bus-activates kded6, whose gtkconfig module then rewrites
+        # ~/.gtkrc-2.0, ~/.config/xsettingsd/xsettingsd.conf and — the fatal one
+        # — ~/.config/gtk-3.0/{gtk,colors}.css. kde-gtk-config's
+        # libcolorreload-gtk-module.so puts a GFileMonitor on colors.css, and
+        # once GTK has dlclosed that module the monitor is still armed, so the
+        # rewrite dispatches into unmapped memory and SIGSEGVs *every* GTK app
+        # at once (Firefox, emacs-pgtk, xdg-desktop-portal-gtk). It also
+        # clobbers the matugen-generated gtk.css that DMS owns here.
+        kded5rc."Module-gtkconfig".autoload = false;
 
         # Darkly widget-style settings (the "Application Style -> Darkly ->
         # Configure" page). Captured from ~/.config/darklyrc; plasma-manager
