@@ -65,26 +65,8 @@ in
             always-center-single-column = true;
             empty-workspace-above-first = true;
 
-            # fog of war
-            focus-ring = {
-              enable = true;
-              width = 1.5;
-              active.gradient = {
-                from = "red";
-                to = "orange";
-                angle = 45;
-                in' = "oklch shorter hue";
-              };
-            };
-
-            border = {
-              width = 1;
-              active.gradient = {
-                from = "red";
-                to = "orange";
-                in' = "oklch shorter hue";
-              };
-            };
+            focus-ring.enable = true;
+            border.enable = true;
 
             shadow.enable = true;
 
