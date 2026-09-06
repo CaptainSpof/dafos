@@ -56,8 +56,13 @@ unavailable.
 
 - The database image must ship `pgvector`; a stock `postgres` image is missing
   the `vector` extension the migrations need (`uuid-ossp` and `pg_trgm` too).
-- `libraries` defaults to the same trees Grimmory serves. Both apps get them
-  read-write, so keep metadata write-back enabled in only one of the two.
+- `libraries` points at `/mnt/bookorbit/{books,livres}`, a **copy** of
+  `/mnt/grimmory/{books,livres}` taken on 2026-09-06. Both apps write to their
+  libraries — metadata write-back, kepubify conversions, file renaming — so
+  sharing one tree has them undoing each other's work. The consequence is that
+  the two copies drift: a book added to one is not in the other, and roughly 2
+  GB is stored twice. Audiobooks are still shared, since `/mnt/audio` is the
+  Freebox CIFS share and nothing here writes to it.
 - The three `*-encryption-key` secrets protect credentials BookOrbit stores in
   its own database (SMTP, migration sources, download clients). They must exist
   before the first credential is saved — adding one later leaves what is already

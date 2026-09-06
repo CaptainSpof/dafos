@@ -68,11 +68,17 @@ in
     libraries = mkOption {
       type = types.attrsOf types.str;
       default = {
-        # Same trees Grimmory serves. Both apps get them read-write, so keep
-        # metadata writeback (Settings => File naming) off in one of the two
-        # unless you want them renaming each other's files.
-        livres = "/mnt/grimmory/livres:/livres";
-        books = "/mnt/grimmory/books:/books";
+        # `/mnt/bookorbit` is a copy of `/mnt/grimmory`, not the same tree:
+        # both apps write to their libraries (metadata write-back, kepubify
+        # conversions, file renaming), so pointing them at one directory has
+        # them undoing each other's work. Duplicated on 2026-09-06; the two
+        # sides drift from here on, and new acquisitions have to be dropped
+        # into whichever one should have them.
+        livres = "/mnt/bookorbit/livres:/livres";
+        books = "/mnt/bookorbit/books:/books";
+
+        # Audiobooks stay shared: `/mnt/audio` is the Freebox CIFS share, and
+        # nothing in this fleet writes to it.
         audiobooks = "/mnt/audio/Audiobooks:/audiobooks";
       };
       description = ''
