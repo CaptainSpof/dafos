@@ -173,6 +173,13 @@ in
           name = "immich_quota";
           value_type = "integer";
         };
+
+        # Feeds the standard `picture` claim of the `profile` scope, which apps
+        # like Immich fetch to set the user's profile image. This is a URL, not
+        # the jpeg itself -- LLDAP's binary `avatar` attribute is unusable here,
+        # so the lldap module serves the same file over HTTP and stores its
+        # address in the `picture` attribute.
+        authentication_backend.ldap.attributes.picture = "picture";
       };
     };
   };
