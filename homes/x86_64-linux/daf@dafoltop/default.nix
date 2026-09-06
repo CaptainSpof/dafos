@@ -50,6 +50,7 @@ in
 
       authelia = enabled;
       bar-assistant = enabled;
+      bookorbit = enabled;
       grimmory = enabled;
       calibre = enabled;
       donetick = enabled;

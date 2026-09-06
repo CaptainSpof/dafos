@@ -55,6 +55,14 @@ let
   avatarFileUrl = id: "file://${avatarDir}/${id}.jpg";
   avatarUrl = id: "https://${cfg.avatarSubDomain}.${cfg.domain}/${id}.jpg";
 
+  # BookOrbit has no nps stack, so its group name lives on the dafos module
+  # rather than under `nps.stacks`. Guarded on the module being on: LLDAP's
+  # bootstrap would otherwise put users in a group nothing declares.
+  bookorbit = config.${namespace}.services.bookorbit;
+  bookorbitGroups = lib.optional (
+    bookorbit.enable && bookorbit.oidc.registerClient
+  ) bookorbit.oidc.userGroup;
+
   users = with config.nps.stacks; {
     readonly = {
       id = "readonly";
@@ -88,7 +96,8 @@ let
         reactive-resume.oidc.userGroup
         streaming.qui.oidc.userGroup
         sparky-fitness.oidc.userGroup
-      ];
+      ]
+      ++ bookorbitGroups;
     };
     cedric = {
       id = "cedric";
@@ -105,7 +114,8 @@ let
         papra.oidc.userGroup
         donetick.oidc.userGroup
         norish.oidc.userGroup
-      ];
+      ]
+      ++ bookorbitGroups;
     };
     joaquim = {
       id = "joaquim";
@@ -119,7 +129,8 @@ let
         streaming.qui.oidc.userGroup
         grimmory.oidc.userGroup
         norish.oidc.userGroup
-      ];
+      ]
+      ++ bookorbitGroups;
     };
     test = {
       id = "test";
@@ -132,7 +143,8 @@ let
         grimmory.oidc.userGroup
         papra.oidc.userGroup
         donetick.oidc.userGroup
-      ];
+      ]
+      ++ bookorbitGroups;
     };
   };
 
