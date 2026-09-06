@@ -16,6 +16,15 @@ let
 
   cfg = config.${namespace}.services.lldap;
 
+  # LLDAP's bootstrap script reads avatars from a file *inside* the container, so
+  # every avatar declared here is bind-mounted from the store into `avatarDir`
+  # and referenced by the user's `avatar_file` attribute.
+  avatarDir = "/bootstrap/avatars";
+  avatars = {
+    daf = ./avatars/daf.jpg;
+  };
+  avatarFile = id: "${avatarDir}/${id}.jpg";
+
   users = with config.nps.stacks; {
     readonly = {
       id = "readonly";
@@ -29,6 +38,7 @@ let
       displayName = "daf";
       password_file = config.sops.secrets."lldap/users/daf-password".path;
       email = "dafonseca.cedric@gmail.com";
+      avatar_file = avatarFile "daf";
       groups = [
         lldap.adminGroup
         streaming.jellyfin.oidc.adminGroup
@@ -118,6 +128,11 @@ in
       "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
       "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
     };
+
+    # Bind-mount the avatar jpegs the bootstrap script points `avatar_file` at.
+    services.podman.containers.lldap.volumeMap = lib.mapAttrs' (
+      id: src: lib.nameValuePair "avatar-${id}" "${src}:${avatarFile id}:ro"
+    ) avatars;
 
     nps.stacks = {
       lldap = {
