@@ -18,6 +18,7 @@ in
     aws.enable = mkBoolOpt false "Whether or not to enable aws development configuration.";
     postman.enable = mkBoolOpt false "Whether or not to enable postman configuration.";
     docker.enable = mkBoolOpt false "Whether or not to enable docker development configuration.";
+    podman.enable = mkBoolOpt false "Whether or not to enable podman development configuration.";
     kubernetes.enable = mkBoolOpt false "Whether or not to enable kubernetes development configuration.";
     nix.enable = mkBoolOpt true "Whether or not to enable nix development configuration.";
     sql.enable = mkBoolOpt false "Whether or not to enable sql development configuration.";
@@ -28,7 +29,6 @@ in
       packages =
         with pkgs;
         [
-          jq
           jqp
           github-desktop
           tokei # need to know how many lines of poorly written code you typed ? 🦀
@@ -74,6 +74,7 @@ in
             lazydocker.enable = cfg.docker.enable;
             lazygit = enabled;
             node = disabled;
+            podman-tui.enable = cfg.podman.enable;
             python = disabled;
             tealdeer = enabled;
           };

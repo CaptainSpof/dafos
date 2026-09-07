@@ -40,6 +40,7 @@ in
 
       terminal = {
         tools = {
+          podman-tui = enabled;
           ssh = enabled;
         };
       };

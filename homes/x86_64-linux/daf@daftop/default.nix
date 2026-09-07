@@ -79,6 +79,7 @@ in
       development = {
         enable = true;
         aws = disabled;
+        podman = enabled;
       };
 
       games = enabled;

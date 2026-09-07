@@ -43,6 +43,7 @@ in
       file
       findutils
       fzf
+      jq
       skim
       killall
       lnav

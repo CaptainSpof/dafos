@@ -103,6 +103,7 @@ in
       development = {
         enable = true;
         aws.enable = true;
+        podman.enable = true;
       };
 
       games = {
