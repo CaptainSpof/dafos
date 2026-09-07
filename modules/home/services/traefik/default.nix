@@ -79,6 +79,23 @@ in
           # response from the rest of the chain.
           compress.compress = { };
           public.chain.middlewares = lib.mkBefore [ "compress" ];
+
+          # nps defaults this to average/burst 100, which is below what a
+          # code-split SPA needs for a *cold* load: BookOrbit ships one chunk
+          # per lucide icon and asks for 181 files at once, so everything past
+          # the 100th came back 429. The failure is unrecognisable from the
+          # browser -- Traefik's 429 carries no Content-Type and
+          # `security-headers` sets `X-Content-Type-Options: nosniff`, so
+          # Firefox rejects each module script with `disallowed MIME type ("")`
+          # and the page just renders black. Only ever seen with an empty cache
+          # (private window, first visit), which is what makes it look random.
+          #
+          # The bucket is per client IP (Traefik's default sourceCriterion), so
+          # this bounds one browser's page load, not aggregate traffic.
+          public-ratelimit.rateLimit = {
+            average = lib.mkForce 250;
+            burst = lib.mkForce 500;
+          };
         };
 
         services = {
