@@ -19,6 +19,19 @@ let
   # splits the package set the day HA moves to a new interpreter.
   hassPythonPkgs = pkgs.home-assistant.python3Packages;
 
+  # tapo_control 7.1.27 pins `pytapo==3.4.19`; nixpkgs still ships 3.4.18, so
+  # manifestRequirementsCheckHook fails the component build. 3.4.19 has the same
+  # dependency set as 3.4.18 (requests, urllib3, pycryptodome, rtp, python-kasa),
+  # so a version+src bump is enough. Drop this once nixpkgs catches up.
+  pytapo = hassPythonPkgs.pytapo.overrideAttrs (old: rec {
+    version = "3.4.19";
+    src = pkgs.fetchPypi {
+      inherit (old) pname;
+      inherit version;
+      hash = "sha256-iwF7f5pwcYFBw6mPQw2YgRIcElqrcTMpzGCNJsttJY8=";
+    };
+  });
+
 in
 {
   options.${namespace}.services.home-assistant = {
@@ -176,22 +189,20 @@ in
           (pkgs.buildHomeAssistantComponent {
             owner = "JurajNyiri";
             domain = "tapo_control";
-            # inputs.hass-tapo-control is unpinned, so keep this in sync with
-            # the version in the source's manifest.json after an input bump.
-            version = "7.1.25";
+            # Keep in sync with the tag `inputs.hass-tapo-control` is pinned to
+            # in flake.nix (and with the version in its manifest.json).
+            version = "7.1.27";
             src = inputs.hass-tapo-control;
             dontConfigure = true;
             dontBuild = true;
             doCheck = false;
 
-            # manifest.json pins `pytapo==3.4.18`, which nixpkgs currently
-            # ships; if an upstream bump moves that pin ahead of nixpkgs,
-            # manifestRequirementsCheckHook will fail the build and an
-            # overrideAttrs on pytapo goes here.
-            propagatedBuildInputs = with hassPythonPkgs; [
+            # `pytapo` here is the let-bound 3.4.19 override, not
+            # hassPythonPkgs.pytapo — see the comment on it above.
+            propagatedBuildInputs = [
               pytapo
-              aiohttp
-              requests
+              hassPythonPkgs.aiohttp
+              hassPythonPkgs.requests
             ];
           })
           # Companion integration for the lovelace-idf-mobilite card (config-flow,
