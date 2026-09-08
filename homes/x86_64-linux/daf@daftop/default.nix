@@ -9,6 +9,26 @@
 
 let
   inherit (lib.${namespace}) enabled disabled;
+
+  # flake-firefox-nightly still advertises the pre-rename `ffmpegSupport`
+  # passthru, but nixpkgs' firefox wrapper now reads `withFFmpeg` — so ffmpeg
+  # gets dropped from the wrapper's LD_LIBRARY_PATH and Firefox loses H.264/AAC
+  # ("your browser may not support the required H.264 or AAC codecs" on every
+  # Twitch stream). The bundled ffvpx is built with
+  # `--enable-decoder='vp8,vp9,mp3,flac,av1'`, so there is no fallback decoder.
+  # Re-wrap exactly the way the flake does, with the flag under its new name.
+  # Drop this once flake-firefox-nightly's package.nix renames the passthru.
+  firefox-nightly-bin =
+    let
+      unwrapped =
+        inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin.unwrapped.overrideAttrs
+          (old: {
+            passthru = old.passthru // {
+              withFFmpeg = old.passthru.ffmpegSupport;
+            };
+          });
+    in
+    pkgs.wrapFirefox unwrapped { pname = "${unwrapped.binaryName}-bin"; };
 in
 {
   dafos = {
@@ -38,7 +58,7 @@ in
         browsers = {
           firefox = {
             enable = true;
-            package = inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
+            package = firefox-nightly-bin;
             # package = pkgs.firefox-beta;
             gpuAcceleration = true;
             hardwareDecoding = true;

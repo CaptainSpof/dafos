@@ -8,7 +8,7 @@
 
 let
   inherit (lib) mkEnableOption mkIf types;
-  inherit (lib.${namespace}) enabled disabled;
+  inherit (lib.${namespace}) enabled;
   inherit (lib.${namespace}) mkOpt;
 
   cfg = config.${namespace}.services.streaming;
@@ -36,96 +36,105 @@ let
     </BrandingOptions>
   '';
 in
-  {
+{
 
-    options.${namespace}.services.streaming = {
-      enable = mkEnableOption "Whether or not to configure streaming.";
-      base-url = mkOpt types.str "streaming.daftdaf.dev" "The base url";
+  options.${namespace}.services.streaming = {
+    enable = mkEnableOption "Whether or not to configure streaming.";
+    base-url = mkOpt types.str "streaming.daftdaf.dev" "The base url";
+  };
+
+  config = mkIf cfg.enable {
+    sops.secrets = {
+      "qui/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
+      "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
+      "gluetun/wg-pk".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
+      "gluetun/wg-address".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
     };
 
-    config = mkIf cfg.enable {
-      sops.secrets = {
-          "qui/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-          "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-          "gluetun/wg-pk".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-          "gluetun/wg-address".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-      };
+    nps = {
+      externalStorageBaseDir = "/mnt/yahrr";
+      stacks = {
+        streaming = {
+          enable = true;
 
-      nps = {
-        externalStorageBaseDir = "/mnt/yahrr";
-        stacks = {
-          streaming = {
+          containers = {
+            jellyfin = {
+              expose = true;
+              volumes = lib.mkForce [
+                "/mnt/videos/Movies:/movies"
+                "/mnt/videos/Shows:/shows"
+                "${config.nps.storageBaseDir}/streaming/jellyfin:/config"
+                "${brandingXml}:/config/branding.xml"
+              ];
+            };
+            sonarr = {
+              volumes = lib.mkForce [
+                "/mnt/videos/Shows:/media"
+                "/mnt/yahrr:/yahrr"
+                "${config.nps.storageBaseDir}/streaming/sonarr:/config"
+              ];
+            };
+            radarr = {
+              volumes = lib.mkForce [
+                "/mnt/videos/Movies:/media"
+                "/mnt/yahrr:/yahrr"
+                "${config.nps.storageBaseDir}/streaming/radarr:/config"
+              ];
+            };
+          };
+
+          jellyfin = {
             enable = true;
 
-            containers = {
-              gluetun = {
-                ports = ["8888:8888"];
-              };
-              jellyfin = {
-                expose = true;
-	            volumes = lib.mkForce [ 
-	              "/mnt/videos/Movies:/movies"
-	              "/mnt/videos/Shows:/shows"
-                  "${config.nps.storageBaseDir}/streaming/jellyfin:/config"
-                  "${brandingXml}:/config/branding.xml"
-	            ];
-              };
-              qui.expose = true;
-              qbittorrent = {
-	            volumes = lib.mkForce [ 
-	              "/mnt/yahrr:/yahrr"
-                  "${config.nps.storageBaseDir}/streaming/radarr:/config"
-	            ];
-              };
-              sonarr = {
-	            volumes = lib.mkForce [ 
-	              "/mnt/videos/Shows:/media"
-	              "/mnt/yahrr:/yahrr"
-                  "${config.nps.storageBaseDir}/streaming/sonarr:/config"
-	            ];
-              };
-              radarr = {
-	            volumes = lib.mkForce [ 
-	              "/mnt/videos/Movies:/media"
-	              "/mnt/yahrr:/yahrr"
-                  "${config.nps.storageBaseDir}/streaming/radarr:/config"
-	            ];
-              };
-            };
-
-            jellyfin = {
+            oidc = {
               enable = true;
-
-              oidc = {
-                enable = true;
-                clientSecretFile = config.sops.secrets."jellyfin/authelia/client-secret".path;
-              };
+              clientSecretFile = config.sops.secrets."jellyfin/authelia/client-secret".path;
             };
+          };
+          bazarr = enabled;
+          profilarr = enabled;
+          radarr = enabled;
+          seerr = enabled;
+          sonarr = enabled;
+        };
+
+        # nps e44f684 split gluetun/qbittorrent/qui out of the streaming stack
+        # into a standalone `qbittorrent` stack (and prowlarr + flaresolverr
+        # into `prowlarr`). `streaming.useQbittorrent` / `.useProwlarr` default
+        # to true and enable those stacks on the streaming network, so only
+        # their settings move here.
+        qbittorrent = {
+          containers = {
             gluetun = {
-              enable = true;
-
-              vpnProvider = "protonvpn";
-              wireguardPrivateKeyFile = config.sops.secrets."gluetun/wg-pk".path;
-              wireguardPresharedKeyFile = pkgs.writeText "wg-psk-empty" "";
-              wireguardAddressesFile = config.sops.secrets."gluetun/wg-address".path;
+              ports = [ "8888:8888" ];
             };
-            qbittorrent = enabled;
-            qui = {
-              enable = true;
-
-              oidc = {
-                enable = true;
-                clientSecretFile = config.sops.secrets."qui/authelia/client-secret".path;
-              };
+            qbittorrent = {
+              volumes = lib.mkForce [
+                "/mnt/yahrr:/yahrr"
+                "${config.nps.storageBaseDir}/streaming/radarr:/config"
+              ];
             };
-            bazarr = enabled;
-            prowlarr = enabled;
-            profilarr = enabled;
-            radarr = enabled;
-            seerr = enabled;
-            sonarr = enabled;
+            qui.expose = true;
+          };
+
+          gluetun = {
+            enable = true;
+
+            vpnProvider = "protonvpn";
+            wireguardPrivateKeyFile = config.sops.secrets."gluetun/wg-pk".path;
+            wireguardPresharedKeyFile = pkgs.writeText "wg-psk-empty" "";
+            wireguardAddressesFile = config.sops.secrets."gluetun/wg-address".path;
+          };
+          qui = {
+            enable = true;
+
+            oidc = {
+              enable = true;
+              clientSecretFile = config.sops.secrets."qui/authelia/client-secret".path;
+            };
           };
         };
       };
     };
-  }
+  };
+}

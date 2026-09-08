@@ -94,7 +94,7 @@ let
         norish.oidc.userGroup
         papra.oidc.userGroup
         reactive-resume.oidc.userGroup
-        streaming.qui.oidc.userGroup
+        qbittorrent.qui.oidc.userGroup
         sparky-fitness.oidc.userGroup
       ]
       ++ bookorbitGroups;
@@ -109,7 +109,7 @@ let
 
         # No group-based admin access supported yet, just user-roles
         "home-assistant_user"
-        streaming.qui.oidc.userGroup
+        qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
         papra.oidc.userGroup
         donetick.oidc.userGroup
@@ -126,7 +126,7 @@ let
         lldap.adminGroup
 
         # No group-based admin access supported yet, just user-roles
-        streaming.qui.oidc.userGroup
+        qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
         norish.oidc.userGroup
       ]
@@ -139,7 +139,7 @@ let
       email = "test@${cfg.domain}";
       groups = [
         # No group-based admin access supported yet, just user-roles
-        streaming.qui.oidc.userGroup
+        qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
         papra.oidc.userGroup
         donetick.oidc.userGroup
