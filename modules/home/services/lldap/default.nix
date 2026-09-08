@@ -45,13 +45,11 @@ let
   avatarDir = "/bootstrap/avatars";
 
   # `avatar_url` rather than `avatar_file`, even though the file is right there
-  # in the container: nps declares the user submodule's freeform type as a bare
-  # `oneOf` instead of an `attrsOf`, so a user may carry exactly one undeclared
-  # attribute before the module system reports the whole user as defined twice.
-  # `picture` below spends that budget, so the avatar has to travel through a
-  # declared option. The bootstrap script just curls this, and Alpine's curl
-  # keeps the `file` protocol, so it stays a local read with no dependency on
-  # the `avatars` container being up.
+  # in the container: `avatar_file` is not a declared option, and nps' freeform
+  # type for undeclared attributes is unusable (see the `picture` declaration
+  # below). The bootstrap script just curls this, and Alpine's curl keeps the
+  # `file` protocol, so it stays a local read with no dependency on the
+  # `avatars` container being up.
   avatarFileUrl = id: "file://${avatarDir}/${id}.jpg";
   avatarUrl = id: "https://${cfg.avatarSubDomain}.${cfg.domain}/${id}.jpg";
 
@@ -150,6 +148,29 @@ let
 
 in
 {
+  # nps declares the bootstrap user submodule's `freeformType` as a bare
+  # `oneOf [ str int bool ]` instead of `attrsOf (oneOf ...)`, so any custom
+  # attribute is type-checked as if the whole freeform bucket were one scalar.
+  # That is a warning today ("neither a value of type `string or signed integer`
+  # nor `boolean`") and an error in a future nixpkgs, and it is also why only one
+  # undeclared attribute can be set before the user merges wrongly.
+  #
+  # Declaring `picture` as a real option keeps it out of the freeform bucket
+  # entirely, which fixes both. nps strips nulls before generating the bootstrap
+  # JSON (`finalUserVolumes`), so users without an avatar are unaffected. Drop
+  # this once Tarow/nix-podman-stacks declares the freeform type correctly.
+  options.nps.stacks.lldap.bootstrap.users = mkOption {
+    type = types.attrsOf (
+      types.submodule {
+        options.picture = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "URL of the user's avatar, mapped to Authelia's `picture` claim.";
+        };
+      }
+    );
+  };
+
   options.${namespace}.services.lldap = {
     enable = mkEnableOption "Whether or not to configure lldap.";
     domain = mkOpt types.str "daftdaf.dev" "The base domain url";
