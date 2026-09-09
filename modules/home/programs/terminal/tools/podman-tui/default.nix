@@ -9,6 +9,7 @@
 let
   inherit (lib) mkIf;
   inherit (lib.${namespace}) mkBoolOpt;
+  inherit (config.${namespace}.programs.terminal.shells) fish;
 
   cfg = config.${namespace}.programs.terminal.tools.podman-tui;
 in
@@ -36,6 +37,21 @@ in
         ppsa = "podman ps -a";
         psp = "podman system prune --all";
         pt = "podman-tui";
+      };
+    };
+
+    # podman has no subcommand aliases of its own and a shell alias only ever
+    # matches the first word, so `podman psa` has to be an abbreviation scoped
+    # to the podman command: typing it expands in place to the full `ps` with
+    # the wide table format.
+    programs.fish = mkIf fish.enable {
+      shellAbbrs = {
+        pdm = "podman";
+        pss = {
+          position = "anywhere";
+          command = "podman";
+          expansion = ''ps --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'';
+        };
       };
     };
   };

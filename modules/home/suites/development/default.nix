@@ -45,7 +45,8 @@ in
           dbeaver-bin
           mysql-workbench
         ]
-        ++ lib.optionals cfg.postman.enable [ postman ];
+        ++ lib.optionals cfg.postman.enable [ postman ]
+        ++ lib.optionals cfg.podman.enable [ yaml-language-server ];
 
       # shellAliases = {
       #   prefetch-sri = "nix store prefetch-file $1";

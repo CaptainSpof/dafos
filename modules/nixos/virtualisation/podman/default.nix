@@ -37,6 +37,14 @@ in
       # This option disables NixOS Containers, leaving OCI Containers available.
       boot.enableContainers = false;
 
+      # Rootless podman needs a subordinate id range. Without /etc/subuid and
+      # /etc/subgid the user namespace maps exactly one id (container 0 -> the
+      # user), so every image file owned by anyone else is stored as 65534 and
+      # crun fails with `fchownat: Invalid argument` as soon as a container has
+      # to reproduce that ownership — which is what breaks minikube's kicbase,
+      # whose /run is a tmpcopyup tmpfs holding a non-root /run/dbus/containers.
+      users.users.${config.${namespace}.user.name}.autoSubUidGidRange = true;
+
       environment.systemPackages = with pkgs; [
         compose2nix
         podman-compose
