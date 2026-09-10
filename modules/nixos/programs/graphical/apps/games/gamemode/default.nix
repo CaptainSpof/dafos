@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   namespace,
@@ -11,7 +12,9 @@ let
 
   cfg = config.${namespace}.programs.graphical.apps.games.gamemode;
 
-  dms = getExe' pkgs.${namespace}.dms-shell "dms";
+  dms =
+    getExe' inputs.dank-material-shell.packages.${pkgs.stdenv.hostPlatform.system}.dms-shell
+      "dms";
 
   # `dms ipc` shells out to `qs` (the Quickshell CLI) to reach the running
   # shell's IPC socket. gamemoded runs these scripts with a minimal PATH that

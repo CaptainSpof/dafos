@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   namespace,
   pkgs,
@@ -9,6 +10,8 @@
 let
   inherit (lib) mkIf;
   inherit (lib.${namespace}) mkBoolOpt mkOpt;
+
+  dmsShell = inputs.dank-material-shell.packages.${pkgs.stdenv.hostPlatform.system}.dms-shell;
 
   matugenConfigDir = "${config.xdg.configHome}/matugen";
 
@@ -325,9 +328,7 @@ in
     programs.dank-material-shell = {
       enable = true;
 
-      # Upstream flake package, minus two dangling agent-doc symlinks that fail
-      # nixpkgs' noBrokenSymlinks fixup hook (see packages/dms-shell).
-      package = pkgs.${namespace}.dms-shell;
+      package = dmsShell;
 
       # Quickshell wrapped with the QtWebSockets QML module (see let binding) so
       # the Home Assistant plugin can `import QtWebSockets`.
