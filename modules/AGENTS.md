@@ -46,11 +46,6 @@ Host and home files mostly toggle suites and override specifics with
 `lib.mkForce`. When answering "is X enabled on host Y", follow that chain — the
 host file alone will not tell you.
 
-## Pins
-
-- `pnpm-10.29.2` sits in `permittedInsecurePackages`, required after a vicinae
-  bump pulled it in. Remove it when vicinae stops needing it, not before.
-
 ## File layout
 
 Roughly 200 lines, or two independently owned programs in one file, is a signal
