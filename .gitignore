@@ -12,8 +12,10 @@ repl-result-out
 # A useful artifact when working with configuration documentation
 options.json
 
-# Claude Code local state and worktrees
-.claude/
+# Claude Code local state. Project settings, skills and agents under .claude/
+# are tracked on purpose; only machine-local state is ignored.
+.claude/settings.local.json
+.claude/worktrees/
 
 # backup stuff
 *.bak

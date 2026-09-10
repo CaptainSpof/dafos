@@ -1,0 +1,48 @@
+{
+	"$schema": "https://json.schemastore.org/claude-code-settings.json",
+	"permissions": {
+		"allow": [
+			"mcp__nixos__nix",
+			"Bash(nix eval:*)",
+			"Bash(nix build:*)",
+			"Bash(nix flake metadata:*)",
+			"Bash(nix flake show:*)",
+			"Bash(nix flake check:*)",
+			"Bash(nix derivation show:*)",
+			"Bash(nix path-info:*)",
+			"Bash(nix why-depends:*)",
+			"Bash(nix search:*)",
+			"Bash(nix fmt:*)",
+			"Bash(nixos-option:*)",
+			"Bash(rg:*)",
+			"Bash(fd:*)",
+			"Bash(git status:*)",
+			"Bash(git diff:*)",
+			"Bash(git log:*)",
+			"Bash(git show:*)",
+			"Bash(git blame:*)",
+			"Bash(systemctl status:*)",
+			"Bash(systemctl list-units:*)",
+			"Bash(journalctl:*)",
+			"WebFetch(domain:github.com)",
+			"WebFetch(domain:search.nixos.org)",
+			"WebFetch(domain:wiki.nixos.org)",
+			"WebFetch(domain:home-manager-options.extranix.com)"
+		],
+		"deny": ["Write(./secrets/**)", "Edit(./secrets/**)"]
+	},
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-changed-file.sh",
+						"timeout": 120
+					}
+				]
+			}
+		]
+	}
+}
