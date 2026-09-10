@@ -2,27 +2,12 @@
   description = "Here lies my shipwrecks. I mean fleet of hosts.";
 
   inputs = {
-    # NixPkgs (nixos-25.05)
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
-
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     # nixpkgs.url = "github:K900/nixpkgs/plasma-6.4";
-
-    # NixPkgs Master
-    nixpkgs-master.url = "github:nixos/nixpkgs";
-
-    # NixPkgs Staging
-    nixpkgs-staging.url = "github:nixos/nixpkgs/staging";
 
     # Home Manager
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Nix User Repository (master)
-    nur = {
-      url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -41,17 +26,8 @@
       };
     };
 
-    # Flake Utils
-    flake-utils.url = "github:numtide/flake-utils";
-
     # Hardware Configuration
     nixos-hardware.url = "github:nixos/nixos-hardware";
-
-    # Generate System Images
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     # Snowfall Lib
     snowfall-lib = {
@@ -65,22 +41,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Pinned to 350668e (not tracking main): the very next commit, 7007897
-    # ("Update flake.lock", 2026-07-01), shipped with an empty refs.nix, which
-    # is a nix file and breaks eval ("syntax error, unexpected end of file").
-    # 350668e is the last known-good commit (2026-06-30). Unpin back to
-    # `github:epireyn/niri-flake` once upstream fixes it.
-    niri.url = "github:epireyn/niri-flake/350668e";
-
-    niri-switch = {
-      url = "github:Kiki-Bouba-Team/niri-switch";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    socle = {
-      url = "github:dvdjv/socle";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    niri.url = "github:epireyn/niri-flake";
 
     # Sonora — native music streaming client (Spotify/YouTube Music/local)
     sonora = {
@@ -96,12 +57,6 @@
 
     nix-gaming = {
       url = "github:fufexan/nix-gaming";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Nuenv
-    nuenv = {
-      url = "github:DeterminateSystems/nuenv";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -259,7 +214,6 @@
           # "dotnet-sdk-6.0.428"
           # "qtwebengine-5.15.19"
           # "olm-3.2.16"
-          "electron-40.10.5"
         ];
       };
 
@@ -267,8 +221,6 @@
         claude-desktop.overlays.default
         emacs-overlay.overlays.default
         niri.overlays.niri
-        nuenv.overlays.default
-        nur.overlays.default
         nix-firefox-addons.overlays.default
       ];
 

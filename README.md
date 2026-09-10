@@ -27,7 +27,7 @@
 - **One formatter to rule them all.** [`treefmt-nix`](https://github.com/numtide/treefmt-nix) wires up nixfmt, biome, ruff, rustfmt, shfmt, stylua, statix, deadnix, and friends.
 - **Gaming.** [`nix-gaming`](https://github.com/fufexan/nix-gaming) platform optimizations.
 - **Multi-arch deploys.** `x86_64-linux`, `aarch64-linux`, and a VirtualBox target — pushed remotely with [`deploy-rs`](https://github.com/serokell/deploy-rs).
-- **Custom bits.** Overlays (Firefox addons, Zen Browser, KDE/GNOME tweaks), in-repo packages (Home Assistant cards, KDE theming, wallpapers, scripts), and project templates.
+- **Custom bits.** Overlays (niri, Ryubing, xwayland-satellite fixes), in-repo packages (Home Assistant cards, KDE theming, wallpapers, scripts), and project templates.
 
 ## Hosts
 
