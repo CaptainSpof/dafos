@@ -17,7 +17,7 @@
 
 ## About
 
-**dafos** ("Here lies my shipwrecks. I mean fleet of hosts.") is my personal fleet of NixOS and Home Manager configurations. Everything is declarative, managed via Nix Flakes, and laid out using [Snowfall Lib](https://github.com/snowfallorg/lib) so hosts, users, modules, packages, and overlays each live where you'd expect.
+**dafos** is my personal fleet of NixOS and Home Manager configurations. Everything is declarative, managed via Nix Flakes, and laid out using [Snowfall Lib](https://github.com/snowfallorg/lib) so hosts, users, modules, packages, and overlays each live where you'd expect.
 
 ## Features
 
