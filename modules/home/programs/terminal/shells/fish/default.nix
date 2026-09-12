@@ -7,10 +7,39 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf getExe;
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    mkMerge
+    mkAfter
+    getExe
+    ;
   inherit (config.${namespace}.programs.terminal.tools) starship;
 
   cfg = config.${namespace}.programs.terminal.shells.fish;
+
+  # kubectl's own cobra completion, generated at build time. It resolves
+  # `kubectl` from PATH at completion time and embeds no store path, so it adds
+  # nothing to the profile closure and does not put a kubectl on PATH.
+  #
+  # The guard is the reason this is not just the script verbatim: kubectl here
+  # comes from a devenv shell and is absent everywhere else, and the script's
+  # own `2> /dev/null` does not cover fish's command-not-found handler, which
+  # writes straight to the terminal. Without the guard every TAB outside the
+  # devenv prints `kubectl: command not found` six times. Checking `$args[1]`
+  # rather than `kubectl` keeps the `k` wrapper working too. The grep fails the
+  # build if upstream ever moves the anchor line.
+  kubectl-fish-completion =
+    pkgs.runCommand "kubectl-completion.fish"
+      {
+        guard = "    if not command -q $args[1]\n        return\n    end\n";
+        passAsFile = [ "guard" ];
+      }
+      ''
+        ${pkgs.kubectl}/bin/kubectl completion fish \
+          | sed -e "/^    set -l args (commandline -opc)\$/r $guardPath" > $out
+        grep -q 'command -q $args\[1\]' $out
+      '';
 in
 {
   options.${namespace}.programs.terminal.shells.fish = {
@@ -26,41 +55,67 @@ in
           starship init fish | source
         '';
 
-        interactiveShellInit = ''
-          set fzf_history_opts "--bind=ctrl-r:toggle-sort,ctrl-z:ignore"
-          set -a fzf_history_opts "--nth=4.."
-          bind \cr _fzf_search_history # HACK: override CTRL+R binding to the one defined in fzf.fish plugin
-          # fix emacs dumb term
-          if test "$TERM" = "dumb"
-           function fish_title; end
-          end
+        interactiveShellInit = mkMerge [
+          ''
+            set fzf_history_opts "--bind=ctrl-r:toggle-sort,ctrl-z:ignore"
+            set -a fzf_history_opts "--nth=4.."
+            bind \cr _fzf_search_history # HACK: override CTRL+R binding to the one defined in fzf.fish plugin
+            # fix emacs dumb term
+            if test "$TERM" = "dumb"
+             function fish_title; end
+            end
 
-          function vterm_printf;
-              if begin; [  -n "$TMUX" ]  ; and  string match -q -r "screen|tmux" "$TERM"; end
-                  # tell tmux to pass the escape sequences through
-                  printf "\ePtmux;\e\e]%s\007\e\\" "$argv"
-              else if string match -q -- "screen*" "$TERM"
-                  # GNU screen (screen, screen-256color, screen-256color-bce)
-                  printf "\eP\e]%s\007\e\\" "$argv"
-              else
-                  printf "\e]%s\e\\" "$argv"
-              end
-          end
+            function vterm_printf;
+                if begin; [  -n "$TMUX" ]  ; and  string match -q -r "screen|tmux" "$TERM"; end
+                    # tell tmux to pass the escape sequences through
+                    printf "\ePtmux;\e\e]%s\007\e\\" "$argv"
+                else if string match -q -- "screen*" "$TERM"
+                    # GNU screen (screen, screen-256color, screen-256color-bce)
+                    printf "\eP\e]%s\007\e\\" "$argv"
+                else
+                    printf "\e]%s\e\\" "$argv"
+                end
+            end
 
-          function vterm_cmd --description 'Run an Emacs command among the ones been defined in vterm-eval-cmds.'
-              set -l vterm_elisp ()
-              for arg in $argv
-                  set -a vterm_elisp (printf '"%s" ' (string replace -a -r '([\\\\"])' '\\\\\\\\$1' $arg))
-              end
-              vterm_printf '51;E'(string join "" $vterm_elisp)
-          end
+            function vterm_cmd --description 'Run an Emacs command among the ones been defined in vterm-eval-cmds.'
+                set -l vterm_elisp ()
+                for arg in $argv
+                    set -a vterm_elisp (printf '"%s" ' (string replace -a -r '([\\\\"])' '\\\\\\\\$1' $arg))
+                end
+                vterm_printf '51;E'(string join "" $vterm_elisp)
+            end
+          ''
 
-          # The bootdev kubernetes devenv shell ships a `k` wrapper around kubectl
-          # on PATH. Teaching fish that it forwards to kubectl is shell state, so
-          # it cannot come from the devenv module; it is inert in directories
-          # where k does not exist.
-          complete -c k -w kubectl
-        '';
+          # mkAfter because home-manager appends carapace's own
+          # `carapace _carapace fish | source` to interactiveShellInit rather
+          # than to conf.d, so it lands *after* this module's block and would
+          # otherwise re-register kubectl and win.
+          (mkAfter ''
+
+            # carapace registers a completer for every command it knows, and its
+            # kubectl spec only offers resource *types* to `logs`, `exec` and
+            # `port-forward` (`pods/`, never the pod names). kubectl's own cobra
+            # completion asks the cluster instead, so hand kubectl back to it.
+            #
+            # This cannot be a completions/kubectl.fish file: fish only autoloads
+            # completions for a command that has none yet, so carapace's eager
+            # registration permanently shadows that directory. It has to run
+            # after carapace, hence the mkAfter above; the script opens with its
+            # own `complete -c kubectl -e`, so from there it wins.
+            #
+            # Its registrations are lazy: they shell out to `kubectl __complete`
+            # only at TAB time, so kubectl need not be on PATH now, which is
+            # what makes a devenv-provided kubectl work.
+            source ${kubectl-fish-completion}
+
+            # The bootdev kubernetes devenv shell ships a `k` wrapper around kubectl
+            # on PATH. Teaching fish that it forwards to kubectl is shell state, so
+            # it cannot come from the devenv module; it is inert in directories
+            # where k does not exist. The wrap picks up whatever kubectl has, so it
+            # inherits the cobra completion registered just above.
+            complete -c k -w kubectl
+          '')
+        ];
 
         functions = {
           fish_greeting = ''
