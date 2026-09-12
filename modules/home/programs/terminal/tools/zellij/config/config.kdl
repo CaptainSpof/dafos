@@ -1,15 +1,25 @@
+// Ergo-L keymap.
+//
+// Ergo-L home row:  a s e n f | l r t i u
+// Directions sit on the right-hand home row, i.e. the physical keys vim uses
+// for hjkl — so they are the same four keys this config used under bépo (ctsr):
+//
+//     l = Left    r = Down    t = Up    i = Right
+//
+// Everything else is an English mnemonic (n = new, s = sync, e = edit,
+// d/u = half page ...) and is layout-independent.
 keybinds clear-defaults=true {
     shared {
-        bind "Alt c" "Alt Left" { MoveFocusOrTab "Left"; }
-        bind "Alt r" "Alt Right" { MoveFocusOrTab "Right"; }
-        bind "Alt t" "Alt Down" { MoveFocus "Down"; }
-        bind "Alt s" "Alt Up" { MoveFocus "Up"; }
+        bind "Alt l" "Alt Left" { MoveFocusOrTab "Left"; }
+        bind "Alt i" "Alt Right" { MoveFocusOrTab "Right"; }
+        bind "Alt r" "Alt Down" { MoveFocus "Down"; }
+        bind "Alt t" "Alt Up" { MoveFocus "Up"; }
 
         bind "Alt /" { NextSwapLayout; }
 
         bind "Alt +" "Alt =" { Resize "Increase"; }
         bind "Alt -" { Resize "Decrease"; }
- 
+
         bind "Alt n" { NewPane; }
         bind "Alt p" { ToggleFloatingPanes; SwitchToMode "normal"; }
     }
@@ -17,8 +27,6 @@ keybinds clear-defaults=true {
         bind "Alt b" { SwitchToMode "tmux"; }
         bind "Alt g" { SwitchToMode "locked"; }
         bind "Alt h" { SwitchToMode "move"; }
-        // bind "Alt p" { SwitchToMode "pane"; }
-        bind "Alt q" { Quit; }
         bind "Ctrl r" { SwitchToMode "resize"; }
         bind "Ctrl s" { SwitchToMode "scroll"; }
         bind "Ctrl t" { SwitchToMode "tab"; }
@@ -38,6 +46,11 @@ keybinds clear-defaults=true {
     normal {
         bind "Ctrl b" { SwitchToMode "tmux"; }
         bind "Alt w" { SwitchToMode "pane"; }
+        // Locked is the only mode worth reaching in one keystroke from a bare
+        // prompt: it is what makes a full-screen TUI (emacs -nw) usable.
+        // Ctrl t/r/s are deliberately NOT bound here — they are transpose-char
+        // and isearch in emacs, and normal mode must let them through.
+        bind "Alt g" { SwitchToMode "locked"; }
     }
     locked {
         bind "Ctrl g" { SwitchToMode "normal"; }
@@ -45,8 +58,8 @@ keybinds clear-defaults=true {
     pane {
         bind "p" { SwitchFocus; }
         bind "n" { NewPane; SwitchToMode "normal"; }
-        bind "k" { NewPane "Down"; SwitchToMode "normal"; }
-        bind "v" { NewPane "Right"; SwitchToMode "normal"; }
+        bind "r" "k" { NewPane "Down"; SwitchToMode "normal"; }
+        bind "i" "v" { NewPane "Right"; SwitchToMode "normal"; }
         bind "z" "f" { ToggleFocusFullscreen; SwitchToMode "normal"; }
         bind "Alt w" "w" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
@@ -55,9 +68,12 @@ keybinds clear-defaults=true {
     }
     tab {
         bind "Ctrl q" { Quit; }
-        bind "c" "Left" "Up" "s" { GoToPreviousTab; }
-        bind "r" "Right" "Down" "t" { GoToNextTab; }
+        bind "l" "Left" "t" "Up" { GoToPreviousTab; }
+        bind "i" "Right" "r" "Down" { GoToNextTab; }
         bind "n" { NewTab; SwitchToMode "normal"; }
+        // `s` is sync only. It used to be bound to GoToPreviousTab as well, and
+        // the later bind silently won — pressing it for "previous tab" turned on
+        // broadcast-to-every-pane instead.
         bind "s" { ToggleActiveSyncTab; SwitchToMode "normal"; }
         bind "1" { GoToTab 1; SwitchToMode "normal"; }
         bind "2" { GoToTab 2; SwitchToMode "normal"; }
@@ -72,47 +88,51 @@ keybinds clear-defaults=true {
     }
     resize {
         bind "Ctrl q" { Quit; }
-        bind "c" "Left" { Resize "Left"; }
-        bind "t" "Down" { Resize "Down"; }
-        bind "s" "Up" { Resize "Up"; }
-        bind "r" "Right" { Resize "Right"; }
+        bind "l" "Left" { Resize "Left"; }
+        bind "r" "Down" { Resize "Down"; }
+        bind "t" "Up" { Resize "Up"; }
+        bind "i" "Right" { Resize "Right"; }
         bind "=" "+" { Resize "Increase"; }
         bind "-" { Resize "Decrease"; }
     }
     move {
         bind "Ctrl q" { Quit; }
         bind "n" "Tab" { MovePane; }
-        bind "c" "Left" { MovePane "Left"; }
-        bind "t" "Down" { MovePane "Down"; }
-        bind "s" "Up" { MovePane "Up"; }
-        bind "r" "Right" { MovePane "Right"; }
+        bind "l" "Left" { MovePane "Left"; }
+        bind "r" "Down" { MovePane "Down"; }
+        bind "t" "Up" { MovePane "Up"; }
+        bind "i" "Right" { MovePane "Right"; }
     }
     scroll {
         bind "e" { EditScrollback; SwitchToMode "normal"; }
         bind "Ctrl g" "Enter" "Esc" { SwitchToMode "normal"; }
-        bind "t" "Down" { ScrollDown; }
-        bind "s" "Up" { ScrollUp; }
-        bind "Alt f" "PageDown" "Right" "l" { PageScrollDown; }
-        bind "Alt b" "PageUp" "Left" "h" { PageScrollUp; }
+        bind "r" "Down" { ScrollDown; }
+        bind "t" "Up" { ScrollUp; }
+        bind "Alt f" "PageDown" "Right" { PageScrollDown; }
+        bind "Alt b" "PageUp" "Left" { PageScrollUp; }
         bind "d" { HalfPageScrollDown; }
         bind "u" { HalfPageScrollUp; }
-        bind "Alt c" { MoveFocus "Left"; }
-        bind "Alt r" { MoveFocus "Right"; }
-        bind "Alt t" { MoveFocus "Down"; }
-        bind "Alt s" { MoveFocus "Up"; }
-        bind "s" { SwitchToMode "entersearch"; SearchInput 0; }
+        bind "Alt l" { MoveFocus "Left"; }
+        bind "Alt i" { MoveFocus "Right"; }
+        bind "Alt r" { MoveFocus "Down"; }
+        bind "Alt t" { MoveFocus "Up"; }
+        // `s` no longer collides with scroll-up: up is `t` on Ergo-L.
+        bind "s" "/" { SwitchToMode "entersearch"; SearchInput 0; }
     }
     session {
+        // Nothing switches into this mode; the session-manager plugin on Alt x
+        // supersedes it. Kept so `shared_among` above stays valid.
         bind "d" { Detach; }
     }
     search {
-        bind "t" "Down" { ScrollDown; }
-        bind "s" "Up" { ScrollUp; }
-        bind "Ctrl f" "PageDown" "Right" "l" { PageScrollDown; }
-        bind "Ctrl b" "PageUp" "Left" "h" { PageScrollUp; }
+        bind "r" "Down" { ScrollDown; }
+        bind "t" "Up" { ScrollUp; }
+        bind "Ctrl f" "PageDown" "Right" { PageScrollDown; }
+        bind "Ctrl b" "PageUp" "Left" { PageScrollUp; }
         bind "d" { HalfPageScrollDown; }
         bind "u" { HalfPageScrollUp; }
-        bind "i" { SwitchToMode "entersearch"; SearchInput 0; }
+        // was `i`, which is now the Right direction key.
+        bind "e" { SwitchToMode "entersearch"; SearchInput 0; }
         bind "n" { Search "Down"; }
         bind "p" { Search "Up"; }
         bind "c" { SearchToggleOption "CaseSensitivity"; }
@@ -123,9 +143,12 @@ keybinds clear-defaults=true {
         bind "Enter" { SwitchToMode "search"; }
         bind "Ctrl c" "Esc" { SearchInput 27; SwitchToMode "scroll"; }
     }
-    renametab { }
+    renametab {
+        bind "Ctrl g" "Enter" "Ctrl c" { SwitchToMode "normal"; }
+        bind "Esc" { UndoRenameTab; SwitchToMode "tab"; }
+    }
     renamepane {
-        bind "Ctrl g" "Enter" "Ctrl c" "Esc" { SwitchToMode "normal"; }
+        bind "Ctrl g" "Enter" "Ctrl c" { SwitchToMode "normal"; }
         bind "Esc" { UndoRenamePane; SwitchToMode "pane"; }
     }
     tmux {

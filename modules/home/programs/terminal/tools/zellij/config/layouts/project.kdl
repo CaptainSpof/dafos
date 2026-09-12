@@ -1,0 +1,41 @@
+// A per-project workspace: editor, logs, shell.
+//
+//     zellij --layout project attach --create <name>
+//
+// No pane sets `cwd`, so every pane inherits the directory zellij was started
+// from — the same layout works for any repo.
+//
+// Panes started from a `command` are respawnable: when the command exits the
+// pane stays and offers Enter to re-run it, instead of disappearing.
+layout {
+    // `default_layout = "compact"` does not apply once an explicit layout is
+    // used, so the compact bar has to be asked for here.
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:compact-bar"
+        }
+        children
+    }
+
+    tab name="edit" focus=true {
+        pane name="emacs" command="emacs" {
+            args "-nw"
+        }
+    }
+
+    tab name="logs" {
+        pane split_direction="horizontal" {
+            pane name="journal" command="journalctl" {
+                args "-f" "-n" "80"
+            }
+            // Swap in whatever the project actually runs, e.g.
+            //   pane name="hass" command="journalctl" { args "-fu" "home-assistant"; }
+            //   pane name="watch" command="nix" { args "flake" "check"; }
+            pane name="scratch"
+        }
+    }
+
+    tab name="shell" {
+        pane
+    }
+}
