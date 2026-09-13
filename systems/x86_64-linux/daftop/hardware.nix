@@ -20,6 +20,27 @@ in
     common-pc-ssd
   ];
 
+  # linux-firmware 20260910 broke DMCUB firmware loading on this Radeon 680M
+  # (Rembrandt/YELLOW_CARP): amdgpu logs "failed to load ucode DMCUB(0x3F)" /
+  # PSP LOAD_IP_FW error and never registers a DRM device, so no compositor
+  # can start at all. Same regression reported upstream:
+  #   https://discuss.cachyos.org/t/regression-linux-firmware-amdgpu-20260910-1-dmcub-fails-to-load-on-amd-radeon-680m-rembrandt-causing-slow-boot-and-visual-glitches/35623
+  # Pin back to the last known-good tag until DMCUB is fixed again for
+  # Rembrandt. Scoped to this host: other GPUs may need the newer firmware.
+  nixpkgs.overlays = [
+    (_final: prev: {
+      linux-firmware = prev.linux-firmware.overrideAttrs (_old: rec {
+        version = "20260810";
+        src = prev.fetchFromGitLab {
+          owner = "kernel-firmware";
+          repo = "linux-firmware";
+          tag = version;
+          hash = "sha256-P/fPpqaatp8Z2GV+I/OChiWGn6AhV+8w1RMFuX/LqHc=";
+        };
+      });
+    })
+  ];
+
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
 

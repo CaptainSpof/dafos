@@ -33,6 +33,7 @@ in
         enable = true;
         user = config.${namespace}.user.name;
       };
+      dms-greeter.enable = true;
     };
 
     hardware = {
