@@ -15,14 +15,25 @@ let
 
   matugenConfigDir = "${config.xdg.configHome}/matugen";
 
-  # DMS's built-in qt6ct matugen template writes this palette file on each theme
-  # change; our qt6ct.conf (style=Darkly) points its color_scheme_path at it.
+  # Qt palette file our qt6ct.conf (style=Darkly) points its color_scheme_path
+  # at, rendered from the template below.
   targetOutputPath = "${config.xdg.configHome}/qt6ct/colors/matugen.conf";
+
+  # Qt/KDE colour-scheme template bodies, and the reasoning behind the palette
+  # they pick, live in ./colors.nix.
+  schemes = import ./colors.nix { inherit lib; };
+
+  qtctTemplatePath = "${matugenConfigDir}/templates/qtct-colors.conf";
+
+  # KDE colour scheme: one auto file (whatever mode is current) plus the forced
+  # Light/Dark pair plasma-manager pins a session to by name.
+  kdeSchemeTemplatePath = mode: "${matugenConfigDir}/templates/kde-colors-${mode}.colors";
+  kdeSchemeOutPath = name: "${config.xdg.dataHome}/color-schemes/${name}.colors";
 
   # GTK matugen template and its rendered outputs. matugen writes
   # ~/.config/gtk-{3,4}.0/gtk.css on each theme change so GTK/libadwaita apps
-  # follow the wallpaper under niri. (qt6ct and wezterm are handled by DMS's own
-  # built-in templates now; only GTK is still hand-rolled here.)
+  # follow the wallpaper under niri. (wezterm is handled by DMS's own built-in
+  # template; GTK and the Qt/KDE schemes are hand-rolled here.)
   gtkTemplatePath = "${matugenConfigDir}/templates/gtk-colors.css";
   gtk3CssPath = "${config.xdg.configHome}/gtk-3.0/gtk.css";
   gtk4CssPath = "${config.xdg.configHome}/gtk-4.0/gtk.css";
@@ -60,53 +71,65 @@ let
   # location instead of DMS's IP-based auto location.
   userLocation = config.${namespace}.user.location;
 
-  dmsSettings = lib.recursiveUpdate (lib.importJSON ./settings.json) {
-    barConfigs = cfg.bar.configs;
-    controlCenterWidgets = cfg.bar.controlCenterWidgets;
-
-    # Fonts
-    fontFamily = "Inter Variable";
-    monoFontFamily = "Fira Code";
-    fontWeight = 400;
-    fontScale = 1;
-
-    # Clock & locale
-    use24HourClock = true;
-    showSeconds = false;
-    padHours12Hour = false;
-    firstDayOfWeek = -1; # locale default
-    showWeekNumber = false;
-    clockDateFormat = "dddd d MMMM";
-    useFahrenheit = false;
-    windSpeedUnit = "kmh";
-
-    # Calendar events come from DankCalendar's dcal daemon over IPC
-    # (dafos.desktop.dankcalendar), not khal.
-    calendarBackend = "dankcal";
-
-    # Theming
-    currentThemeName = "dynamic";
-    currentThemeCategory = "dynamic";
-    matugenScheme = "scheme-fidelity";
-    matugenContrast = 0;
-    runUserMatugenTemplates = true;
+  # DMS's built-in matugen templates this module renders itself. Both sides
+  # writing the same target is the failure mode to avoid (qt6ct and wezterm
+  # collided once), so these gates have to be *enforced*, not just seeded — see
+  # the dmsMatugenTemplates activation below.
+  matugenTemplateOverrides = {
     matugenTemplateGtk = false;
-    syncModeWithPortal = true;
-    terminalsAlwaysDark = true;
-    iconTheme = "System Default";
-    nightModeEnabled = false;
-
-    # Behaviour
-    weatherEnabled = true;
-    useAutoLocation = false;
-    audioVisualizerEnabled = true;
-    soundsEnabled = true;
-    networkPreference = "ethernet";
-
-    # Launcher logo (path derived from the home directory)
-    launcherLogoMode = "os";
-    launcherStyle = "full";
+    matugenTemplateQt6ct = false;
+    matugenTemplateKcolorscheme = false;
   };
+
+  dmsSettings = lib.recursiveUpdate (lib.importJSON ./settings.json) (
+    matugenTemplateOverrides
+    // {
+      barConfigs = cfg.bar.configs;
+      controlCenterWidgets = cfg.bar.controlCenterWidgets;
+
+      # Fonts
+      fontFamily = "Inter Variable";
+      monoFontFamily = "Fira Code";
+      fontWeight = 400;
+      fontScale = 1;
+
+      # Clock & locale
+      use24HourClock = true;
+      showSeconds = false;
+      padHours12Hour = false;
+      firstDayOfWeek = -1; # locale default
+      showWeekNumber = false;
+      clockDateFormat = "dddd d MMMM";
+      useFahrenheit = false;
+      windSpeedUnit = "kmh";
+
+      # Calendar events come from DankCalendar's dcal daemon over IPC
+      # (dafos.desktop.dankcalendar), not khal.
+      calendarBackend = "dankcal";
+
+      # Theming
+      currentThemeName = "dynamic";
+      currentThemeCategory = "dynamic";
+      matugenScheme = "scheme-fidelity";
+      matugenContrast = 0;
+      runUserMatugenTemplates = true;
+      syncModeWithPortal = true;
+      terminalsAlwaysDark = true;
+      iconTheme = "System Default";
+      nightModeEnabled = false;
+
+      # Behaviour
+      weatherEnabled = true;
+      useAutoLocation = false;
+      audioVisualizerEnabled = true;
+      soundsEnabled = true;
+      networkPreference = "ethernet";
+
+      # Launcher logo (path derived from the home directory)
+      launcherLogoMode = "os";
+      launcherStyle = "full";
+    }
+  );
 
   dmsSettingsSeed = (pkgs.formats.json { }).generate "dms-settings-seed.json" dmsSettings;
   dmsSettingsPath = "${config.xdg.configHome}/DankMaterialShell/settings.json";
@@ -140,6 +163,16 @@ in
   };
 
   config = mkIf cfg.enable {
+
+    # Qt palette (qt6ct) and KDE colour schemes, matugen-rendered — DMS's own
+    # qt6ct/kcolorscheme templates are switched off in favour of these (see
+    # matugenTemplateOverrides). ./colors.nix holds the bodies, and the reason
+    # selection and hover pick the roles they do.
+    xdg.configFile."matugen/templates/qtct-colors.conf".text = schemes.qtctColors "default";
+    xdg.configFile."matugen/templates/kde-colors-default.colors".text =
+      schemes.kdeColorScheme "default";
+    xdg.configFile."matugen/templates/kde-colors-light.colors".text = schemes.kdeColorScheme "light";
+    xdg.configFile."matugen/templates/kde-colors-dark.colors".text = schemes.kdeColorScheme "dark";
 
     # GTK colours, matugen-rendered. libadwaita reads ~/.config/gtk-4.0/gtk.css
     # directly; adw-gtk3 picks the same @define-color names up for GTK3. matugen
@@ -220,8 +253,25 @@ in
     xdg.configFile."matugen/config.toml".text = lib.mkForce ''
       [config]
       # General Matugen settings can go here
-      # (qt6ct + wezterm are handled by DMS's own built-in templates; only the
-      # GTK templates below are ours.)
+      # (wezterm is handled by DMS's own built-in template; everything below is
+      # ours, and the DMS templates writing the same files are switched off in
+      # settings.json — see matugenTemplateOverrides.)
+
+      [templates.qt6ct]
+      input_path = "${qtctTemplatePath}"
+      output_path = "${targetOutputPath}"
+
+      [templates.kde-colors]
+      input_path = "${kdeSchemeTemplatePath "default"}"
+      output_path = "${kdeSchemeOutPath "DankMatugen"}"
+
+      [templates.kde-colors-light]
+      input_path = "${kdeSchemeTemplatePath "light"}"
+      output_path = "${kdeSchemeOutPath "DankMatugenLight"}"
+
+      [templates.kde-colors-dark]
+      input_path = "${kdeSchemeTemplatePath "dark"}"
+      output_path = "${kdeSchemeOutPath "DankMatugenDark"}"
 
       [templates.gtk3]
       input_path = "${gtkTemplatePath}"
@@ -268,6 +318,24 @@ in
         run rm -f ${lib.escapeShellArg dmsSettingsPath}
         run mkdir -p "$(dirname ${lib.escapeShellArg dmsSettingsPath})"
         run install -m 0644 ${dmsSettingsSeed} ${lib.escapeShellArg dmsSettingsPath}
+      fi
+    '';
+
+    # …with one exception to "seeded once": the gates for the templates this
+    # module renders itself. A settings.json seeded before they existed would
+    # leave DMS rendering its own qt6ct/KDE files over ours (last writer wins,
+    # nondeterministically), so patch just those keys, the way dmsDockApps
+    # patches pinnedApps. A running DMS holds settings in memory, hence the
+    # restart.
+    home.activation.dmsMatugenTemplates = config.lib.dag.entryAfter [ "seedDmsSettings" ] ''
+      settings=${lib.escapeShellArg dmsSettingsPath}
+      want=${lib.escapeShellArg (builtins.toJSON matugenTemplateOverrides)}
+      if [ -f "$settings" ] && ! ${pkgs.jq}/bin/jq -e --argjson want "$want" \
+        'contains($want)' "$settings" >/dev/null; then
+        tmp=$(mktemp)
+        ${pkgs.jq}/bin/jq --argjson want "$want" '. * $want' "$settings" > "$tmp" \
+          && run mv "$tmp" "$settings"
+        ${pkgs.systemd}/bin/systemctl --user restart dms.service 2>/dev/null || true
       fi
     '';
 

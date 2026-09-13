@@ -14,6 +14,23 @@ Matugen template rendering is gated by `runDmsMatugenTemplates` plus per-app
 switches are dead — do not reintroduce them. Watch for two modules writing the
 same target (qt6ct and wezterm collided once).
 
+GTK, the qt6ct palette and the KDE colour schemes are rendered from _our_
+templates ([colors.nix](colors.nix)), with DMS's equivalents switched off in
+`matugenTemplateOverrides`. Those gates are patched into the running
+`settings.json` on activation, because that file is seeded only once — a setting
+added to `dmsSettings` alone never reaches an existing install.
+
+**A background a widget style may fill behind arbitrary text — selection, hover,
+focus — must sit on the same lightness side as the surface.** A style does not
+only use the paired on-colour: Qt's Inactive group (Dolphin's Places sidebar,
+once the file view has focus) draws with its own text role, and Darkly fills a
+hovered row with `DecorationHover` without touching the text. Under
+`scheme-fidelity`, `primary`, `primary_container` and `tertiary_container` do
+_not_ flip with light/dark — they stay faithful to the wallpaper — so a fill
+built from them is a near-white pill under near-white text in dark mode. Use
+`secondary_container`, `surface_container*` or `inverse_primary` for fills;
+[colors.nix](colors.nix) carries the reasoning in full.
+
 ## The "Games" folder is faked, in two halves
 
 DMS has no concept of a folder in the app drawer.
