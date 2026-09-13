@@ -1,9 +1,11 @@
-;; Base layer: layer-taps under the thumbs + home-row mods on SDF and KL
+;; Base layer: layer-taps under the thumbs + home-row mods on SDF and KL.
+;; The Ergo-L ★ key (physical position of 'o') is @acc, not a plain pass
+;; through: see defalias/ergol_accent.kbd for why.
 
 (deflayer base
   @esw
   _    _    _    _    _    _    _    _    _    _    _
-  q    w    e    r    t         y    u    i    o    p
+  q    w    e    r    t         y    u    i    @acc p
   a    @ss  @dd  @ff  g         h    j    @kk  @ll  @nav
   z    x    c    v    b    <    n    m    ,    .    /
             @alt          @ssp            @sym  @met

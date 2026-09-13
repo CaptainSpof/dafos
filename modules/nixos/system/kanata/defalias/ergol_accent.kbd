@@ -1,0 +1,60 @@
+;; Ergo-L accent composition, done in kanata instead of relying on XKB's
+;; ISO_Level5_Latch (the ★ key). That latch is spent unreliably by several
+;; Wayland clients: libxkbcommon requires reading a key's resolved keysym
+;; *before* calling xkb_state_update_key(), and clients that get this
+;; ordering backwards silently drop or corrupt the latch (reported upstream:
+;; https://github.com/pop-os/cosmic-comp/issues/2828,
+;; https://github.com/jwinarske/drm-cxx/issues/247). Real (non-latching)
+;; dead keys aren't affected, so each combo below is composed by holding
+;; AltGr+Shift on fr(ergol)'s own real dead-key carrier for that accent,
+;; then tapping the target letter -- the OS never sees ★ or a latch at all.
+;;
+;; Carriers used (AltGr+Shift+key, all real XKB dead keys on fr(ergol)):
+;;   q -> dead_circumflex   o -> dead_acute   p -> dead_grave
+;;   , -> dead_cedilla      z -> dead_tilde
+;;
+;; IMPORTANT: the second tap must be the plain Latin letter the compose
+;; engine expects (dead_acute + e = é), NOT the physical key where Ergo-L's
+;; own Level5 table happens to park that accent. Ergo-L moves accents onto
+;; different physical keys than their base letter for ergonomics (e.g. é
+;; lives on the 's' key, level5), but the *compose* sequence only cares
+;; about the letter, so composing with 's' gives dead_acute+s = ś, not é.
+;; Always look up which physical key types the base letter at level1.
+;;
+;; Uppercase (À, É, Â...) falls out for free: hold real Shift through the
+;; second tap and fr(ergol)'s compose state applies it, same as any
+;; standard AZERTY dead key -- kanata never touches the physical Shift key.
+;;
+;; Not covered: ï/Ï (diaeresis), œ/Œ, æ/Æ, ß/ẞ. fr(ergol) has no
+;; non-latching carrier anywhere for these; they still fall through to a
+;; plain, unaccented letter when typed after ★.
+(defalias
+
+  à (macro AG-S-p a)   ;; dead_grave + a (physical a: base letter a)
+  é (macro AG-S-o d)   ;; dead_acute + e (physical d: base letter e)
+  è (macro AG-S-p d)   ;; dead_grave + e (physical d: base letter e)
+  ê (macro AG-S-q d)   ;; dead_circumflex + e (physical d: base letter e)
+  ñ (macro AG-S-z f)   ;; dead_tilde + n (physical f: base letter n)
+  î (macro AG-S-q l)   ;; dead_circumflex + i (physical l: base letter i)
+  ù (macro AG-S-p ;)   ;; dead_grave + u (physical ;: base letter u)
+  â (macro AG-S-q a)   ;; dead_circumflex + a (physical a: base letter a)
+  ç (macro AG-S-, w)   ;; dead_cedilla + c (physical w: base letter c)
+  ô (macro AG-S-q e)   ;; dead_circumflex + o (physical e: base letter o)
+  û (macro AG-S-q ;)   ;; dead_circumflex + u (physical ;: base letter u)
+
+  ;; ★'s other XKB levels are still real, useful characters on fr(ergol):
+  ;; Shift+★ = ! , AltGr+★ = ' , AltGr+Shift+★ = dead_acute (bare mark).
+  ;; Only a plain, unmodified press/hold of ★ should arm the accent layer --
+  ;; with any of those modifiers already down, pass the physical key
+  ;; through untouched and let fr(ergol) resolve it as usual.
+  ;;
+  ;; Tap (no modifier): arms the layer for exactly one following key.
+  ;; Hold (no modifier): acts as a plain layer-while-held for as long as
+  ;; it's held.
+  acc (switch
+    ((input real lsft) (input real rsft) (input real ralt)) o break
+    () (one-shot 500 (layer-while-held accent)) break
+  )
+)
+
+;; vim: set ft=lisp

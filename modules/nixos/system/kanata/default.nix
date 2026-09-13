@@ -25,8 +25,10 @@ let
   baseFile = "deflayer/base_lt_hrm.kbd";
   symbolsFile = "deflayer/symbols_noop_num.kbd";
   navigationFile = "deflayer/navigation_vim.kbd";
+  accentFile = "deflayer/accent_ergol.kbd";
   switcherFile = "deflayer/switcher.kbd";
   layoutAliasFile = "defalias/ergol_pc.kbd";
+  accentAliasFile = "defalias/ergol_accent.kbd";
 in
 {
   options.${namespace}.system.kanata = {
@@ -40,10 +42,18 @@ in
       "Espanso virtual device"
       "WH-1000XM3 (AVRCP)"
     ] "The devices to be excluded.";
-    tapTimeout = mkOpt types.number 250 "Arsenik tap_timeout: key must be pressed twice within this many ms to enable repetitions.";
-    holdTimeout = mkOpt types.number 250 "Arsenik hold_timeout: key must be held this many ms to become a layer shift.";
-    longHoldTimeout = mkOpt types.number 300 "Arsenik long_hold_timeout: slightly higher value for typing keys, to prevent unexpected hold effect.";
-    tcpPort = mkOpt types.port 5829 "Port for kanata's TCP server (localhost only). Used by the layer-change notifier to receive LayerChange events.";
+    tapTimeout =
+      mkOpt types.number 250
+        "Arsenik tap_timeout: key must be pressed twice within this many ms to enable repetitions.";
+    holdTimeout =
+      mkOpt types.number 250
+        "Arsenik hold_timeout: key must be held this many ms to become a layer shift.";
+    longHoldTimeout =
+      mkOpt types.number 300
+        "Arsenik long_hold_timeout: slightly higher value for typing keys, to prevent unexpected hold effect.";
+    tcpPort =
+      mkOpt types.port 5829
+        "Port for kanata's TCP server (localhost only). Used by the layer-change notifier to receive LayerChange events.";
   };
 
   config = mkIf cfg.enable {
@@ -95,11 +105,17 @@ in
             ;; -- navigation layer --
             ${readPart navigationFile}
 
+            ;; -- accent layer (Ergo-L ★ latch replacement) --
+            ${readPart accentFile}
+
             ;; -- alternative layers + ` switcher (qwerty / gaming / basic) --
             ${readPart switcherFile}
 
             ;; -- layout aliases (Ergo-L PC) --
             ${readPart layoutAliasFile}
+
+            ;; -- accent composition aliases (Ergo-L) --
+            ${readPart accentAliasFile}
 
             ;; Application launcher shortcut for navigation layer ([Space]+[P])
             (defalias run XX)

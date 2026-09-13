@@ -1,0 +1,14 @@
+;; Accent layer, entered via @acc (defalias/ergol_accent.kbd). Only the
+;; positions with a defined accent combo are overridden; everything else is
+;; transparent so a tap that isn't part of an accent still types normally.
+
+(deflayer accent
+  _
+  _    _    _    _    _    _    _    _    _    _    _
+  @â   @ç   _    @ô   _         _    _    _    _    @û
+  @à   @é   @è   @ê   @ñ        _    _    @î   _    @ù
+  _    _    _    _    _    _    _    _    _    _    _
+            _             _               _     _
+)
+
+;; vim: set ft=lisp
