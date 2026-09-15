@@ -7,7 +7,7 @@
 
 let
   inherit (lib) mkDefault mkIf;
-  inherit (lib.${namespace}) enabled disabled mkBoolOpt;
+  inherit (lib.${namespace}) enabled mkBoolOpt;
 
   cfg = config.${namespace}.archetypes.workstation;
 in
@@ -18,10 +18,6 @@ in
 
   config = mkIf cfg.enable {
     dafos = {
-
-      services = {
-        logiops = disabled;
-      };
 
       suites = {
         common = mkDefault enabled;

@@ -83,13 +83,6 @@ in
     };
 
     services = {
-      audiobookshelf = disabled;
-      paperless = disabled;
-      # caddy = enabled;
-      # calibre = enabled;
-      # calibre-web-automated = enabled;
-      # karakeep = enabled;
-      glance = disabled;
       blocky = {
         enable = true;
         hostAddress = "192.168.0.10";
@@ -117,15 +110,8 @@ in
         ];
       };
       immich = enabled;
-      # immich-frame = enabled;
       # immich-kiosk: migrated to the rootless nps stack (home-manager module)
-      # wishlist = enabled;
-      # it-tools = enabled;
-      # mealie = enabled;
-      # tandoor = enabled;
       printing = disabled;
-      # stirling-pdf = enabled;
-      # send = enabled;
       # syncthing = enabled;
     };
 
