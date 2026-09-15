@@ -36,17 +36,6 @@ let
 
   bookDockPath = "/book-dock";
 
-  # nps orders containers after nothing but the network, so a container whose
-  # `extraEnv.*.fromFile` points into /home/daf/.config/sops-nix races its own
-  # secrets. Already-running services never notice (sops-nix has long since
-  # run by the time a rebuild restarts them), but a *first* start in the same
-  # activation that creates the secrets loses: `create-extra-files` logs "No
-  # such file or directory", the variable comes out empty, and -- for postgres
-  # -- initdb aborts with "superuser password is not specified".
-  #
-  # Wants rather than Requires: all that is missing is the ordering edge, and
-  # sops-nix is a `RemainAfterExit=no` oneshot, so there is no long-lived unit
-  # for a hard requirement to bind to.
   secretsDep = [ "sops-nix.service" ];
 in
 {
@@ -68,12 +57,8 @@ in
     libraries = mkOption {
       type = types.attrsOf types.str;
       default = {
-        # `/mnt/bookorbit` is a copy of `/mnt/grimmory`, not the same tree:
-        # both apps write to their libraries (metadata write-back, kepubify
-        # conversions, file renaming), so pointing them at one directory has
-        # them undoing each other's work. Duplicated on 2026-09-06; the two
-        # sides drift from here on, and new acquisitions have to be dropped
-        # into whichever one should have them.
+        root = "/mnt/bookorbit:/libraries";
+
         livres = "/mnt/bookorbit/livres:/livres";
         books = "/mnt/bookorbit/books:/books";
 
