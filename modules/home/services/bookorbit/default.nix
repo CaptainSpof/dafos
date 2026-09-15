@@ -59,9 +59,6 @@ in
       default = {
         root = "/mnt/bookorbit:/libraries";
 
-        livres = "/mnt/bookorbit/livres:/livres";
-        books = "/mnt/bookorbit/books:/books";
-
         # Audiobooks stay shared: `/mnt/audio` is the Freebox CIFS share, and
         # nothing in this fleet writes to it.
         audiobooks = "/mnt/audio/Audiobooks:/audiobooks";
