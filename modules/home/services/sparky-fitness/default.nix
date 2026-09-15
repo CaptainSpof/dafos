@@ -50,6 +50,10 @@ in
         containers.sparky-fitness-frontend = {
           traefik.subDomain = cfg.subDomain;
         };
+
+        # Keep the database off the unattended Sunday registry pull (see the
+        # grimmory module for the full reasoning): `postgres:18` is a moving tag.
+        containers.sparky-fitness-db.autoUpdate = "local";
       };
     };
 

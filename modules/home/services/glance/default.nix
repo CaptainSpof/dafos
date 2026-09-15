@@ -27,6 +27,14 @@ in
           glance = {
             expose = true;
             traefik.subDomain = cfg.subDomain;
+
+            # Glance ships no authentication of its own, and this dashboard
+            # publishes dafoltop's server stats plus a bookmark map of the
+            # internal services. Everything else on the public chain
+            # authenticates somehow -- OIDC against Authelia, or the app's own
+            # login -- so gate this one on Authelia too. `default_policy` is
+            # `one_factor`, so no per-app rule or client secret is needed.
+            forwardAuth.enable = true;
           };
         };
 

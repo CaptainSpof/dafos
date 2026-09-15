@@ -278,6 +278,11 @@ in
         image = cfg.dbImage;
         volumeMap.data = "${storage}/db:/var/lib/postgresql/data";
 
+        # Keep the database off the unattended Sunday registry pull (see the
+        # grimmory module for the full reasoning): `pgvector:pg18` is a moving
+        # tag, and this one also carries the pgvector extension build.
+        autoUpdate = "local";
+
         extraEnv = {
           POSTGRES_DB = name;
           POSTGRES_USER = name;

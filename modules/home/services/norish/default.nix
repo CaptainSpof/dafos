@@ -84,6 +84,13 @@ in
           expose = true;
           traefik.subDomain = cfg.subDomain;
         };
+
+        # Keep the stateful containers off the unattended Sunday registry pull
+        # (see the grimmory module for the full reasoning): `postgres:18` and
+        # `redis:8` are moving tags, so `registry` would restart the database
+        # and cache on whatever upstream published that week.
+        containers.norish-db.autoUpdate = "local";
+        containers.norish-redis.autoUpdate = "local";
       };
     };
 

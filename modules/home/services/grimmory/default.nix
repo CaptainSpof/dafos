@@ -40,6 +40,14 @@ in
           ];
         };
 
+        # `services.podman.autoUpdate` is on by default upstream and pulls every
+        # container from its registry on Sunday at 00:00. `mariadb:11` is a
+        # moving tag, so that rolls the major line's point releases in
+        # unattended and restarts the database with it. `local` keeps the
+        # container pinned to the image already on disk; upgrades land on a
+        # rebuild instead, where they are reviewable.
+        containers.grimmory-db.autoUpdate = "local";
+
         oidc.registerClient = true;
 
         db = {

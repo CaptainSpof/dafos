@@ -56,7 +56,15 @@ in
         bar-assistant-meilisearch = {
           expose = true;
           traefik.subDomain = cfg.searchSubDomain;
+
+          # Meilisearch owns the search index on disk, so keep it off the
+          # unattended Sunday registry pull (see the grimmory module for the
+          # full reasoning) even though its tag is pinned.
+          autoUpdate = "local";
         };
+
+        # `redis:8` is a moving tag; same reasoning.
+        bar-assistant-redis.autoUpdate = "local";
       };
     };
   };

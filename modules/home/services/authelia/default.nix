@@ -41,6 +41,11 @@ in
 
       sessionProvider = "redis";
 
+      # Keep the session store off the unattended Sunday registry pull (see the
+      # grimmory module for the full reasoning). Restarting this one mid-pull
+      # logs every SSO session out across the whole fleet.
+      containers.authelia-redis.autoUpdate = "local";
+
       ldap = {
         username = lldap.lldapUsers.readonly.id;
         passwordFile = lldap.lldapUsers.readonly.password_file;

@@ -56,6 +56,11 @@ in
             port = 1337;
             traefik.subDomain = cfg.apiSubDomain;
           };
+
+          # Keep the database off the unattended Sunday registry pull (see the
+          # grimmory module for the full reasoning): `postgres:18` is a moving
+          # tag.
+          kaneo-db.autoUpdate = "local";
         };
       };
     };
