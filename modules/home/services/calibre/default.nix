@@ -12,28 +12,28 @@ let
   cfg = config.${namespace}.services.calibre;
 
 in
-  {
-    options.${namespace}.services.calibre = {
-      enable = mkEnableOption "Whether or not to configure calibre.";
-      subDomain = mkOpt types.str "livre" "The base url";
-    };
+{
+  options.${namespace}.services.calibre = {
+    enable = mkEnableOption "Whether or not to configure calibre.";
+    subDomain = mkOpt types.str "livre" "The base url";
+  };
 
-    config = mkIf cfg.enable {
-      nps.stacks = {
-        calibre = {
-          enable = true;
+  config = mkIf cfg.enable {
+    nps.stacks = {
+      calibre = {
+        enable = true;
 
-	      containers.calibre = {
-            expose = true;
-            traefik.subDomain = "livre";
+        containers.calibre = {
+          expose = true;
+          traefik.subDomain = "livre";
 
-	        volumes = lib.mkForce [
-              "/mnt/livres.bak:/calibre-library"
-	          "${config.nps.storageBaseDir}/calibre/ingest:/cwa-book-ingest"
-	          "${config.nps.storageBaseDir}/calibre/config:/config"
-            ];
-	      };
+          volumes = lib.mkForce [
+            "/mnt/calibre:/calibre-library"
+            "${config.nps.storageBaseDir}/calibre/ingest:/cwa-book-ingest"
+            "${config.nps.storageBaseDir}/calibre/config:/config"
+          ];
         };
       };
     };
-  }
+  };
+}
