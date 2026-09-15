@@ -100,6 +100,12 @@ in
       home = {
         username = mkDefault cfg.name;
         homeDirectory = mkDefault cfg.home;
+
+        # The NixOS `home-manager` module drives this from `system.stateVersion`
+        # (see modules/nixos/home), which outranks this default. It exists so the
+        # standalone `homeConfigurations.*` outputs -- which never see a NixOS
+        # `config` -- can evaluate at all.
+        stateVersion = mkDefault "23.11";
       };
     }
   ]);
