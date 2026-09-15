@@ -26,7 +26,7 @@
 - **Secrets.** Provisioned with [`sops-nix`](https://github.com/Mic92/sops-nix), age-encrypted at rest.
 - **One formatter to rule them all.** [`treefmt-nix`](https://github.com/numtide/treefmt-nix) wires up nixfmt, biome, ruff, rustfmt, shfmt, stylua, statix, deadnix, and friends.
 - **Gaming.** [`nix-gaming`](https://github.com/fufexan/nix-gaming) platform optimizations.
-- **Multi-arch deploys.** `x86_64-linux`, `aarch64-linux`, and a VirtualBox target — pushed remotely with [`deploy-rs`](https://github.com/serokell/deploy-rs).
+- **Multi-arch deploys.** `x86_64-linux` and `aarch64-linux` — pushed remotely with [`deploy-rs`](https://github.com/serokell/deploy-rs).
 - **Custom bits.** Overlays (niri, Ryubing, xwayland-satellite fixes), in-repo packages (Home Assistant cards, KDE theming, wallpapers, scripts), and project templates.
 
 ## Hosts
@@ -36,7 +36,6 @@
 | **`dafbox`**   | `x86_64-linux`      | Desktop / workstation       |
 | **`dafoltop`** | `x86_64-linux`      | Laptop                      |
 | **`daftop`**   | `x86_64-linux`      | Laptop                      |
-| **`virt`**     | `x86_64-virtualbox` | Throwaway VM                |
 
 ## Layout
 

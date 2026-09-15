@@ -23,12 +23,11 @@ to the module or host it describes. Longer rationale goes in that directory's
 
 ## The fleet
 
-| Host       | System            | Role                                                                 | Desktop                           |
-| ---------- | ----------------- | -------------------------------------------------------------------- | --------------------------------- |
-| `dafbox`   | x86_64-linux      | Desktop/workstation                                                  | Niri (autologin) + DMS greeter    |
-| `dafoltop` | x86_64-linux      | Laptop repurposed as homelab server — runs most self-hosted services | Plasma (autologin), Niri disabled |
-| `daftop`   | x86_64-linux      | Laptop                                                               | Niri                              |
-| `virt`     | x86_64-virtualbox | Throwaway VM                                                         | —                                 |
+| Host       | System       | Role                                                                 | Desktop                           |
+| ---------- | ------------ | -------------------------------------------------------------------- | --------------------------------- |
+| `dafbox`   | x86_64-linux | Desktop/workstation                                                  | Niri (autologin) + DMS greeter    |
+| `dafoltop` | x86_64-linux | Laptop repurposed as homelab server — runs most self-hosted services | Plasma (autologin), Niri disabled |
+| `daftop`   | x86_64-linux | Laptop                                                               | Niri                              |
 
 `dafoltop` is the de facto home server and the live house — see
 [systems/x86_64-linux/dafoltop/AGENTS.md](systems/x86_64-linux/dafoltop/AGENTS.md)

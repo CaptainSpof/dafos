@@ -48,9 +48,8 @@ nix eval '.#homeConfigurations."daf@<host>".config.dafos.programs.ai' --json | j
 nix build '.#nixosConfigurations.<host>.config.system.build.toplevel'
 ```
 
-Hosts: `dafbox`, `dafoltop`, `daftop`, `virt` (`x86_64-virtualbox`). Build the
-host you changed. Build all of them only when the change is in a shared module
-or in `lib/`.
+Hosts: `dafbox`, `dafoltop`, `daftop`. Build the host you changed. Build all of
+them only when the change is in a shared module or in `lib/`.
 
 Home Manager alone:
 
