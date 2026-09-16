@@ -33,7 +33,7 @@ let
 
   # The same two groups nps already creates for the OIDC half, so the LDAP and
   # SSO login paths cannot drift apart on who is allowed in and who is admin.
-  ldapAuthConfig = pkgs.writeText "ldap-auth-config" (
+  ldapAuthConfigSource = pkgs.writeText "ldap-auth-config" (
     import ./ldap-auth-config.nix {
       ldapServer = "lldap";
       ldapPort = 3890;
@@ -52,6 +52,26 @@ let
       passwordResetUrl = config.nps.containers.lldap.traefik.serviceUrl;
     }
   );
+
+  # Validate at build time. Jellyfin does not report a malformed plugin config:
+  # `BasePlugin.LoadConfiguration` catches the deserialization exception, falls
+  # back to a default-constructed object and *saves it over the file*, so the
+  # only symptom is a settings page full of `contoso.com` and a login path that
+  # silently does nothing. A stray `--` inside an XML comment shipped exactly
+  # that on 2026-09-16.
+  #
+  # The gomplate expressions are blanked first: `{{ ... }}` is not XML, and the
+  # secret it reads is not in the store anyway.
+  ldapAuthConfig =
+    pkgs.runCommand "ldap-auth-config-checked"
+      {
+        nativeBuildInputs = [ pkgs.libxml2 ];
+      }
+      ''
+        sed 's|{{[^}]*}}|PLACEHOLDER|g' ${ldapAuthConfigSource} > checked.xml
+        xmllint --noout checked.xml
+        cp ${ldapAuthConfigSource} "$out"
+      '';
 
   brandingXml = pkgs.writeText "branding.xml" ''
     <?xml version="1.0" encoding="utf-8"?>

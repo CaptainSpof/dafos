@@ -46,7 +46,7 @@
     <LdapUsernameAttribute>uid</LdapUsernameAttribute>
     <LdapPasswordAttribute>userPassword</LdapPasswordAttribute>
     <!-- lldap does hold a `jpegPhoto` blob, but the plugin tracks which avatar
-         it has already synced in `LdapUsers`, inside this file -- which is
+         it has already synced in `LdapUsers`, inside this file, which is
          regenerated on every container start. Enabling the sync would re-fetch
          every avatar each restart, so leave it off until the plugin config is
          stateful. -->
