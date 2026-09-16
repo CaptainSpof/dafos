@@ -124,20 +124,43 @@ in
               # alternate-version links it drops on the way through.
               image = lib.mkForce "lscr.io/linuxserver/jellyfin:12.1ubu2604-ls50";
 
-              volumes = lib.mkForce [
-                "/mnt/videos/Movies:/movies"
-                "/mnt/videos/Shows:/shows"
-                "${config.nps.storageBaseDir}/streaming/jellyfin:/config"
-                "${brandingXml}:/config/branding.xml"
-              ];
-
-              # nps declares this as a list and sets its own entry for the SSO
-              # plugin's configuration, so ours appends rather than replacing
-              # it.
-              templateMount = lib.optional cfg.jellyfin.ldapAuth.enable {
-                templatePath = ldapAuthConfig;
-                destPath = "/config/data/plugins/configurations/LDAP-Auth.xml";
+              # `volumeMap`, not `volumes`. nps builds `volumes` as
+              #
+              #   mkMerge [ (attrValues volumeMap) (mkAfter <template/fileEnv mounts>) ]
+              #
+              # so forcing `volumes` here silently discarded the second branch --
+              # which is how the rendered SSO-Auth.xml and LDAP-Auth.xml were
+              # never actually reaching the container, leaving both plugins on
+              # their built-in defaults. Forcing the map instead replaces nps'
+              # own entries (dropping its single `media` mount for the two paths
+              # below) and leaves the generated configs to append.
+              volumeMap = lib.mkForce {
+                movies = "/mnt/videos/Movies:/movies";
+                shows = "/mnt/videos/Shows:/shows";
+                config = "${config.nps.storageBaseDir}/streaming/jellyfin:/config";
+                brandingXml = "${brandingXml}:/config/branding.xml";
               };
+
+              # Ours only -- `mkForce` drops nps' own entry for SSO-Auth.xml.
+              #
+              # That entry never actually reached the container (the `volumes`
+              # mkForce above discarded it), so the working SSO configuration is
+              # the stateful file, and it has diverged from what nps generates:
+              # it holds `CanonicalLinks` -- the Authelia-subject-to-Jellyfin-user
+              # account links -- plus `DisablePushedAuthorization` and
+              # `UseClientSecretBasic`, none of which the template reproduces.
+              # Mounting it now would silently detach every linked account and
+              # revert two settings Authelia login depends on.
+              #
+              # LDAP-Auth has no equivalent: its `LdapUsers` is a uid-to-guid
+              # cache the plugin rebuilds, which is why its config can be
+              # generated and this one cannot.
+              templateMount = lib.mkForce (
+                lib.optional cfg.jellyfin.ldapAuth.enable {
+                  templatePath = ldapAuthConfig;
+                  destPath = "/config/data/plugins/configurations/LDAP-Auth.xml";
+                }
+              );
             };
             sonarr = {
               volumes = lib.mkForce [
