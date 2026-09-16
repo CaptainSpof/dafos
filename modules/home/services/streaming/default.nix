@@ -20,11 +20,12 @@ let
 
   jellyfinPluginDir = "${config.nps.storageBaseDir}/streaming/jellyfin/data/plugins";
 
-  # Only the LDAP plugin for now. Jellyfin is still on 10.11.11 here, so this is
-  # v23 -- the last build for that line -- and everything else in the plugins
-  # directory is left exactly as the web UI installer left it. The rest moves
-  # under this mechanism with the jump to 12.
-  managedPlugins = lib.optional cfg.jellyfin.ldapAuth.enable plugins.ldap-auth-23;
+  # What the plugins directory should contain: the 12.x set, plus whichever of
+  # the two auth plugins is switched on.
+  managedPlugins =
+    plugins.all12
+    ++ lib.optional cfg.jellyfin.ldapAuth.enable plugins.ldap-auth
+    ++ lib.optional jellyfinOidc.enable plugins.sso-auth;
 
   # lldap's LDAP tree: users under `ou=people`, groups under `ou=groups`.
   userBaseDn = "ou=people,${lldapStack.baseDn}";
@@ -110,6 +111,18 @@ in
           containers = {
             jellyfin = {
               expose = true;
+
+              # nps pins 10.11.11 and will not move on its own: linuxserver
+              # changed its tag shape to `12.1ubu2604-ls50` (it used to be a
+              # bare `10.11.11`), so nps' renovate rule no longer matches the
+              # 12.x line at all.
+              #
+              # One-way trip. 12.x migrates the database and upstream is
+              # explicit that rolling back needs a full restore of
+              # `${config.nps.storageBaseDir}/streaming/jellyfin`, and a full
+              # library rescan is required afterwards to rebuild the
+              # alternate-version links it drops on the way through.
+              image = lib.mkForce "lscr.io/linuxserver/jellyfin:12.1ubu2604-ls50";
 
               volumes = lib.mkForce [
                 "/mnt/videos/Movies:/movies"

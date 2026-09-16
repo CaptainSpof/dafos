@@ -1,5 +1,34 @@
 # streaming (Jellyfin and the arrs)
 
+## Jellyfin's image will not update itself
+
+nps pins the image and renovate keeps it current — except for Jellyfin, where
+linuxserver changed its tag shape from a bare `10.11.11` to `12.1ubu2604-ls50`.
+nps' rule no longer matches the 12.x line, so the pin here is a `lib.mkForce`
+and **bumping it is a manual job**. The current tag is in
+`api.linuxserver.io/api/v1/images?key=jellyfin`; do not wait for an upstream
+bump that will not arrive.
+
+### Patch `encoding.xml` before taking 12.x
+
+10.11 writes `<EncoderPreset xsi:nil="true" />`; 12.x cannot deserialize that,
+logs `Error loading configuration file: "/config/encoding.xml"`, and silently
+falls back to defaults **for the whole file** — which resets
+`HardwareAccelerationType` from `qsv` to `none` and blanks `QsvDevice`, so this
+box quietly stops using QuickSync and transcodes on CPU. Found by dry-run, not
+in any release note. Before switching:
+
+```bash
+sed -i 's|<EncoderPreset xsi:nil="true" />|<EncoderPreset>auto</EncoderPreset>|' \
+  ~/stacks/streaming/jellyfin/encoding.xml
+```
+
+With that one element fixed the file parses and every encoding setting survives.
+
+Going from 10.11 to 12.x is also one-way: it migrates the database, upstream
+says rolling back needs a full restore of `~/stacks/streaming/jellyfin`, and a
+full library rescan is required afterwards.
+
 ## Plugin directories must be writable
 
 Jellyfin rewrites a plugin's own `meta.json` when it first loads it
