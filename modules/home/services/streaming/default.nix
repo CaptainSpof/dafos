@@ -9,9 +9,48 @@
 let
   inherit (lib) mkEnableOption mkIf types;
   inherit (lib.${namespace}) enabled;
-  inherit (lib.${namespace}) mkOpt;
+  inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.streaming;
+
+  lldapStack = config.nps.stacks.lldap;
+  jellyfinOidc = config.nps.stacks.streaming.jellyfin.oidc;
+
+  plugins = import ./jellyfin-plugins.nix { inherit lib pkgs; };
+
+  jellyfinPluginDir = "${config.nps.storageBaseDir}/streaming/jellyfin/data/plugins";
+
+  # Only the LDAP plugin for now. Jellyfin is still on 10.11.11 here, so this is
+  # v23 -- the last build for that line -- and everything else in the plugins
+  # directory is left exactly as the web UI installer left it. The rest moves
+  # under this mechanism with the jump to 12.
+  managedPlugins = lib.optional cfg.jellyfin.ldapAuth.enable plugins.ldap-auth-23;
+
+  # lldap's LDAP tree: users under `ou=people`, groups under `ou=groups`.
+  userBaseDn = "ou=people,${lldapStack.baseDn}";
+  groupDn = group: "cn=${group},ou=groups,${lldapStack.baseDn}";
+
+  # The same two groups nps already creates for the OIDC half, so the LDAP and
+  # SSO login paths cannot drift apart on who is allowed in and who is admin.
+  ldapAuthConfig = pkgs.writeText "ldap-auth-config" (
+    import ./ldap-auth-config.nix {
+      ldapServer = "lldap";
+      ldapPort = 3890;
+
+      # `readonly` already exists in lldap's `lldap_strict_readonly` group and
+      # is exactly a bind account; no new user and no new secret. The path is
+      # declared by the lldap module, which lands in the same home config.
+      # `CN=` rather than `uid=`: that is lldap's own bind-DN form, and it is
+      # what Authelia already binds with against this same directory.
+      bindDn = "CN=readonly,${userBaseDn}";
+      bindPasswordFile = config.sops.secrets."lldap/users/readonly-password".path;
+
+      inherit userBaseDn;
+      loginFilter = "(|(memberOf=${groupDn jellyfinOidc.userGroup})(memberOf=${groupDn jellyfinOidc.adminGroup}))";
+      adminFilter = "(memberOf=${groupDn jellyfinOidc.adminGroup})";
+      passwordResetUrl = config.nps.containers.lldap.traefik.serviceUrl;
+    }
+  );
 
   brandingXml = pkgs.writeText "branding.xml" ''
     <?xml version="1.0" encoding="utf-8"?>
@@ -41,6 +80,8 @@ in
   options.${namespace}.services.streaming = {
     enable = mkEnableOption "Whether or not to configure streaming.";
     base-url = mkOpt types.str "streaming.daftdaf.dev" "The base url";
+
+    jellyfin.ldapAuth.enable = mkBoolOpt true "Whether to authenticate Jellyfin against lldap with the official LDAP Authentication plugin.";
   };
 
   config = mkIf cfg.enable {
@@ -51,6 +92,15 @@ in
       "gluetun/wg-address".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
     };
 
+    # Plugin directories have to be writable -- Jellyfin rewrites each plugin's
+    # own meta.json when it first loads it, and fails *startup* if it cannot --
+    # so the pinned store copies are materialised here rather than bind-mounted.
+    # Ordered before `reloadSystemd` so the files are in place before the
+    # container is restarted.
+    home.activation.jellyfinPlugins = config.lib.dag.entryBefore [ "reloadSystemd" ] (
+      lib.concatStringsSep "\n" (map (plugins.install jellyfinPluginDir) managedPlugins)
+    );
+
     nps = {
       externalStorageBaseDir = "/mnt/yahrr";
       stacks = {
@@ -60,12 +110,21 @@ in
           containers = {
             jellyfin = {
               expose = true;
+
               volumes = lib.mkForce [
                 "/mnt/videos/Movies:/movies"
                 "/mnt/videos/Shows:/shows"
                 "${config.nps.storageBaseDir}/streaming/jellyfin:/config"
                 "${brandingXml}:/config/branding.xml"
               ];
+
+              # nps declares this as a list and sets its own entry for the SSO
+              # plugin's configuration, so ours appends rather than replacing
+              # it.
+              templateMount = lib.optional cfg.jellyfin.ldapAuth.enable {
+                templatePath = ldapAuthConfig;
+                destPath = "/config/data/plugins/configurations/LDAP-Auth.xml";
+              };
             };
             sonarr = {
               volumes = lib.mkForce [

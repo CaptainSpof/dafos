@@ -107,6 +107,7 @@ let
 
         # No group-based admin access supported yet, just user-roles
         "home-assistant_user"
+        streaming.jellyfin.oidc.userGroup
         qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
         papra.oidc.userGroup
@@ -124,6 +125,7 @@ let
         lldap.adminGroup
 
         # No group-based admin access supported yet, just user-roles
+        streaming.jellyfin.oidc.userGroup
         qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
         norish.oidc.userGroup
@@ -137,6 +139,7 @@ let
       email = "test@${cfg.domain}";
       groups = [
         # No group-based admin access supported yet, just user-roles
+        streaming.jellyfin.oidc.userGroup
         qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
         papra.oidc.userGroup
