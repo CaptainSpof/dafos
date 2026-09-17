@@ -16,11 +16,17 @@ in
   options.${namespace}.services.kaneo = {
     enable = mkEnableOption "Whether or not to configure kaneo.";
     subDomain = mkOpt types.str "kaneo" "The subdomain of the web frontend.";
+    aliases = mkOpt (types.listOf types.str) [ "todo" ] "Subdomains that redirect to `subDomain`.";
     apiSubDomain = mkOpt types.str "kaneo-api" "The subdomain of the backend API.";
     expose = mkBoolOpt false "Whether to reach the instance from outside the LAN/tailnet.";
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.traefik.redirects = lib.genAttrs cfg.aliases (_: {
+      to = cfg.subDomain;
+      inherit (cfg) expose;
+    });
+
     sops.secrets = {
       "kaneo/auth-secret" = {
         sopsFile = lib.snowfall.fs.get-file "secrets/daf/kaneo.yaml";

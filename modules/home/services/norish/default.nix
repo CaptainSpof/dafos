@@ -20,6 +20,7 @@ in
   options.${namespace}.services.norish = {
     enable = mkEnableOption "Whether or not to configure norish.";
     subDomain = mkOpt types.str "norish" "The base url";
+    aliases = mkOpt (types.listOf types.str) [ "recette" ] "Subdomains that redirect to `subDomain`.";
 
     ai = {
       enable = mkEnableOption "AI features, backed by an OpenAI-compatible or Ollama endpoint";
@@ -37,6 +38,11 @@ in
   };
 
   config = mkIf cfg.enable {
+    ${namespace}.services.traefik.redirects = lib.genAttrs cfg.aliases (_: {
+      to = cfg.subDomain;
+      expose = true;
+    });
+
     sops.secrets = {
       "norish/master-key" = {
         sopsFile = lib.snowfall.fs.get-file "secrets/daf/norish.yaml";

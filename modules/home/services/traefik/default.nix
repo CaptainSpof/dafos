@@ -6,8 +6,12 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf types;
-  inherit (lib.${namespace}) mkOpt;
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    types
+    ;
+  inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.traefik;
 in
@@ -16,11 +20,31 @@ in
   options.${namespace}.services.traefik = {
     enable = mkEnableOption "Whether or not to configure traefik.";
     base-url = mkOpt types.str "daftdaf.dev" "The base url";
+
+    # Aliases redirect instead of serving the app a second time: norish and
+    # kaneo pin their own origin for auth (AUTH_URL / KANEO_CLIENT_URL), so a
+    # login started on another hostname would fail its OIDC callback.
+    redirects = mkOpt (types.attrsOf (
+      types.submodule {
+        options = {
+          to = mkOpt types.str null "Subdomain the alias redirects to.";
+          expose = mkBoolOpt false "Whether the alias is reachable from outside the LAN/tailnet. Match the target.";
+        };
+      }
+    )) { } "Subdomain aliases, keyed by alias, that redirect to another subdomain.";
   };
 
   config = mkIf cfg.enable {
     sops.secrets."cloudflare-api-token" = {
       sopsFile = lib.snowfall.fs.get-file "secrets/daf/cloudflare.yaml";
+    };
+
+    # Immich is a native NixOS service, so its alias lives here rather than in
+    # a service module. A redirect keeps the immich OIDC client's
+    # redirect_uris unchanged.
+    ${namespace}.services.traefik.redirects.photo = {
+      to = "photos";
+      expose = true;
     };
 
     nps.stacks.traefik = {
@@ -66,7 +90,22 @@ in
             middlewares = [ "private@file" ];
             tls.certResolver = "letsencrypt"; # NPS default resolver name
           };
-        };
+        }
+        // lib.mapAttrs' (
+          alias: r:
+          lib.nameValuePair "redirect-${alias}" {
+            rule = "Host(`${alias}.${cfg.base-url}`)";
+            # The redirect middleware always answers first, but a router still
+            # has to name a service.
+            service = "noop@internal";
+            entryPoints = [ "websecure" ];
+            middlewares = [
+              (if r.expose then "public@file" else "private@file")
+              "redirect-${alias}@file"
+            ];
+            tls.certResolver = "letsencrypt"; # NPS default resolver name
+          }
+        ) cfg.redirects;
 
         middlewares = {
           # nps ships `private` as an RFC1918-only ipAllowList; the tailnet lives in
@@ -96,7 +135,16 @@ in
             average = lib.mkForce 250;
             burst = lib.mkForce 500;
           };
-        };
+        }
+        // lib.mapAttrs' (
+          alias: r:
+          lib.nameValuePair "redirect-${alias}" {
+            redirectRegex = {
+              regex = "^https?://[^/]+/(.*)";
+              replacement = "https://${r.to}.${cfg.base-url}/\${1}";
+            };
+          }
+        ) cfg.redirects;
 
         services = {
           immich-service = {
