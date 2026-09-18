@@ -98,12 +98,15 @@ in
           pkce_challenge_method = "";
           pre_configured_consent_duration = config.nps.stacks.authelia.oidc.defaultConsentDuration;
           redirect_uris = [
-            # Both hostnames are routed to the native immich by Traefik, and
-            # Immich derives its redirect uri from the origin it was opened on.
+            # Every hostname Traefik routes to the native immich (see the
+            # traefik module), since Immich derives its redirect uri from the
+            # origin it was opened on.
             "https://immich.daftdaf.dev/auth/login"
             "https://immich.daftdaf.dev/user-settings"
             "https://photos.daftdaf.dev/auth/login"
             "https://photos.daftdaf.dev/user-settings"
+            "https://photo.daftdaf.dev/auth/login"
+            "https://photo.daftdaf.dev/user-settings"
             "app.immich:///oauth-callback"
           ];
           token_endpoint_auth_method = "client_secret_post";

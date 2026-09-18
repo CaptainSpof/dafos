@@ -21,9 +21,10 @@ in
     enable = mkEnableOption "Whether or not to configure traefik.";
     base-url = mkOpt types.str "daftdaf.dev" "The base url";
 
-    # Aliases redirect instead of serving the app a second time: norish and
-    # kaneo pin their own origin for auth (AUTH_URL / KANEO_CLIENT_URL), so a
-    # login started on another hostname would fail its OIDC callback.
+    # For apps that cannot be served on a second hostname. norish's OIDC
+    # callback always lands on AUTH_URL, but better-auth's state cookie was set
+    # on the host the login started from, so a login from an alias fails with
+    # state_mismatch.
     redirects = mkOpt (types.attrsOf (
       types.submodule {
         options = {
@@ -39,14 +40,6 @@ in
       sopsFile = lib.snowfall.fs.get-file "secrets/daf/cloudflare.yaml";
     };
 
-    # Immich is a native NixOS service, so its alias lives here rather than in
-    # a service module. A redirect keeps the immich OIDC client's
-    # redirect_uris unchanged.
-    ${namespace}.services.traefik.redirects.photo = {
-      to = "photos";
-      expose = true;
-    };
-
     nps.stacks.traefik = {
       enable = true;
       domain = cfg.base-url;
@@ -55,8 +48,9 @@ in
       dynamicConfig.http = {
         routers = {
           immich-nix = {
-            # Listen for both domains
-            rule = "Host(`immich.${cfg.base-url}`) || Host(`photos.${cfg.base-url}`)";
+            # Every hostname here needs its redirect_uris in the authelia
+            # immich client.
+            rule = "Host(`immich.${cfg.base-url}`) || Host(`photos.${cfg.base-url}`) || Host(`photo.${cfg.base-url}`)";
             service = "immich-service";
             entryPoints = [ "websecure" ];
             middlewares = [ "public@file" ];

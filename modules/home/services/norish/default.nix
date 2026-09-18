@@ -19,8 +19,8 @@ in
 
   options.${namespace}.services.norish = {
     enable = mkEnableOption "Whether or not to configure norish.";
-    subDomain = mkOpt types.str "norish" "The base url";
-    aliases = mkOpt (types.listOf types.str) [ "recette" ] "Subdomains that redirect to `subDomain`.";
+    subDomain = mkOpt types.str "recette" "The base url";
+    aliases = mkOpt (types.listOf types.str) [ "norish" ] "Subdomains that redirect to `subDomain`.";
 
     ai = {
       enable = mkEnableOption "AI features, backed by an OpenAI-compatible or Ollama endpoint";
