@@ -246,6 +246,16 @@
         vault-service.nixosModules.nixos-vault-service
       ];
 
+      # devenv project shells: `devinit <name>`, or `nix flake init -t self#<name>`.
+      templates = {
+        devenv.description = "Bare devenv shell, activated by direnv";
+        python.description = "devenv shell: Python with uv and a venv";
+        node.description = "devenv shell: Node.js with pnpm";
+        rust.description = "devenv shell: stable Rust toolchain";
+        go.description = "devenv shell: Go, static builds by default";
+      };
+      alias.templates.default = "devenv";
+
       deploy = lib.mkDeploy { inherit (inputs) self; };
 
       outputs-builder = channels: {

@@ -74,6 +74,8 @@ Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkOpt'`,
   vendoring
 - [secrets/AGENTS.md](secrets/AGENTS.md) — sops-nix key groups and secret
   workflow
+- [templates/AGENTS.md](templates/AGENTS.md) — devenv project templates
+  (`devinit`)
 - [modules/home/services/AGENTS.md](modules/home/services/AGENTS.md) —
   self-hosted service stack
 
