@@ -33,7 +33,7 @@ in
         # google-fonts
         julia-mono
         maple-mono.NF
-        iosevka-comfy.comfy
+        # iosevka-comfy.comfy
         mononoki
         # noto-fonts
         # noto-fonts-color-emoji
