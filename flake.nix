@@ -103,10 +103,13 @@
       flake = false;
     };
 
-    # Companion integration for the lovelace-idf-mobilite card. Pinned to the
-    # v0.1.0 tag (early release) so the code matches manifest.json's version.
     idf-mobilite-assistant = {
       url = "github:yyrkoon94/idf-mobilite-assistant/v0.1.0";
+      flake = false;
+    };
+
+    donetick-hass = {
+      url = "github:donetick/donetick-hass-integration/3f3d27b3b46750bfba83b3c7ff6786d0581fe567";
       flake = false;
     };
 

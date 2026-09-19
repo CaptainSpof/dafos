@@ -218,6 +218,20 @@ in
             dontBuild = true;
             doCheck = false;
           })
+          # Chores from the donetick instance as todo/calendar/sensor entities.
+          # Config-flow setup: donetick URL + a per-user API token. No manifest
+          # requirements beyond core HA deps.
+          (pkgs.buildHomeAssistantComponent {
+            owner = "donetick";
+            domain = "donetick";
+            # manifest.json's version; the source itself is pinned to a commit
+            # in flake.nix (upstream has no tags).
+            version = "2.0.1";
+            src = inputs.donetick-hass;
+            dontConfigure = true;
+            dontBuild = true;
+            doCheck = false;
+          })
         ];
 
         customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
