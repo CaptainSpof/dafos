@@ -36,6 +36,10 @@ in
         spliit = {
           inherit (cfg) expose;
           traefik.subDomain = cfg.subDomain;
+
+          extraEnv = {
+            DEFAULT_CURRENCY_CODE = "EUR";
+          };
         };
 
         # Keep the database off the unattended Sunday registry pull (see the
