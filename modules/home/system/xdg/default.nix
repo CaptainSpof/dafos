@@ -176,6 +176,7 @@ let
     "x-scheme-handler/spotify" = [ "spotify.desktop" ];
     "x-scheme-handler/terminal" = terminal;
     "x-scheme-handler/tg" = [ "org.telegram.desktop" ];
+    "x-scheme-handler/trash" = fileManager;
     "x-scheme-handler/unknown" = browser;
     "x-scheme-handler/webcal" = mail;
     "x-scheme-handler/webcals" = mail;
@@ -199,7 +200,6 @@ in
         XDG_MENU_PREFIX = "plasma-";
       };
     };
-
 
     xdg = {
       enable = true;
