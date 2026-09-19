@@ -60,6 +60,7 @@ in
       immich-kiosk = enabled;
       it-tools = enabled;
       kaneo = enabled;
+      kitchenowl = enabled;
       lldap = enabled;
       norish = {
         enable = true;
@@ -70,6 +71,7 @@ in
       reactive-resume = enabled;
       shelfmark = enabled;
       sparky-fitness = enabled;
+      spliit = enabled;
       streaming = enabled;
       traefik = enabled;
     };

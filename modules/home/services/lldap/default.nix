@@ -89,6 +89,7 @@ let
         donetick.oidc.userGroup
         kaneo.oidc.userGroup
         karakeep.oidc.userGroup
+        kitchenowl.oidc.userGroup
         norish.oidc.userGroup
         papra.oidc.userGroup
         reactive-resume.oidc.userGroup
@@ -112,6 +113,7 @@ let
         grimmory.oidc.userGroup
         papra.oidc.userGroup
         donetick.oidc.userGroup
+        kitchenowl.oidc.userGroup
         norish.oidc.userGroup
       ]
       ++ bookorbitGroups;
@@ -128,6 +130,7 @@ let
         streaming.jellyfin.oidc.userGroup
         qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
+        kitchenowl.oidc.userGroup
         norish.oidc.userGroup
       ]
       ++ bookorbitGroups;
