@@ -108,5 +108,19 @@ on is precisely what the hosts disagree about. When a second field starts to
 differ, drop it from the piece the same way rather than adding a parameter or a
 per-host file here.
 
+Where a piece cannot stay neutral — a widget list, say — it takes the
+**leanest** host's shape, so a host that wants more adds rather than subtracts.
+`sideBar` is daftop's sparse right-hand bar for that reason, and dafbox layers
+its busier edge (wallpaper picker, KDE Connect, clight, tailscale, keyboard
+layout, clipboard, VPN) on top in its own file. Re-extract that piece from
+daftop when the two drift again.
+
 The default `bar.configs` is the main bar alone, so a host that says nothing
 still gets something sane.
+
+A bar _style_ is vocabulary, not host shape, so it belongs here rather than in a
+host file: `islandStyle` is an overlay a host merges over a bar
+(`mainBar // islandStyle`) to collapse it into DMS's hover-expanding pill. It
+carries no id, geometry or widgets of its own, and lists only the island keys
+that differ from DMS's `islandDefaults` (`Common/SettingsData.qml`). daftop's
+top bar is built this way; dafbox's is not.

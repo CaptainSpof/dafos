@@ -61,10 +61,6 @@
     ];
     centerWidgets = [
       {
-        id = "timeManager";
-        enabled = false;
-      }
-      {
         id = "music";
         enabled = true;
       }
@@ -145,8 +141,66 @@
     widgetTransparency = 0.8;
   };
 
+  # Turns a bar into a DMS "island": the bar collapses to a floating pill that
+  # expands on hover/click instead of spanning the panel. Merge it over a bar
+  # (`mainBar // islandStyle`) — it is a style, not a bar, so it carries no
+  # widgets, geometry or id of its own.
+  #
+  # The widget lists still apply when the island is expanded; `islandHomeLayout`
+  # is what the collapsed pill shows, and its order is the order on screen. A
+  # bar that enables the `notifications` group here usually wants
+  # `notificationButton` disabled in its rightWidgets, since the pill already
+  # carries the badge.
+  #
+  # Only the values that differ from DMS's island defaults are listed. The rest
+  # (satellites, interaction mode, spring physics, `islandPalette`) are left to
+  # DMS — check `islandDefaults` in `Common/SettingsData.qml` before adding one.
+  islandStyle = {
+    island = true;
+
+    # Just the time in the collapsed pill; DMS's "both" adds the date, which
+    # the pill has no room for next to media.
+    islandHomeClockDisplay = "time";
+
+    islandHomeLayout = [
+      {
+        id = "media";
+        enabled = true;
+      }
+      {
+        id = "clock";
+        enabled = true;
+      }
+      {
+        id = "weather";
+        enabled = true;
+      }
+      {
+        id = "status";
+        enabled = false;
+      }
+      {
+        id = "volume";
+        enabled = false;
+      }
+      {
+        id = "brightness";
+        enabled = false;
+      }
+      {
+        id = "notifications";
+        enabled = true;
+      }
+    ];
+  };
+
   # Vertical auto-hiding utility bar on the right edge: the things that want a
   # click but not a permanent slot on the main bar.
+  #
+  # Sparse on purpose — a notepad, a colour picker and a house sensor, with the
+  # pomodoro timer parked at the top and the tray at the bottom. A host that
+  # wants more hanging off this edge adds to the widget lists; it is easier to
+  # hang something on a bar than to get it back off one.
   #
   # Deliberately has NO screenPreferences — a host sets its own, because which
   # panel this bar belongs on is the thing the hosts disagree about.
@@ -161,14 +215,26 @@
 
     autoHide = true;
     autoHideDelay = 250;
-    clickThrough = true;
+    clickThrough = false;
     maximizeDetection = false;
     openOnOverview = false;
     attachToScreenEdge = false;
     scrollEnabled = false;
     followInterfaceStyle = false;
 
-    leftWidgets = [ ];
+    # The spacer drops the timer clear of the top corner, where the main bar's
+    # right-hand widgets already are.
+    leftWidgets = [
+      {
+        id = "spacer";
+        enabled = true;
+        size = 25;
+      }
+      {
+        id = "dankPomodoroTimer";
+        enabled = true;
+      }
+    ];
     centerWidgets = [
       {
         id = "notepadButton";
@@ -179,63 +245,32 @@
         enabled = true;
       }
       {
-        id = "wallpaperDiscovery";
-        enabled = true;
-      }
-      {
-        id = "dankKDEConnect";
-        enabled = true;
-      }
-      {
-        id = "dankPomodoroTimer";
-        enabled = true;
-      }
-      {
-        id = "dankClight";
-        enabled = true;
-      }
-      {
-        id = "tailscale";
-        enabled = true;
-      }
-      {
         id = "homeAssistantMonitor";
         enabled = true;
       }
     ];
     rightWidgets = [
       {
-        id = "idleInhibitor";
-        enabled = true;
-      }
-      {
         id = "systemTray";
         enabled = true;
       }
       {
-        id = "keyboard_layout_name";
-        enabled = true;
-        keyboardLayoutNameCompactMode = true;
-      }
-      {
-        id = "clipboard";
-        enabled = true;
-      }
-      {
-        id = "vpn";
+        id = "cpuTemp";
         enabled = true;
       }
     ];
 
     # Geometry / spacing
-    innerPadding = 6;
-    spacing = 10;
+    innerPadding = 20;
+    spacing = 4;
     bottomGap = 0;
     fontScale = 1.25;
     popupGapsAuto = true;
     popupGapsManual = 36;
 
-    # Appearance
+    # Appearance. The outline values are here although the outline is off: a
+    # host that turns `widgetOutlineEnabled` on gets the same outline the rest
+    # of the fleet draws, rather than DMS's default primary.
     noBackground = false;
     transparency = 0;
     squareCorners = false;
@@ -247,7 +282,7 @@
     gothCornerRadiusOverride = false;
     gothCornerRadiusValue = 28;
     shadowIntensity = 0;
-    widgetOutlineEnabled = true;
+    widgetOutlineEnabled = false;
     widgetOutlineColor = "secondary";
     widgetOutlineOpacity = 1;
     widgetOutlineThickness = 1;

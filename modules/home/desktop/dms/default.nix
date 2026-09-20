@@ -159,7 +159,7 @@ in
     bar = {
       parts =
         mkOpt lib.types.attrs barParts
-          "Bar/dock building blocks hosts compose from: `mainBar` and `sideBar` (attrsets), `controlCenterWidgets` and `dockConfigs` (lists). Read this to build `configs`; replace an entry to change that piece fleet-wide.";
+          "Bar/dock building blocks hosts compose from: `mainBar` and `sideBar` (bars), `islandStyle` (a style merged over a bar), `controlCenterWidgets` and `dockConfigs` (lists). Read this to build `configs`; replace an entry to change that piece fleet-wide.";
 
       configs =
         mkOpt (with lib.types; listOf attrs) [ cfg.bar.parts.mainBar ]

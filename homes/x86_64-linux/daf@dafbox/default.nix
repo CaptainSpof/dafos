@@ -37,6 +37,73 @@ in
                   model = "LG IPS FULLHD";
                 }
               ];
+
+              # A desk machine can afford a busy edge: everything the fleet bar
+              # leaves off goes here, tightened up to fit and outlined so the
+              # icons stay apart without a background behind them.
+              clickThrough = true;
+              innerPadding = 6;
+              spacing = 10;
+              widgetOutlineEnabled = true;
+
+              leftWidgets = [ ];
+              centerWidgets = [
+                {
+                  id = "notepadButton";
+                  enabled = true;
+                }
+                {
+                  id = "colorPicker";
+                  enabled = true;
+                }
+                {
+                  id = "wallpaperDiscovery";
+                  enabled = true;
+                }
+                {
+                  id = "dankKDEConnect";
+                  enabled = true;
+                }
+                {
+                  id = "dankPomodoroTimer";
+                  enabled = true;
+                }
+                {
+                  id = "dankClight";
+                  enabled = true;
+                }
+                {
+                  id = "tailscale";
+                  enabled = true;
+                }
+                {
+                  id = "homeAssistantMonitor";
+                  enabled = true;
+                }
+              ];
+              rightWidgets = [
+                {
+                  id = "idleInhibitor";
+                  enabled = true;
+                }
+                {
+                  id = "systemTray";
+                  enabled = true;
+                }
+                {
+                  id = "keyboard_layout_name";
+                  enabled = true;
+                  keyboardLayoutNameCompactMode = true;
+                }
+                {
+                  id = "clipboard";
+                  enabled = true;
+                }
+                {
+                  id = "vpn";
+                  enabled = true;
+                }
+              ];
             }
           )
         ];
