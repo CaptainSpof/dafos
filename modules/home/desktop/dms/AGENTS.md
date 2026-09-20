@@ -64,3 +64,49 @@ from activation to put the games back.
 Qt caches plugin components. After editing a plugin, run `plugins reload` —
 otherwise the old component keeps serving and the edit appears to have done
 nothing.
+
+## settings.json is extracted, not authored
+
+DMS persists only values that differ from its own defaults, so a running
+install's `~/.config/DankMaterialShell/settings.json` _is_ the delta.
+[settings.json](settings.json) here is that file, lifted verbatim minus the keys
+[default.nix](default.nix) supplies (`barConfigs`, `controlCenterWidgets`,
+`dockConfigs`, the `enforcedSettings` keys and the commented scalar block).
+
+Re-extract rather than hand-edit, and re-baseline an existing install with:
+
+```bash
+rm ~/.config/DankMaterialShell/settings.json && home-manager switch
+```
+
+DMS renames and regroups settings between versions — `use24HourClock` became
+`clockFormat`, the thirteen top-level `dock*` settings became `dockConfigs`,
+control-center `width` percentages became a `w`/`h` grid, and
+`workspaceFollowFocus` moved inside the `workspaceSwitcher` widget. Check a key
+against `Common/settings/{SettingsSpec,SessionSpec}.js` (and their
+`DankCommon/.../Shared*` counterparts) in the `dms-shell` store path before
+trusting that it still exists; a key DMS no longer knows is dropped silently on
+its next save.
+
+**A setting that only lives in the seed never reaches an existing install** —
+the file is written once and owned by DMS afterwards. Anything that must hold
+goes in `enforcedSettings`, which the `dmsEnforcedSettings` activation patches
+back on every switch. `calendarBackend` is there because a schema migration had
+already reset it to `auto`, silently emptying the dash's calendar card.
+
+## Bars: the module owns the vocabulary, hosts own the layout
+
+dafbox and daftop do not share a bar layout, and **this module holds no host
+names**. [bar.nix](bar.nix) publishes building blocks — `mainBar`, `sideBar`,
+`controlCenterWidgets`, `dockConfigs` — as `dafos.desktop.dms.bar.parts`. Each
+host assembles its own `bar.configs` from those in its
+`homes/daf@<host>/default.nix`, which is also where the display names and panel
+models live.
+
+`sideBar` deliberately ships without `screenPreferences`: which panel it belongs
+on is precisely what the hosts disagree about. When a second field starts to
+differ, drop it from the piece the same way rather than adding a parameter or a
+per-host file here.
+
+The default `bar.configs` is the main bar alone, so a host that says nothing
+still gets something sane.

@@ -1,314 +1,425 @@
-# DMS "bar setup" expressed in Nix: the bar layout (barConfigs) and the
-# control-center quick-settings tiles (controlCenterWidgets). These are the
-# defaults for the dafos.desktop.dms.bar.{configs,controlCenterWidgets} options;
-# override either per host in homes/<user>@<host> to give a machine a different
-# bar / control center (e.g. dafbox has no eDP-1, so it doesn't need "Bar 2").
+# The DMS bar/dock vocabulary every host builds from, published as
+# `dafos.desktop.dms.bar.parts`.
+#
+# Nothing here is a complete setup. A host assembles its own bar list in its
+# `homes/daf@<host>/default.nix` by picking the pieces it wants and overriding
+# what differs — which is where anything host-shaped (display names, panel
+# models) belongs. This file must stay free of host names.
+#
+# Keep a value here only while every host that uses it agrees on it. When two
+# disagree, drop the field from the piece and let each host set it, the way
+# `sideBar` already omits `screenPreferences`.
 #
 # Widget lists accept either a bare id string or an attrset
-# ({ id = ...; enabled = ...; <extra opts> }). Applied via the DMS settings
-# seed, so edits take effect on re-baseline (see the seedDmsSettings note in
-# default.nix).
+# ({ id = ...; enabled = ...; <extra opts> }).
+#
+# `id` fields are DMS's own identifiers. "bar1764155746503" is the opaque id the
+# GUI minted when the side bar was first created; `connectedFrameBarStyleBackups`
+# in ./settings.json keys off it, so it is kept verbatim rather than renamed to
+# something readable.
 {
-  # Bars (DMS `barConfigs`). Each entry is one bar.
-  configs = [
-    {
-      id = "default";
-      name = "Main Bar";
-      enabled = true;
-      visible = true;
-      position = 0; # top
-      screenPreferences = [ "all" ];
-      showOnLastDisplay = true;
+  # Top bar, every display. Workspaces + focused window on the left, media /
+  # clock / weather in the middle, system status on the right.
+  mainBar = {
+    id = "default";
+    name = "Main Bar";
+    enabled = true;
+    visible = true;
+    position = 0; # top
+    screenPreferences = [ "all" ];
+    showOnLastDisplay = true;
 
-      autoHide = false;
-      autoHideDelay = 250;
-      clickThrough = false;
-      maximizeDetection = true;
-      openOnOverview = false;
-      attachToScreenEdge = false;
-      hoverPopouts = false;
+    autoHide = false;
+    autoHideDelay = 250;
+    clickThrough = false;
+    maximizeDetection = true;
+    openOnOverview = false;
+    attachToScreenEdge = false;
+    hoverPopouts = false;
+    followInterfaceStyle = false;
 
-      leftWidgets = [
-        "launcherButton"
-        "workspaceSwitcher"
-        {
-          id = "focusedWindow";
-          enabled = true;
-          focusedWindowCompactMode = true;
-        }
-        {
-          id = "dankPomodoroTimer";
-          enabled = true;
-        }
-      ];
-      centerWidgets = [
-        {
-          id = "timeManager";
-          enabled = false;
-        }
-        {
-          id = "music";
-          enabled = true;
-        }
-        {
-          id = "spacer";
-          enabled = true;
-          size = 20;
-        }
-        {
-          id = "clock";
-          enabled = true;
-        }
-        {
-          id = "spacer";
-          enabled = true;
-          size = 5;
-        }
-        {
-          id = "weather";
-          enabled = true;
-        }
-      ];
-      rightWidgets = [
-        {
-          id = "systemTray";
-          enabled = true;
-        }
-        {
-          id = "network_speed_monitor";
-          enabled = true;
-        }
-        {
-          id = "cpuUsage";
-          enabled = true;
-        }
-        {
-          id = "memUsage";
-          enabled = true;
-        }
-        {
-          id = "notificationButton";
-          enabled = true;
-        }
-        {
-          id = "battery";
-          enabled = true;
-        }
-        {
-          id = "controlCenterButton";
-          enabled = true;
-        }
-      ];
+    leftWidgets = [
+      "launcherButton"
+      {
+        id = "workspaceSwitcher";
+        enabled = true;
+        # Moved here from the top-level workspaceFollowFocus /
+        # workspaceFocusedBorderColor settings, which DMS folded into the
+        # widget itself.
+        workspaceFollowFocus = true;
+        workspaceFocusedBorderColor = "surfaceText";
+      }
+      {
+        id = "focusedWindow";
+        enabled = true;
+        focusedWindowCompactMode = true;
+      }
+      {
+        id = "dankPomodoroTimer";
+        enabled = true;
+      }
+    ];
+    centerWidgets = [
+      {
+        id = "timeManager";
+        enabled = false;
+      }
+      {
+        id = "music";
+        enabled = true;
+      }
+      {
+        id = "spacer";
+        enabled = true;
+        size = 20;
+      }
+      {
+        id = "clock";
+        enabled = true;
+      }
+      {
+        id = "spacer";
+        enabled = true;
+        size = 5;
+      }
+      {
+        id = "weather";
+        enabled = true;
+      }
+    ];
+    rightWidgets = [
+      {
+        id = "systemTray";
+        enabled = true;
+      }
+      {
+        id = "network_speed_monitor";
+        enabled = true;
+      }
+      {
+        id = "cpuUsage";
+        enabled = true;
+      }
+      {
+        id = "memUsage";
+        enabled = true;
+      }
+      {
+        id = "notificationButton";
+        enabled = true;
+      }
+      {
+        id = "battery";
+        enabled = true;
+      }
+      {
+        id = "controlCenterButton";
+        enabled = true;
+      }
+    ];
 
-      # Geometry / spacing
-      innerPadding = 5;
-      spacing = 6;
-      bottomGap = 0;
-      fontScale = 1.05;
-      popupGapsAuto = true;
-      popupGapsManual = 4;
+    # Geometry / spacing
+    innerPadding = 5;
+    spacing = 6;
+    bottomGap = 0;
+    fontScale = 1.05;
+    popupGapsAuto = true;
+    popupGapsManual = 4;
 
-      # Appearance
-      noBackground = true;
-      transparency = 0.75;
-      squareCorners = false;
-      borderEnabled = false;
-      borderColor = "surfaceText";
-      borderOpacity = 1;
-      borderThickness = 1;
-      gothCornersEnabled = false;
-      gothCornerRadiusOverride = false;
-      gothCornerRadiusValue = 12;
-      shadowColorMode = "surface";
-      shadowIntensity = 0;
-      shadowOpacity = 40;
-      widgetOutlineEnabled = false;
-      widgetPadding = 5;
-      widgetTransparency = 0.8;
-    }
+    # Appearance
+    noBackground = true;
+    transparency = 0.75;
+    squareCorners = false;
+    borderEnabled = false;
+    borderColor = "surfaceText";
+    borderOpacity = 1;
+    borderThickness = 1;
+    gothCornersEnabled = false;
+    gothCornerRadiusOverride = false;
+    gothCornerRadiusValue = 12;
+    shadowColorMode = "surface";
+    shadowIntensity = 0;
+    shadowOpacity = 40;
+    widgetOutlineEnabled = false;
+    widgetPadding = 5;
+    widgetTransparency = 0.8;
+  };
 
-    {
-      id = "bar1764155746503";
-      name = "Bar 2";
-      enabled = true;
-      visible = true;
-      position = 3; # right
-      # Pinned to specific panels: daftop's internal display and dafbox's LG
-      # monitor. Hosts without either of those never show this bar.
-      screenPreferences = [
-        {
-          name = "eDP-1";
-          model = "0x8A98";
-        }
-        {
-          name = "HDMI-A-1";
-          model = "LG IPS FULLHD";
-        }
-      ];
-      showOnLastDisplay = false;
-      showOnWindowsOpen = false;
+  # Vertical auto-hiding utility bar on the right edge: the things that want a
+  # click but not a permanent slot on the main bar.
+  #
+  # Deliberately has NO screenPreferences — a host sets its own, because which
+  # panel this bar belongs on is the thing the hosts disagree about.
+  sideBar = {
+    id = "bar1764155746503";
+    name = "Bar 2";
+    enabled = true;
+    visible = true;
+    position = 3; # right
+    showOnLastDisplay = false;
+    showOnWindowsOpen = false;
 
-      autoHide = true;
-      autoHideDelay = 250;
-      maximizeDetection = false;
-      openOnOverview = false;
-      attachToScreenEdge = false;
-      scrollEnabled = false;
+    autoHide = true;
+    autoHideDelay = 250;
+    clickThrough = true;
+    maximizeDetection = false;
+    openOnOverview = false;
+    attachToScreenEdge = false;
+    scrollEnabled = false;
+    followInterfaceStyle = false;
 
-      leftWidgets = [ ];
-      centerWidgets = [
-        {
-          id = "notepadButton";
-          enabled = true;
-        }
-        {
-          id = "colorPicker";
-          enabled = true;
-        }
-        {
-          id = "wallpaperDiscovery";
-          enabled = true;
-        }
-        {
-          id = "dankKDEConnect";
-          enabled = true;
-        }
-        {
-          id = "dankPomodoroTimer";
-          enabled = true;
-        }
-        {
-          id = "dankClight";
-          enabled = true;
-        }
-        {
-          id = "tailscale";
-          enabled = true;
-        }
-        {
-          id = "homeAssistantMonitor";
-          enabled = true;
-        }
-      ];
-      rightWidgets = [
-        {
-          id = "idleInhibitor";
-          enabled = true;
-        }
-        {
-          id = "systemTray";
-          enabled = true;
-        }
-        {
-          id = "keyboard_layout_name";
-          enabled = true;
-          keyboardLayoutNameCompactMode = true;
-        }
-        {
-          id = "clipboard";
-          enabled = true;
-        }
-        {
-          id = "vpn";
-          enabled = true;
-        }
-      ];
+    leftWidgets = [ ];
+    centerWidgets = [
+      {
+        id = "notepadButton";
+        enabled = true;
+      }
+      {
+        id = "colorPicker";
+        enabled = true;
+      }
+      {
+        id = "wallpaperDiscovery";
+        enabled = true;
+      }
+      {
+        id = "dankKDEConnect";
+        enabled = true;
+      }
+      {
+        id = "dankPomodoroTimer";
+        enabled = true;
+      }
+      {
+        id = "dankClight";
+        enabled = true;
+      }
+      {
+        id = "tailscale";
+        enabled = true;
+      }
+      {
+        id = "homeAssistantMonitor";
+        enabled = true;
+      }
+    ];
+    rightWidgets = [
+      {
+        id = "idleInhibitor";
+        enabled = true;
+      }
+      {
+        id = "systemTray";
+        enabled = true;
+      }
+      {
+        id = "keyboard_layout_name";
+        enabled = true;
+        keyboardLayoutNameCompactMode = true;
+      }
+      {
+        id = "clipboard";
+        enabled = true;
+      }
+      {
+        id = "vpn";
+        enabled = true;
+      }
+    ];
 
-      # Geometry / spacing
-      innerPadding = 6;
-      spacing = 10;
-      bottomGap = 0;
-      fontScale = 1.25;
-      popupGapsAuto = true;
-      popupGapsManual = 36;
+    # Geometry / spacing
+    innerPadding = 6;
+    spacing = 10;
+    bottomGap = 0;
+    fontScale = 1.25;
+    popupGapsAuto = true;
+    popupGapsManual = 36;
 
-      # Appearance
-      noBackground = false;
-      transparency = 0;
-      squareCorners = false;
-      borderEnabled = false;
-      borderColor = "surfaceText";
-      borderOpacity = 1;
-      borderThickness = 1;
-      gothCornersEnabled = false;
-      gothCornerRadiusOverride = false;
-      gothCornerRadiusValue = 28;
-      shadowIntensity = 0;
-      widgetOutlineEnabled = true;
-      widgetOutlineColor = "secondary";
-      widgetOutlineOpacity = 1;
-      widgetOutlineThickness = 1;
-      widgetTransparency = 0.8;
-    }
-  ];
+    # Appearance
+    noBackground = false;
+    transparency = 0;
+    squareCorners = false;
+    borderEnabled = false;
+    borderColor = "surfaceText";
+    borderOpacity = 1;
+    borderThickness = 1;
+    gothCornersEnabled = false;
+    gothCornerRadiusOverride = false;
+    gothCornerRadiusValue = 28;
+    shadowIntensity = 0;
+    widgetOutlineEnabled = true;
+    widgetOutlineColor = "secondary";
+    widgetOutlineOpacity = 1;
+    widgetOutlineThickness = 1;
+    widgetTransparency = 0.8;
+  };
 
   # Control-center quick-settings tiles (DMS `controlCenterWidgets`).
-  # Each is { id; enabled; width } where width is a percentage (50 = half row).
+  #
+  # Each is { id; enabled; w; h } on an 8-column grid — `w = 8` is a full row,
+  # `w = 4` a half, `w = 2` a quarter. (DMS replaced the old percentage `width`
+  # field with this grid.)
   controlCenterWidgets = [
     {
       id = "volumeSlider";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "brightnessSlider";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "audioOutput";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "audioInput";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "wifi";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "builtin_vpn";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "bluetooth";
       enabled = true;
-      width = 100;
+      w = 8;
+      h = 1;
     }
     {
       id = "plugin_dankKDEConnect";
       enabled = true;
-      width = 100;
+      w = 8;
+      h = 1;
     }
     {
       id = "nightMode";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "darkMode";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "idleInhibitor";
       enabled = true;
-      width = 25;
+      w = 2;
+      h = 1;
     }
     {
       id = "colorPicker";
       enabled = true;
-      width = 50;
+      w = 4;
+      h = 1;
     }
     {
       id = "doNotDisturb";
       enabled = true;
-      width = 25;
+      w = 2;
+      h = 1;
+    }
+  ];
+
+  # The dock (DMS `dockConfigs`). DMS used to spread this over ~13 top-level
+  # `dock*` settings; they now live inside one config object per dock, the same
+  # shape as a bar.
+  #
+  # `pinnedApps` is NOT here — that is runtime session state, kept declarative
+  # through `dafos.desktop.dms.dockApps` (see ../default.nix).
+  dockConfigs = [
+    {
+      id = "dock";
+      name = "Dock";
+      enabled = true;
+      screenPreferences = [ "all" ];
+      showOnLastDisplay = true;
+      position = 1; # bottom
+
+      mode = "compact";
+      taskbarAlign = "center";
+      widgetExpansion = "popout";
+
+      # Geometry / spacing
+      iconSize = 48;
+      spacing = 8;
+      itemSpacing = 4;
+      margin = 0;
+      bottomGap = 0;
+
+      # Behaviour
+      autoHide = false;
+      smartAutoHide = true;
+      useOverlayLayer = true;
+      editOnRightClick = false;
+      showOnFullscreen = false;
+      openOnOverview = true;
+      groupByApp = false;
+      separatePinnedAndRunningApps = false;
+      restoreSpecialWorkspaceOnClick = false;
+      isolateDisplays = false;
+
+      # Appearance
+      transparency = 0.85;
+      followInterfaceStyle = false;
+      indicatorStyle = "line";
+      borderEnabled = true;
+      borderColor = "primary";
+      borderOpacity = 0.55;
+      borderThickness = 2;
+
+      launcherEnabled = true;
+      launcherLogoMode = "apps";
+      launcherLogoCustomPath = "";
+      launcherLogoColorOverride = "";
+      launcherLogoSizeOffset = 0;
+      launcherLogoBrightness = 0.5;
+      launcherLogoContrast = 1;
+
+      maxVisibleApps = 0;
+      maxVisibleRunningApps = 0;
+      showOverflowBadge = true;
+      showTrash = true;
+      trashFileManager = "default";
+      trashCustomCommand = "";
+
+      order = [ ];
+      widgets = [
+        {
+          id = "dock_launcher";
+          widgetId = "dockLauncher";
+          enabled = true;
+        }
+        {
+          id = "dock_apps";
+          widgetId = "appsDock";
+          enabled = true;
+        }
+        {
+          id = "dock_trash";
+          widgetId = "dockTrash";
+          enabled = true;
+        }
+      ];
     }
   ];
 }

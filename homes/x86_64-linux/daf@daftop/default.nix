@@ -18,6 +18,20 @@ in
     };
 
     desktop = {
+      # Both bars follow whatever display is in use: daftop docks to different
+      # panels (its niri outputs below currently disable eDP-1 in favour of an
+      # external HDMI-A-1), so pinning a bar to a named output would just make
+      # it disappear.
+      dms.bar.configs = with config.${namespace}.desktop.dms.bar.parts; [
+        mainBar
+        (
+          sideBar
+          // {
+            screenPreferences = [ "all" ];
+          }
+        )
+      ];
+
       plasma = {
         touchScreen = false;
         themeSwitcher = false;

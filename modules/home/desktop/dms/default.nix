@@ -64,70 +64,71 @@ let
     '';
   };
 
-  # Bar setup (bar layout + control-center tiles) extracted to Nix; see bar.nix.
-  barSetup = import ./bar.nix;
+  # The bar/dock building blocks hosts compose from; see ./bar.nix. Published
+  # as `bar.parts` below so a host can reach them without importing a path out
+  # of this module.
+  barParts = import ./bar.nix;
 
   # User location (lat/long/name), reused to fix the DMS weather widget's
   # location instead of DMS's IP-based auto location.
   userLocation = config.${namespace}.user.location;
 
-  # DMS's built-in matugen templates this module renders itself. Both sides
-  # writing the same target is the failure mode to avoid (qt6ct and wezterm
-  # collided once), so these gates have to be *enforced*, not just seeded — see
-  # the dmsMatugenTemplates activation below.
-  matugenTemplateOverrides = {
+  # Settings that have to be *enforced*, not merely seeded: settings.json is
+  # written from Nix once and owned by DMS afterwards, so anything added to
+  # dmsSettings alone never reaches an install that already exists — and a DMS
+  # schema migration can silently reset one of these. The dmsEnforcedSettings
+  # activation below patches exactly these keys back on every switch.
+  #
+  # - matugenTemplate*: DMS's built-in templates for the files this module
+  #   renders itself. Both sides writing the same target is the failure mode to
+  #   avoid (qt6ct and wezterm collided once).
+  # - calendarBackend: the dash's calendar card is fed by DankCalendar's dcal
+  #   daemon over IPC. DMS's "auto" looks for khal, which is not configured, so
+  #   a reset here quietly empties the card.
+  enforcedSettings = {
     matugenTemplateGtk = false;
     matugenTemplateQt6ct = false;
     matugenTemplateKcolorscheme = false;
+    calendarBackend = "dankcal";
   };
 
   dmsSettings = lib.recursiveUpdate (lib.importJSON ./settings.json) (
-    matugenTemplateOverrides
+    enforcedSettings
     // {
       barConfigs = cfg.bar.configs;
       controlCenterWidgets = cfg.bar.controlCenterWidgets;
+      dockConfigs = cfg.bar.dockConfigs;
 
-      # Fonts
-      fontFamily = "Inter Variable";
-      monoFontFamily = "Fira Code";
-      fontWeight = 400;
-      fontScale = 1;
+      # Everything below is an intentional delta from DMS's own defaults. The
+      # bulk of the baseline lives in ./settings.json (extracted from a running
+      # install, which persists only non-default values); these are the ones
+      # dafos has a reason to hold, so they are stated here with that reason.
 
-      # Clock & locale
-      use24HourClock = true;
-      showSeconds = false;
-      padHours12Hour = false;
-      firstDayOfWeek = -1; # locale default
-      showWeekNumber = false;
+      # Clock & locale. "24h" rather than DMS's "auto", which follows the
+      # locale — same result today, but not a thing to leave to chance.
+      clockFormat = "24h";
       clockDateFormat = "dddd d MMMM";
-      useFahrenheit = false;
-      windSpeedUnit = "kmh";
 
-      # Calendar events come from DankCalendar's dcal daemon over IPC
-      # (dafos.desktop.dankcalendar), not khal.
-      calendarBackend = "dankcal";
+      # (calendarBackend is not here — it is in `enforcedSettings` above,
+      # because seeding it once was not enough to keep it.)
 
-      # Theming
+      # Theming. `runUserMatugenTemplates` and `syncModeWithPortal` match DMS's
+      # defaults but are load-bearing: the first renders the templates in this
+      # module, the second is the light/dark chain described in AGENTS.md.
       currentThemeName = "dynamic";
       currentThemeCategory = "dynamic";
-      matugenScheme = "scheme-fidelity";
-      matugenContrast = 0;
+      matugenScheme = "scheme-fruit-salad";
+      matugenSourceMode = "value";
       runUserMatugenTemplates = true;
       syncModeWithPortal = true;
       terminalsAlwaysDark = true;
-      iconTheme = "System Default";
-      nightModeEnabled = false;
 
-      # Behaviour
-      weatherEnabled = true;
+      # Weather location is driven from dafos.user.location by the dmsWeather
+      # activation below, so DMS's IP lookup stays off.
       useAutoLocation = false;
-      audioVisualizerEnabled = true;
-      soundsEnabled = true;
-      networkPreference = "ethernet";
 
-      # Launcher logo (path derived from the home directory)
+      networkPreference = "ethernet";
       launcherLogoMode = "os";
-      launcherStyle = "full";
     }
   );
 
@@ -152,13 +153,23 @@ in
       "org.kde.dolphin"
     ] "App IDs (desktop-entry basenames) pinned to the DMS dock, in order. Override per host.";
 
+    # Bars and dock. The defaults here are the generic ones — a host that wants
+    # a bar on a particular panel assembles `configs` itself from `parts`, in
+    # its own homes/daf@<host>/default.nix. See ./bar.nix.
     bar = {
+      parts =
+        mkOpt lib.types.attrs barParts
+          "Bar/dock building blocks hosts compose from: `mainBar` and `sideBar` (attrsets), `controlCenterWidgets` and `dockConfigs` (lists). Read this to build `configs`; replace an entry to change that piece fleet-wide.";
+
       configs =
-        mkOpt (with lib.types; listOf attrs) barSetup.configs
-          "DMS bar layout (barConfigs), in Nix. Defaults to ./bar.nix; override per host for a different set of bars.";
-      controlCenterWidgets =
-        mkOpt (with lib.types; listOf attrs) barSetup.controlCenterWidgets
-          "DMS control-center quick-settings tiles. Defaults to ./bar.nix; override per host.";
+        mkOpt (with lib.types; listOf attrs) [ cfg.bar.parts.mainBar ]
+          "DMS bar layout (barConfigs), in Nix. Defaults to the main bar alone; hosts add their own bars from `parts`.";
+      controlCenterWidgets = mkOpt (
+        with lib.types; listOf attrs
+      ) cfg.bar.parts.controlCenterWidgets "DMS control-center quick-settings tiles.";
+      dockConfigs =
+        mkOpt (with lib.types; listOf attrs) cfg.bar.parts.dockConfigs
+          "DMS dock layout (dockConfigs). Pinned apps are separate — see `dockApps`.";
     };
   };
 
@@ -166,7 +177,7 @@ in
 
     # Qt palette (qt6ct) and KDE colour schemes, matugen-rendered — DMS's own
     # qt6ct/kcolorscheme templates are switched off in favour of these (see
-    # matugenTemplateOverrides). ./colors.nix holds the bodies, and the reason
+    # enforcedSettings). ./colors.nix holds the bodies, and the reason
     # selection and hover pick the roles they do.
     xdg.configFile."matugen/templates/qtct-colors.conf".text = schemes.qtctColors "default";
     xdg.configFile."matugen/templates/kde-colors-default.colors".text =
@@ -255,7 +266,7 @@ in
       # General Matugen settings can go here
       # (wezterm is handled by DMS's own built-in template; everything below is
       # ours, and the DMS templates writing the same files are switched off in
-      # settings.json — see matugenTemplateOverrides.)
+      # settings.json — see enforcedSettings.)
 
       [templates.qt6ct]
       input_path = "${qtctTemplatePath}"
@@ -321,15 +332,15 @@ in
       fi
     '';
 
-    # …with one exception to "seeded once": the gates for the templates this
-    # module renders itself. A settings.json seeded before they existed would
-    # leave DMS rendering its own qt6ct/KDE files over ours (last writer wins,
-    # nondeterministically), so patch just those keys, the way dmsDockApps
-    # patches pinnedApps. A running DMS holds settings in memory, hence the
-    # restart.
-    home.activation.dmsMatugenTemplates = config.lib.dag.entryAfter [ "seedDmsSettings" ] ''
+    # …with one exception to "seeded once": `enforcedSettings` (see the let
+    # binding for what is in it and why each key is there). A settings.json
+    # seeded before one of those keys existed — or a DMS schema migration that
+    # resets it — leaves the install quietly wrong, so patch just those keys,
+    # the way dmsDockApps patches pinnedApps. A running DMS holds settings in
+    # memory, hence the restart.
+    home.activation.dmsEnforcedSettings = config.lib.dag.entryAfter [ "seedDmsSettings" ] ''
       settings=${lib.escapeShellArg dmsSettingsPath}
-      want=${lib.escapeShellArg (builtins.toJSON matugenTemplateOverrides)}
+      want=${lib.escapeShellArg (builtins.toJSON enforcedSettings)}
       if [ -f "$settings" ] && ! ${pkgs.jq}/bin/jq -e --argjson want "$want" \
         'contains($want)' "$settings" >/dev/null; then
         tmp=$(mktemp)

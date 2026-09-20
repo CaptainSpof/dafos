@@ -22,14 +22,34 @@ in
       # M27Q — the monitor Remote Play should stream (headless portal pick).
       niri.screencastOutput = "DP-2";
 
-      dms.dockApps = [
-        "${toString firefox-pkg.meta.mainProgram}"
-        "emacs"
-        "steam"
-        "org.wezfurlong.wezterm"
-        "org.kde.dolphin"
-        "vesktop"
-      ];
+      dms = {
+        # Main bar everywhere; the vertical utility bar only on the secondary
+        # LG panel, so it never covers the M27Q that games and Remote Play
+        # stream from.
+        bar.configs = with config.${namespace}.desktop.dms.bar.parts; [
+          mainBar
+          (
+            sideBar
+            // {
+              screenPreferences = [
+                {
+                  name = "HDMI-A-1";
+                  model = "LG IPS FULLHD";
+                }
+              ];
+            }
+          )
+        ];
+
+        dockApps = [
+          "${toString firefox-pkg.meta.mainProgram}"
+          "emacs"
+          "steam"
+          "org.wezfurlong.wezterm"
+          "org.kde.dolphin"
+          "vesktop"
+        ];
+      };
 
       plasma = {
         themeSwitcher = false;
