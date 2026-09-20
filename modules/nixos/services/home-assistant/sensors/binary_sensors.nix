@@ -12,7 +12,29 @@
     unique_id = "dafos.binary_sensor.global_maybe_home_occupied";
     default_entity_id = "binary_sensor.global_maybe_home_occupied";
     device_class = "occupancy";
-    state = "{{ states('zone.home') | int > 0 }}";
+    # Count real people, never `zone.home`. This used to be
+    # `{{ states('zone.home') | int > 0 }}`, which can never reach 0:
+    # `person.kiosk` is the wall-mounted iPad and its GPS puts it permanently
+    # inside zone.home's 100 m radius, so the zone counter floors at 1 and every
+    # "nobody home" automation downstream silently stops firing. `person.daf`
+    # has no trackers at all and sits at `unknown`.
+    #
+    # `House` is zone.house — radius ~14 m, entirely inside zone.home. A person
+    # standing in it reports `House` instead of `home` because HA picks the
+    # smallest matching zone, and that still means they are home.
+    state = ''
+      {{ states.person
+         | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf'])
+         | selectattr('state', 'in', ['home', 'House'])
+         | list | count > 0 }}
+    '';
+    # Before the person entities load, `states.person` is empty and the state
+    # template would render false — a spurious "nobody home" on every restart.
+    availability = ''
+      {{ states.person
+         | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf'])
+         | list | count > 0 }}
+    '';
   }
   {
     name = "Véranda · daftv is running";

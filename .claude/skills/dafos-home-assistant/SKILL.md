@@ -9,16 +9,26 @@ This instance runs the actual house. Nothing here is a staging environment.
 
 ## API access
 
-Credentials live **outside this repo**, because this repo is public:
+The long-lived admin token is a sops secret, `ha-admin-token` in
+`secrets/daf/home-assistant.yaml`. The server URL is not secret — it already
+appears in several modules.
 
 ```bash
-set -a; . ~/.config/hass/env; set +a     # HASS_SERVER, HASS_TOKEN
-# or just the token
-token=$(cat ~/.config/hass/token)
+export HASS_SERVER=https://home.daftdaf.dev
+export HASS_TOKEN=$(sops -d --extract '["ha-admin-token"]' secrets/daf/home-assistant.yaml)
 ```
 
-The token is admin-equivalent. Never echo it into the transcript, a file in this
-repo, or a URL query string.
+Keep it in a command substitution like that so it never lands in a file or the
+transcript. The token is admin-equivalent: never echo it, write it into this
+repo in plaintext, or put it in a URL query string.
+
+Decryption needs `~/.config/sops/age/keys.txt` or one of daf's user keys, so it
+works from any host in the fleet — see
+[secrets/AGENTS.md](../../../secrets/AGENTS.md).
+
+This is a _separate_ token from `zone-configurator-ha-token` in
+`secrets/daf/everything-presence.yaml`, which belongs to the zone-configurator
+service and is not for ad-hoc API calls.
 
 **REST covers states and services:**
 
