@@ -37,6 +37,9 @@ let
   word = [ "libreoffice-writer.desktop" ];
 
   # Other graphical apps
+  # Claude Desktop self-registers this handler on launch, but cannot: it writes
+  # ~/.config/mimeapps.list, which home-manager owns as a read-only store symlink.
+  claude = [ "com.anthropic.Claude.desktop" ];
   gimp = [ "gimp.desktop" ];
   svg = [ "org.inkscape.Inkscape.desktop" ];
   torrent = [ "org.qbittorrent.qBittorrent.desktop" ];
@@ -166,6 +169,7 @@ let
     "video/*" = video;
     "x-scheme-handler/about" = browser;
     "x-scheme-handler/chrome" = browser;
+    "x-scheme-handler/claude" = claude;
     "x-scheme-handler/discord" = [ "discord.desktop" ]; # TODO: vesktop?
     "x-scheme-handler/ftp" = browser;
     "x-scheme-handler/http" = browser;
