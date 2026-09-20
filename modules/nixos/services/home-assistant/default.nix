@@ -306,7 +306,7 @@ in
             filename = "ui-lovelace.yaml";
           };
 
-          "automation manual" = [ (import ./automations/donetick-chores.nix) ];
+          "automation manual" = [ ];
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
