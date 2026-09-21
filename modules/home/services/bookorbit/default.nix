@@ -48,7 +48,7 @@ in
       to `false` to keep BookOrbit LAN/tailnet-only.
     '';
 
-    image = mkOpt types.str "ghcr.io/bookorbit/bookorbit:2.10.0" "Container image to run.";
+    image = mkOpt types.str "ghcr.io/bookorbit/bookorbit:3.0.0" "Container image to run.";
     dbImage = mkOpt types.str "docker.io/pgvector/pgvector:pg18" ''
       Database image. BookOrbit needs the `uuid-ossp`, `pg_trgm` and `vector`
       extensions, which rules out a plain `postgres` image.
