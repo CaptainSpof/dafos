@@ -60,6 +60,14 @@ in
 
     environment.systemPackages = with pkgs; [ kanata ];
 
+    # GTK 3's built-in compose table predates <dead_circumflex> <period> = ·
+    # (libX11's Compose, used by Qt/xkbcommon, has it), which the accent layer's
+    # middle dot relies on: without this, Firefox/Emacs/GTK type "^." instead.
+    # GTK 3 reads this file in addition to its own table, so nothing else changes.
+    dafos.home.configFile."gtk-3.0/Compose".text = ''
+      <dead_circumflex> <period> : "·" periodcentered
+    '';
+
     services.kanata = {
       enable = true;
 

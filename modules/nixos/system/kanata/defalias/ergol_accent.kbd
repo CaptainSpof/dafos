@@ -12,6 +12,7 @@
 ;; Carriers used (AltGr+Shift+key, all real XKB dead keys on fr(ergol)):
 ;;   q -> dead_circumflex   o -> dead_acute   p -> dead_grave
 ;;   , -> dead_cedilla      z -> dead_tilde
+;;   y -> dead_abovering    r -> dead_currency
 ;;
 ;; IMPORTANT: the second tap must be the plain Latin letter the compose
 ;; engine expects (dead_acute + e = é), NOT the physical key where Ergo-L's
@@ -25,9 +26,11 @@
 ;; second tap and fr(ergol)'s compose state applies it, same as any
 ;; standard AZERTY dead key -- kanata never touches the physical Shift key.
 ;;
-;; Not covered: ï/Ï (diaeresis), œ/Œ, æ/Æ, ß/ẞ. fr(ergol) has no
-;; non-latching carrier anywhere for these; they still fall through to a
-;; plain, unaccented letter when typed after ★.
+;; Not covered (★ + key falls through to the plain key): ä ë ï ö ü ÿ (★★
+;; diaeresis), œ Œ æ Æ ß ẞ µ, … — ‑ ¿ ¡, ’ (★+space), • (★+Shift+,), Greek
+;; (★+g), and the digit row § ¶ ‰ „ ‚ “ ‘ ” ’. Digits 1-5 are still
+;; reachable through the numrow layer (@dk1-5), which uses the legacy latch.
+;; – ‰ ÷ ≠ ± are plain AltGr+Shift chords and need no kanata support.
 (defalias
 
   à (macro AG-S-p a)   ;; dead_grave + a (physical a: base letter a)
@@ -41,6 +44,20 @@
   ç (macro AG-S-, w)   ;; dead_cedilla + c (physical w: base letter c)
   ô (macro AG-S-q e)   ;; dead_circumflex + o (physical e: base letter o)
   û (macro AG-S-q ;)   ;; dead_circumflex + u (physical ;: base letter u)
+
+  ° (macro AG-S-y spc)   ;; dead_abovering + space (★+0)
+  ¢ (macro AG-S-r w)     ;; dead_currency + c (physical w: base letter c) (★+4)
+
+  ;; Middle dot:Ergo-L puts · on ★+, (Level5 of the physical '.' key), which
+  ;; only exists behind the latch. Compose has <dead_circumflex> <period> = ·,
+  ;; and 'n' is the physical key that types '.' at level1. With Shift held
+  ;; (Ergo-L's • ) there is no non-latch route, so the plain key passes through.
+  ;; GTK 3's own compose table lacks this sequence: default.nix ships
+  ;; ~/.config/gtk-3.0/Compose to add it.
+  · (switch
+    ((input real lsft) (input real rsft)) . break
+    () (macro AG-S-q n) break
+  )
 
   ;; ★'s other XKB levels are still real, useful characters on fr(ergol):
   ;; Shift+★ = ! , AltGr+★ = ' , AltGr+Shift+★ = dead_acute (bare mark).
