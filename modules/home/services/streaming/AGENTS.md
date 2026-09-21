@@ -1,33 +1,41 @@
 # streaming (Jellyfin and the arrs)
 
-## Jellyfin's image will not update itself
+## Jellyfin's image tag moves, so auto-update is off
 
-nps pins the image and renovate keeps it current — except for Jellyfin, where
-linuxserver changed its tag shape from a bare `10.11.11` to `12.1ubu2604-ls50`.
-nps' rule no longer matches the 12.x line, so the pin here is a `lib.mkForce`
-and **bumping it is a manual job**. The current tag is in
-`api.linuxserver.io/api/v1/images?key=jellyfin`; do not wait for an upstream
-bump that will not arrive.
+The pin is upstream's: nps carries Jellyfin 12.1 plus a renovate regex for
+linuxserver's `version-<v>ubu<n>` tag shape, which is what its old rule could
+not match. Nothing to override here any more — let renovate bump it.
 
-### Patch `encoding.xml` before taking 12.x
+What _is_ set locally is `autoUpdate = "local"`, because `version-*` is a moving
+tag: `12.1ubu2604-ls49` and `-ls50` are distinct builds of the same Jellyfin and
+`version-12.1ubu2604` follows the newer one. On the default `registry` policy
+the Sunday 00:00 pull would roll linuxserver rebuilds unattended into a
+container holding a database. Same reasoning as the data-bearing containers in
+the grimmory module.
 
-10.11 writes `<EncoderPreset xsi:nil="true" />`; 12.x cannot deserialize that,
+### Patch `encoding.xml` before taking a new major
+
+10.11 wrote `<EncoderPreset xsi:nil="true" />`; 12.x cannot deserialize that,
 logs `Error loading configuration file: "/config/encoding.xml"`, and silently
-falls back to defaults **for the whole file** — which resets
-`HardwareAccelerationType` from `qsv` to `none` and blanks `QsvDevice`, so this
-box quietly stops using QuickSync and transcodes on CPU. Found by dry-run, not
-in any release note. Before switching:
+falls back to defaults **for the whole file** — which reset
+`HardwareAccelerationType` from `qsv` to `none` and blanked `QsvDevice` and
+`HardwareDecodingCodecs`, so the box quietly transcoded on CPU. It was in no
+release note, and it fired here on 2026-09-16. The fix was one element:
 
 ```bash
 sed -i 's|<EncoderPreset xsi:nil="true" />|<EncoderPreset>auto</EncoderPreset>|' \
   ~/stacks/streaming/jellyfin/encoding.xml
 ```
 
-With that one element fixed the file parses and every encoding setting survives.
+Kept as a worked example rather than a live instruction: before any future
+major, diff `encoding.xml` against a dry-run copy and check the
+hardware-acceleration block specifically. Note this box has **two** render
+nodes, so `QsvDevice` wants `/dev/dri/renderD128` explicitly rather than blank
+auto-detection.
 
-Going from 10.11 to 12.x is also one-way: it migrates the database, upstream
-says rolling back needs a full restore of `~/stacks/streaming/jellyfin`, and a
-full library rescan is required afterwards.
+A major upgrade is also one-way: it migrates the database, upstream says rolling
+back needs a full restore of `~/stacks/streaming/jellyfin`, and a full library
+rescan is required afterwards.
 
 ## Plugin directories must be writable
 

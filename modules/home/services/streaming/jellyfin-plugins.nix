@@ -46,6 +46,10 @@ let
     );
 
   # `stripRoot = false`: every one of these archives is flat.
+  #
+  # Take the hash from the failing build, not from `nix store prefetch-file
+  # --unpack` -- for the single-file archives (Intro Skipper, Jellyfin Enhanced)
+  # the two disagree, and prefetch wins you one wasted build every bump.
   fetchPlugin =
     {
       pname,
@@ -181,14 +185,14 @@ rec {
   # server version.
   jellyfin-enhanced = fetchPlugin {
     pname = "jellyfin-enhanced";
-    version = "12.7.0.0";
-    dirName = "JellyfinEnhanced_12.7.0.0";
+    version = "12.8.0.0";
+    dirName = "JellyfinEnhanced_12.8.0.0";
     supersedes = [
       "JellyfinEnhanced_*"
       "Jellyfin Enhanced_*"
     ];
-    url = "https://github.com/n00bcodr/Jellyfin-Enhanced/releases/download/12.7.0.0/Jellyfin.Plugin.JellyfinEnhanced_12.0.0.zip";
-    hash = "sha256-+EO6htqP4jdVZ19puPoSqsMuasRcbpyg8temF5ecWu8=";
+    url = "https://github.com/n00bcodr/Jellyfin-Enhanced/releases/download/12.8.0.0/Jellyfin.Plugin.JellyfinEnhanced_12.0.0.zip";
+    hash = "sha256-qUOpYlS2WDwZiiqoK3V1YVrrVf0ayrYEamZoRgx0ew0=";
     meta = {
       guid = "f69e946a-4b3c-4e9a-8f0a-8d7c1b2c4d9b";
       name = "Jellyfin Enhanced";

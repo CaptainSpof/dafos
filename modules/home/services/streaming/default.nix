@@ -132,17 +132,19 @@ in
             jellyfin = {
               expose = true;
 
-              # nps pins 10.11.11 and will not move on its own: linuxserver
-              # changed its tag shape to `12.1ubu2604-ls50` (it used to be a
-              # bare `10.11.11`), so nps' renovate rule no longer matches the
-              # 12.x line at all.
+              # The image pin is upstream's again: nps carries 12.1 and a
+              # renovate regex for linuxserver's `version-<v>ubu<n>` tag shape,
+              # which is what its old rule could not match.
               #
-              # One-way trip. 12.x migrates the database and upstream is
-              # explicit that rolling back needs a full restore of
-              # `${config.nps.storageBaseDir}/streaming/jellyfin`, and a full
-              # library rescan is required afterwards to rebuild the
-              # alternate-version links it drops on the way through.
-              image = lib.mkForce "lscr.io/linuxserver/jellyfin:12.1ubu2604-ls50";
+              # But that tag *moves* -- `12.1ubu2604-ls49` and `-ls50` are
+              # distinct builds of the same Jellyfin, and `version-12.1ubu2604`
+              # follows the newer one -- so on the default `registry` policy the
+              # Sunday 00:00 pull would roll linuxserver rebuilds unattended
+              # into a container holding a database. `local` keeps it on the
+              # image already on disk and moves upgrades onto a rebuild, where
+              # they are a reviewable diff. Same reasoning as the data-bearing
+              # containers in the grimmory module.
+              autoUpdate = "local";
 
               # `volumeMap`, not `volumes`. nps builds `volumes` as
               #
@@ -164,13 +166,17 @@ in
               # Ours only -- `mkForce` drops nps' own entry for SSO-Auth.xml.
               #
               # That entry never actually reached the container (the `volumes`
-              # mkForce above discarded it), so the working SSO configuration is
-              # the stateful file, and it has diverged from what nps generates:
-              # it holds `CanonicalLinks` -- the Authelia-subject-to-Jellyfin-user
-              # account links -- plus `DisablePushedAuthorization` and
-              # `UseClientSecretBasic`, none of which the template reproduces.
-              # Mounting it now would silently detach every linked account and
-              # revert two settings Authelia login depends on.
+              # mkForce that used to be above discarded it), so the working SSO
+              # configuration is the stateful file, and it holds one thing no
+              # template can: `CanonicalLinks`, the Authelia-subject-to-Jellyfin-user
+              # account links. Mounting the template would silently detach every
+              # linked account.
+              #
+              # That is now the *only* reason. nps a5f7e7f added
+              # `DisablePushedAuthorization` to its template, and
+              # `UseClientSecretBasic` is a plain bool defaulting to false,
+              # which is the live value -- so if account linking ever moves out
+              # of this file, the override can go.
               #
               # LDAP-Auth has no equivalent: its `LdapUsers` is a uid-to-guid
               # cache the plugin rebuilds, which is why its config can be
