@@ -12,6 +12,7 @@ before deploying.
 | Situation                                      | Where                                                |
 | ---------------------------------------------- | ---------------------------------------------------- |
 | Upstream ships a container and nps has a stack | nps stack here                                       |
+| Upstream ships a container, nps has no stack   | stack in `../stacks/<name>` + dafos wrapper here     |
 | Upstream has a maintained NixOS module         | `modules/nixos/services/<name>`                      |
 | Neither, and it is a plain program             | package it in `packages/`, run it as a NixOS service |
 
@@ -52,6 +53,13 @@ A stack reads `secrets/daf/*.yaml`. Prefer systemd `LoadCredential` over reading
 
 `Obsolete option nps.stacks.ittools` appears on every dafbox and daftop build.
 It comes from nix-podman-stacks, not from dafos, and cannot be fixed here.
+
+## Local stacks
+
+A container that nps doesn't cover becomes an nps-style stack under
+[../stacks](../stacks/AGENTS.md), with a thin wrapper here. Renovate keeps its
+image pins current, and a VM test boots it on every PR. Read that file for the
+image-pin and `vm-test.nix` rules.
 
 ## Adding one
 

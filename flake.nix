@@ -263,6 +263,25 @@
 
       outputs-builder = channels: {
         formatter = inputs.treefmt-nix.lib.mkWrapper channels.nixpkgs ./treefmt.nix;
+
+        # VM boot tests for the local nps stacks, one per
+        # modules/home/stacks/<name>/vm-test.nix. Kept out of `checks`: they
+        # pull images, so they need `--option sandbox false`. See
+        # modules/home/stacks/AGENTS.md.
+        integrationTests =
+          let
+            inherit (channels.nixpkgs) lib;
+            stacks = builtins.filter (name: builtins.pathExists ./modules/home/stacks/${name}/vm-test.nix) (
+              builtins.attrNames (
+                lib.filterAttrs (_: type: type == "directory") (builtins.readDir ./modules/home/stacks)
+              )
+            );
+            mkTest = import ./tests/integration/vm.nix {
+              inherit inputs;
+              pkgs = channels.nixpkgs;
+            };
+          in
+          lib.genAttrs' stacks (name: lib.nameValuePair "${name}-integration" (mkTest name));
       };
     };
 }

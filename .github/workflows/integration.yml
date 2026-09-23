@@ -1,0 +1,102 @@
+# Boots the local nps stacks (modules/home/stacks/<name>) in a NixOS VM and
+# checks their containers come up and stay up. Adapted from nix-podman-stacks'
+# own integration workflow; see modules/home/stacks/AGENTS.md.
+name: integration
+on:
+  workflow_dispatch:
+    inputs:
+      stacks:
+        description: "Stacks to test (comma-separated) or 'all' (default: affected stacks)"
+        type: string
+        required: false
+  push:
+    branches:
+      - main
+  pull_request:
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      stacks: ${{ steps.affected.outputs.stacks }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Filter changed files
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          list-files: json
+          filters: |
+            stacks:
+              - 'modules/home/stacks/**'
+            all:
+              - 'flake.lock'
+              - 'flake.nix'
+              - 'tests/integration/**'
+              - '.github/workflows/integration.yml'
+      - name: Determine affected stacks
+        id: affected
+        env:
+          STACK_FILES: ${{ steps.filter.outputs.stacks_files }}
+          ALL_CHANGED: ${{ steps.filter.outputs.all }}
+          MANUAL_STACKS: ${{ inputs.stacks }}
+        run: |
+          set -euo pipefail
+
+          if [[ -n "$MANUAL_STACKS" && "$MANUAL_STACKS" != "all" ]]; then
+            STACKS=$(echo "$MANUAL_STACKS" | tr ',' '\n')
+          elif [[ "$MANUAL_STACKS" == "all" || "$ALL_CHANGED" == "true" ]]; then
+            # An nps bump (flake.lock) or a harness change can break any stack.
+            STACKS=$(for d in modules/home/stacks/*/; do basename "$d"; done)
+          else
+            STACKS=$(echo "${STACK_FILES:-[]}" | jq -r '.[]' | cut -d/ -f4 | sort -u || true)
+          fi
+
+          # Keep only stacks that actually ship a vm-test.nix
+          FILTERED=()
+          for s in $STACKS; do
+            if [[ -f "modules/home/stacks/$s/vm-test.nix" ]]; then
+              FILTERED+=("$s")
+            fi
+          done
+
+          STACKS_JSON=$(jq -n -c '$ARGS.positional' --args "${FILTERED[@]}")
+          echo "stacks=$STACKS_JSON" >> "$GITHUB_OUTPUT"
+  integration:
+    needs: detect
+    if: needs.detect.outputs.stacks != '[]'
+    runs-on: ubuntu-latest
+    name: integration (${{ matrix.stack }})
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJson(needs.detect.outputs.stacks) }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          # nix-podman-stacks uses the `|>` operator
+          extra_nix_config: "experimental-features = nix-command flakes pipe-operators"
+      - name: Restore and cache Nix store
+        uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ matrix.stack }}-${{ hashFiles('flake.lock', 'modules/home/stacks/**', 'tests/integration/**') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-${{ matrix.stack }}-
+          gc-max-store-size-linux: 1073741824
+          purge: false
+      - name: Run integration test
+        env:
+          STACK: ${{ matrix.stack }}
+        # sandbox off: the VM pulls images from the registries
+        run: nix build ".#integrationTests.x86_64-linux.$STACK-integration" --no-link --option sandbox false -L

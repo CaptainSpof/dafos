@@ -68,9 +68,9 @@ in
 
   config = lib.mkIf cfg.enable {
     services.podman.containers.${name} = {
-      # renovate: versioning=semver
       # 0.40.0+ is required for Immich v3 (older versions expect assets
       # embedded in the album response and log "no assets found").
+      # renovate: versioning=semver
       image = "ghcr.io/damongolding/immich-kiosk:0.43.1";
 
       port = 3000;
