@@ -38,5 +38,7 @@ nix build .#integrationTests.x86_64-linux.<name>-integration --no-link --option 
 The sandbox has to be off because the VM pulls images, which is also why these
 tests are not in `checks`. CI (`.github/workflows/integration.yml`) runs the
 stacks a PR touches, or all of them when `flake.lock` or the harness changes.
-Snowfall only imports `default.nix`, so a `vm-test.nix` never reaches a real
-home.
+`flake.lock` itself moves through Renovate's weekly lock-file maintenance PR
+(Monday morning), which therefore boots every stack. Merging it is left to a
+human, because nothing in CI covers the hosts themselves. Snowfall only imports
+`default.nix`, so a `vm-test.nix` never reaches a real home.
