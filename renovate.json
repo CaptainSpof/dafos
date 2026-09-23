@@ -2,15 +2,16 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": ["config:recommended", "docker:enableMajor"],
 	"timezone": "Europe/Paris",
-	"enabledManagers": ["custom.regex"],
+	"enabledManagers": ["custom.regex", "nix"],
 	"platformAutomerge": false,
 	"packageRules": [
 		{
-			"description": "Merge minor/patch/digest bumps of >=1.0 images once the VM boot test is green",
+			"description": "Merge minor/patch/digest bumps of >=1.0 images once the VM boot test is green (images only: flake input refs such as the HA integrations stay manual)",
 			"matchUpdateTypes": ["minor", "patch", "digest"],
 			"matchCurrentVersion": "!/^v?0\\./",
 			"automerge": true,
-			"automergeType": "pr"
+			"automergeType": "pr",
+			"matchDatasources": ["docker"]
 		},
 		{
 			"matchManagers": ["custom.regex"],
@@ -33,6 +34,12 @@
 				"/meilisearch/"
 			],
 			"enabled": false
+		},
+		{
+			"description": "Flake inputs that track a branch move with the weekly lock file maintenance PR, not one PR each",
+			"matchManagers": ["nix"],
+			"matchUpdateTypes": ["digest"],
+			"enabled": false
 		}
 	],
 	"customManagers": [
@@ -47,5 +54,15 @@
 			"versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}",
 			"extractVersionTemplate": "{{#if extractVersion}}{{{extractVersion}}}{{/if}}"
 		}
-	]
+	],
+	"lockFileMaintenance": {
+		"enabled": true,
+		"description": "Weekly nix flake update; the integration workflow boots every local stack on flake.lock changes. Left for review: stack tests do not cover the hosts.",
+		"schedule": ["before 6am on monday"],
+		"commitMessageAction": "bump",
+		"automerge": false
+	},
+	"nix": {
+		"enabled": true
+	}
 }
