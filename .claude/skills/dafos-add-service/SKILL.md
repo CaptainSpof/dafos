@@ -11,12 +11,12 @@ first — this skill is the ordered procedure, those hold the reasoning.
 
 ## 1. Decide where it lives
 
-| Situation                               | Where                                                        | Shape                               |
-| --------------------------------------- | ------------------------------------------------------------ | ----------------------------------- |
-| nix-podman-stacks has a stack           | `modules/home/services/<name>`                               | `nps.stacks.<name>`                 |
-| Container exists, nps does not cover it | `modules/home/services/<name>`                               | `services.podman.containers.<name>` |
-| A maintained NixOS module exists        | `modules/nixos/services/<name>`                              | upstream options                    |
-| Neither; it is a plain program          | package in `packages/`, service in `modules/nixos/services/` | systemd unit                        |
+| Situation                               | Where                                                        | Shape                     |
+| --------------------------------------- | ------------------------------------------------------------ | ------------------------- |
+| nix-podman-stacks has a stack           | `modules/home/services/<name>`                               | `nps.stacks.<name>`       |
+| Container exists, nps does not cover it | `modules/home/stacks/<name>` + wrapper in `services/<name>`  | local `nps.stacks.<name>` |
+| A maintained NixOS module exists        | `modules/nixos/services/<name>`                              | upstream options          |
+| Neither; it is a plain program          | package in `packages/`, service in `modules/nixos/services/` | systemd unit              |
 
 Most of the fleet is the first row. The choice matters for OIDC — see step 4.
 
@@ -53,6 +53,13 @@ in
 Pin container images by digest when upstream is known to re-push tags, and say
 why in a comment — the norish module is the reference for how much detail that
 deserves.
+
+A local stack (row two) follows `modules/home/stacks/AGENTS.md`, with
+bar-assistant and bookorbit as the worked examples. The stack takes secret
+_file_ options and never touches sops; the wrapper in `services/<name>` feeds it
+sops paths. Pin images as inline `image = "repo:tag";` so Renovate can see them,
+and ship a `vm-test.nix`. Build that test before you commit; it catches images
+that exit at startup.
 
 ## 3. Secrets
 

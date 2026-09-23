@@ -1,0 +1,51 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["config:recommended", "docker:enableMajor"],
+	"timezone": "Europe/Paris",
+	"enabledManagers": ["custom.regex"],
+	"platformAutomerge": false,
+	"packageRules": [
+		{
+			"description": "Merge minor/patch/digest bumps of >=1.0 images once the VM boot test is green",
+			"matchUpdateTypes": ["minor", "patch", "digest"],
+			"matchCurrentVersion": "!/^v?0\\./",
+			"automerge": true,
+			"automergeType": "pr"
+		},
+		{
+			"matchManagers": ["custom.regex"],
+			"additionalBranchPrefix": "{{parentDir}}-"
+		},
+		{
+			"description": "Multi-container stacks: bump their images together",
+			"matchDatasources": ["docker"],
+			"matchPackageNames": ["/barassistant/"],
+			"groupName": "{{parentDir}}"
+		},
+		{
+			"description": "Databases and search indexes need a planned migration, not a drive-by bump",
+			"matchDatasources": ["docker"],
+			"matchPackageNames": [
+				"/postgres/",
+				"/pgvector/",
+				"/redis/",
+				"/valkey/",
+				"/meilisearch/"
+			],
+			"enabled": false
+		}
+	],
+	"customManagers": [
+		{
+			"customType": "regex",
+			"description": "Container image pins: image = \"repo:tag\";",
+			"managerFilePatterns": ["/.*\\.nix$/"],
+			"matchStrings": [
+				"(?:# renovate: (?:versioning=(?<versioning>[^\\s]+)\\s+)?(?:extractVersion=(?<extractVersion>[^\\s]+)\\s*)?)?image\\s*=\\s*\"(?<depName>[^:\"]+):(?<currentValue>[^\"\\s]+)\"\\s*;"
+			],
+			"datasourceTemplate": "docker",
+			"versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}",
+			"extractVersionTemplate": "{{#if extractVersion}}{{{extractVersion}}}{{/if}}"
+		}
+	]
+}
