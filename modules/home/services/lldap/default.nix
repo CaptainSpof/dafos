@@ -53,10 +53,11 @@ let
   avatarFileUrl = id: "file://${avatarDir}/${id}.jpg";
   avatarUrl = id: "https://${cfg.avatarSubDomain}.${cfg.domain}/${id}.jpg";
 
-  # BookOrbit has no nps stack, so its group name lives on the dafos module
-  # rather than under `nps.stacks`. Guarded on the module being on: LLDAP's
-  # bootstrap would otherwise put users in a group nothing declares.
-  bookorbit = config.${namespace}.services.bookorbit;
+  # BookOrbit's stack is local to dafos (modules/home/stacks/bookorbit), so
+  # its group is not in the upstream `with config.nps.stacks` lists below.
+  # Guarded on the stack being on: LLDAP's bootstrap would otherwise put users
+  # in a group nothing declares.
+  inherit (config.nps.stacks) bookorbit;
   bookorbitGroups = lib.optional (
     bookorbit.enable && bookorbit.oidc.registerClient
   ) bookorbit.oidc.userGroup;
