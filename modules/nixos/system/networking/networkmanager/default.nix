@@ -24,10 +24,8 @@ in
         };
 
         plugins = with pkgs; [
-          # networkmanager-l2tp
           networkmanager-openvpn
-          networkmanager-sstp
-          networkmanager-vpnc
+          networkmanager-libreswan
         ];
 
         unmanaged =
