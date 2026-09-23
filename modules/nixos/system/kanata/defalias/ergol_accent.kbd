@@ -13,6 +13,9 @@
 ;;   q -> dead_circumflex   o -> dead_acute   p -> dead_grave
 ;;   , -> dead_cedilla      z -> dead_tilde
 ;;   y -> dead_abovering    r -> dead_currency
+;;   pause -> Multi_key (xkb option compose:paus, set in
+;;            modules/nixos/system/xkb/default.nix -- fr(ergol) itself has no
+;;            key bound to Multi_key, so this borrows the unused Pause key)
 ;;
 ;; IMPORTANT: the second tap must be the plain Latin letter the compose
 ;; engine expects (dead_acute + e = é), NOT the physical key where Ergo-L's
@@ -26,10 +29,21 @@
 ;; second tap and fr(ergol)'s compose state applies it, same as any
 ;; standard AZERTY dead key -- kanata never touches the physical Shift key.
 ;;
+;; œ/Œ and æ/Æ have no dead-key route: the only Compose sequence for them is
+;; <Multi_key> <o> <e> = œ (and <a> <e> = æ), and fr(ergol) has no key bound
+;; to Multi_key by default. Fixed above by remapping Pause to Multi_key via
+;; the compose:paus xkb option; kanata taps it as an ordinary carrier, same
+;; shape as the dead-key combos. Verified directly against GTK3's compose
+;; engine (not just the raw libX11 Compose file) before relying on it, since
+;; an earlier attempt via kanata's `unicode` action (Ctrl+Shift+U) turned out
+;; to be unusable here -- Wayland apps typed the raw hex digits instead of
+;; entering Unicode-input mode, exactly the failure kanata's own docs warn
+;; about for that action.
+;;
 ;; Not covered (★ + key falls through to the plain key): ä ë ï ö ü ÿ (★★
-;; diaeresis), œ Œ æ Æ ß ẞ µ, … — ‑ ¿ ¡, ’ (★+space), • (★+Shift+,), Greek
-;; (★+g), and the digit row § ¶ ‰ „ ‚ “ ‘ ” ’. Digits 1-5 are still
-;; reachable through the numrow layer (@dk1-5), which uses the legacy latch.
+;; diaeresis), ß ẞ µ, … — ‑ ¿ ¡, ’ (★+space), • (★+Shift+,), Greek (★+g),
+;; and the digit row § ¶ ‰ „ ‚ “ ‘ ” ’. Digits 1-5 are still reachable
+;; through the numrow layer (@dk1-5), which uses the legacy latch.
 ;; – ‰ ÷ ≠ ± are plain AltGr+Shift chords and need no kanata support.
 (defalias
 
@@ -47,6 +61,12 @@
 
   ° (macro AG-S-y spc)   ;; dead_abovering + space (★+0)
   ¢ (macro AG-S-r w)     ;; dead_currency + c (physical w: base letter c) (★+4)
+
+  ;; Uppercase (Œ, Æ) falls out for free, same as the dead-key combos: hold
+  ;; real Shift through the second and third tap and Compose matches the
+  ;; separate <Multi_key> <O> <E> = Œ entry.
+  œ (macro pause e d)   ;; Multi_key o e (physical e/d: base letters o/e)
+  æ (macro pause a d)   ;; Multi_key a e (physical a/d: base letters a/e)
 
   ;; Middle dot:Ergo-L puts · on ★+, (Level5 of the physical '.' key), which
   ;; only exists behind the latch. Compose has <dead_circumflex> <period> = ·,

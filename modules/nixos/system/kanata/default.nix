@@ -25,7 +25,7 @@ let
   baseFile = "deflayer/base_lt_hrm.kbd";
   symbolsFile = "deflayer/symbols_noop_num.kbd";
   navigationFile = "deflayer/navigation_vim.kbd";
-  accentFile = "deflayer/accent_ergol.kbd";
+  accentFile = "deflayer/accent.kbd";
   switcherFile = "deflayer/switcher.kbd";
   layoutAliasFile = "defalias/ergol_pc.kbd";
   accentAliasFile = "defalias/ergol_accent.kbd";

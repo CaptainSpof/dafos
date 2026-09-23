@@ -22,7 +22,10 @@ in
       xkb = {
         layout = "fr";
         variant = "ergol";
-        options = "caps:escape";
+        # compose:paus binds the otherwise-unused Pause key to Multi_key, so
+        # kanata (defalias/ergol_accent.kbd) can reach Compose sequences that
+        # have no dead-key route on fr(ergol), like œ/æ.
+        options = "caps:escape,compose:paus";
       };
     };
   };
