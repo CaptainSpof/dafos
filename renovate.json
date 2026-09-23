@@ -6,12 +6,13 @@
 	"platformAutomerge": false,
 	"packageRules": [
 		{
-			"description": "Merge minor/patch/digest bumps of >=1.0 images once the VM boot test is green (images only: flake input refs such as the HA integrations stay manual)",
+			"description": "Merge minor/patch/digest bumps of >=1.0 images in modules/home/stacks once the VM boot test is green. Pins elsewhere (e.g. lldap avatar nginx) have no boot test, and a skipped test counts as green, so they wait for review",
 			"matchUpdateTypes": ["minor", "patch", "digest"],
 			"matchCurrentVersion": "!/^v?0\\./",
 			"automerge": true,
 			"automergeType": "pr",
-			"matchDatasources": ["docker"]
+			"matchDatasources": ["docker"],
+			"matchFileNames": ["modules/home/stacks/**"]
 		},
 		{
 			"matchManagers": ["custom.regex"],
@@ -64,5 +65,6 @@
 	},
 	"nix": {
 		"enabled": true
-	}
+	},
+	"prHourlyLimit": 0
 }
