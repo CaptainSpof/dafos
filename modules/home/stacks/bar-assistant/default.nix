@@ -152,7 +152,7 @@ in
       # start, so it must come up after Meilisearch is actually answering.
       ${name} = {
         # renovate: versioning=semver
-        image = "docker.io/barassistant/server:6.8.0";
+        image = "docker.io/barassistant/server:6.8.1";
 
         # The SQLite database (`database.ba3.sqlite`) and the uploads live here.
         volumeMap.data = "${storage}/data:/var/www/cocktails/storage/bar-assistant";
