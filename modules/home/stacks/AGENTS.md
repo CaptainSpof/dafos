@@ -31,6 +31,14 @@ unless the test imports authelia. If the app refuses to start without some
 setting (immich-kiosk wants an API key), give it a dummy value; don't boot its
 backend.
 
+**Test with the real app config, not the defaults.** If the wrapper in
+`../services/<name>` feeds the app a config file, move that config into a plain
+sibling file (`settings.nix`, not a module), import it from both the wrapper and
+`vm-test.nix`, and check they produce the same store path. Otherwise a bump that
+renames config keys passes CI and crash-loops in production: immich-kiosk 0.44
+did exactly that. CI also runs a stack's test when its `services/<name>` wrapper
+changes.
+
 ```bash
 nix build .#integrationTests.x86_64-linux.<name>-integration --no-link --option sandbox false -L
 ```
