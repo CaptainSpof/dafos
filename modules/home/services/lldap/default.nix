@@ -214,7 +214,7 @@ in
       # its docroot on 8080 with no config of our own, and has no autoindex, so
       # only the exact `<user>.jpg` paths are reachable.
       avatars = {
-        image = "docker.io/nginxinc/nginx-unprivileged:1.30.4-alpine";
+        image = "docker.io/nginxinc/nginx-unprivileged:1.31.6-alpine";
         volumeMap.avatars = "${avatarRoot}:/usr/share/nginx/html:ro";
         port = 8080;
         traefik = {
