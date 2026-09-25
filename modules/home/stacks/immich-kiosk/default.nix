@@ -71,7 +71,7 @@ in
       # 0.40.0+ is required for Immich v3 (older versions expect assets
       # embedded in the album response and log "no assets found").
       # renovate: versioning=semver
-      image = "ghcr.io/damongolding/immich-kiosk:0.44.0";
+      image = "ghcr.io/damongolding/immich-kiosk:0.44.1";
 
       port = 3000;
 
