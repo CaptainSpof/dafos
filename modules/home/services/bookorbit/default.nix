@@ -17,7 +17,8 @@ in
 {
   options.${namespace}.services.bookorbit = {
     enable = mkEnableOption "Whether or not to configure BookOrbit.";
-    subDomain = mkOpt types.str "bookorbit" "The subdomain for the service.";
+    subDomain = mkOpt types.str "book" "The subdomain for the service.";
+    aliases = mkOpt (types.listOf types.str) [ "bookorbit" ] "Subdomains that redirect to `subDomain`.";
     expose = mkBoolOpt true ''
       Reachable from the internet (Traefik's `public` middleware chain) rather
       than from private ranges only. Matches how Grimmory is published; set it
@@ -26,6 +27,13 @@ in
   };
 
   config = mkIf cfg.enable {
+    # BookOrbit builds APP_URL and its OIDC redirect URI from `subDomain`, so a
+    # second hostname has to be a redirect rather than an extra router rule.
+    ${namespace}.services.traefik.redirects = lib.genAttrs cfg.aliases (_: {
+      to = cfg.subDomain;
+      inherit (cfg) expose;
+    });
+
     sops.secrets =
       lib.genAttrs
         [
