@@ -113,12 +113,18 @@ in
         show_image_location = true;
         show_image_qr = false;
         show_image_id = false;
-        show_more_info = true;
-        show_more_info_image_link = true;
-        show_more_info_qr_code = true;
 
-        like_button_action = "favorite"; # album, favorite or both
-        hide_button_action = "tag"; # tag, archive or both
+        ## More info overlay. Since kiosk 0.44 this is one object; the old flat
+        ## `show_more_info*` / `*_button_action` keys fail config validation.
+        more_info = {
+          display = true;
+          like_button_action = "favorite"; # album, favorite or both
+          hide_button_action = "tag"; # tag, archive or both
+          show = {
+            asset_link = true;
+            qr_code = true;
+          };
+        };
 
         ## Weather (API key comes from weatherApiKeyFile).
         ## Since kiosk 0.41 this is an object with a `locations` list, no
