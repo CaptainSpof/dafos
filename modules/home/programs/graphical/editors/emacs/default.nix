@@ -59,7 +59,6 @@ in
               fr
             ]
           ))
-          djvu2pdf
           enchant
           ffmpegthumbnailer
           hunspellDicts.en-us
