@@ -73,6 +73,69 @@ let
         cp ${ldapAuthConfigSource} "$out"
       '';
 
+  # Transcoding settings pinned over the stateful encoding.xml. The rest of the
+  # file stays Jellyfin's to manage from the dashboard; only these elements are
+  # forced back, on every container start, so a dashboard edit or a major
+  # upgrade's silent reset-to-defaults cannot quietly undo them.
+  #
+  # - HardwareAccelerationType / QsvDevice: the 12.x migration reset these to
+  #   `none` and blank. The box has two render nodes, renderD128 (i915) and
+  #   renderD129 (nouveau), so QSV must name the Intel one explicitly.
+  # - EnableThrottling: without it ffmpeg reads the source as fast as the link
+  #   allows. A 4K remux over the Freebox SMB share saturated dafoltop's 100
+  #   Mbit NIC on 2026-09-27, and DNS (blocky), ping and SSH all timed out
+  #   behind it.
+
+  # Updates only elements whose value differs, so an already-correct file is
+  # left byte-for-byte alone. xmlstarlet refuses malformed input, and that is
+  # deliberate: a broken file makes Jellyfin reset the whole thing, so better
+  # to fail the start loudly than to patch around it. A missing file (first
+  # start) is skipped; Jellyfin writes its defaults and the next start pins.
+
+  # Transcoding settings pinned over the stateful encoding.xml. The rest of the
+  # file stays Jellyfin's to manage from the dashboard; only these elements are
+  # forced back, on every container start, so a dashboard edit or a major
+  # upgrade's silent reset-to-defaults cannot quietly undo them.
+  #
+  # - HardwareAccelerationType / QsvDevice: the 12.x migration reset these to
+  #   `none` and blank. The box has two render nodes, renderD128 (i915) and
+  #   renderD129 (nouveau), so QSV must name the Intel one explicitly.
+  # - EnableThrottling: without it ffmpeg reads the source as fast as the link
+  #   allows. A 4K remux over the Freebox SMB share saturated dafoltop's 100
+  #   Mbit NIC on 2026-09-27, and DNS (blocky), ping and SSH all timed out
+  #   behind it.
+  jellyfinEncoding = {
+    HardwareAccelerationType = "qsv";
+    QsvDevice = "/dev/dri/renderD128";
+    EnableThrottling = "true";
+  };
+
+  jellyfinEncodingXml = "${config.nps.storageBaseDir}/streaming/jellyfin/encoding.xml";
+
+  # Updates only elements whose value differs, so an already-correct file is
+  # left byte-for-byte alone. xmlstarlet refuses malformed input, and that is
+  # deliberate: a broken file makes Jellyfin reset the whole thing, so better
+  # to fail the start loudly than to patch around it. A missing file (first
+  # start) is skipped; Jellyfin writes its defaults and the next start pins.
+  pinJellyfinEncoding = pkgs.writeShellApplication {
+    name = "pin-jellyfin-encoding";
+    runtimeInputs = [ pkgs.xmlstarlet ];
+    text = ''
+      f=${lib.escapeShellArg jellyfinEncodingXml}
+      [ -e "$f" ] || exit 0
+    ''
+    + lib.concatStrings (
+      lib.mapAttrsToList (name: value: ''
+        xpath=/EncodingOptions/${name}
+        if [ "$(xmlstarlet sel -t -v "count($xpath)" "$f")" = 0 ]; then
+          xmlstarlet ed -L -s /EncodingOptions -t elem -n ${name} -v ${lib.escapeShellArg value} "$f"
+        elif [ "$(xmlstarlet sel -t -v "$xpath" "$f")" != ${lib.escapeShellArg value} ]; then
+          xmlstarlet ed -L -u "$xpath" -v ${lib.escapeShellArg value} "$f"
+        fi
+      '') jellyfinEncoding
+    );
+  };
+
   brandingXml = pkgs.writeText "branding.xml" ''
     <?xml version="1.0" encoding="utf-8"?>
     <BrandingOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -145,6 +208,9 @@ in
               # they are a reviewable diff. Same reasoning as the data-bearing
               # containers in the grimmory module.
               autoUpdate = "local";
+
+              # Merges with nps' own ExecStartPre list (volume dirs, templates).
+              extraConfig.Service.ExecStartPre = [ (lib.getExe pinJellyfinEncoding) ];
 
               # `volumeMap`, not `volumes`. nps builds `volumes` as
               #
