@@ -262,18 +262,9 @@ in
           NoNewPrivileges = true;
         };
 
-        homepage = {
-          inherit category;
-          name = displayName;
-          settings = {
-            inherit description;
-            icon = "sh-bookorbit";
-          };
-        };
-        glance = {
+        dashboard = {
           inherit category description;
           name = displayName;
-          id = name;
           icon = "sh:bookorbit";
         };
       };
@@ -307,11 +298,11 @@ in
         };
 
         stack = name;
-        glance = {
-          parent = name;
+        dashboard = {
+          inherit category;
           name = "PostgreSQL";
           icon = "si:postgresql";
-          inherit category;
+          parent = name;
         };
       };
     };

@@ -7,6 +7,17 @@ upstreamed as-is. Each one has a dafos wrapper in
 subdomains. A stack module never touches sops or `dafos.*`, which is what lets
 it boot in a bare test VM.
 
+## Dashboard metadata goes in `dashboard`
+
+Since nps's dashboard abstraction (#2414),
+`dashboard = { category, name,
+description, icon, id, parent }` feeds both
+Glance and Homepage. Use `glance.*` / `homepage.*` only for settings specific to
+one dashboard. Put `parent` in `dashboard`, never in `glance`. The `glance.id`
+default only drops to null when `dashboard.parent` is set, and Glance renders
+any container that has an id as top-level, so a `glance.parent` child shows up
+as its own row.
+
 ## Image pins: Renovate owns them
 
 - Pin as an inline literal, `image = "registry/repo:tag";`. Renovate's regex

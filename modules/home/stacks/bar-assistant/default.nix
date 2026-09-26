@@ -195,7 +195,7 @@ in
           inherit name;
           subDomain = lib.mkDefault "bar-api";
         };
-        glance = {
+        dashboard = {
           inherit category;
           name = "API";
           parent = name;
@@ -225,19 +225,13 @@ in
           name = saltRimName;
           subDomain = lib.mkDefault "bar";
         };
-        homepage = {
-          inherit category;
-          name = displayName;
-          settings = {
-            inherit description;
-            icon = "bar-assistant";
-          };
-        };
-        glance = {
+        # The web client fronts the stack, so it carries the stack's id and the
+        # API (which owns the stack name) hangs below it.
+        dashboard = {
           inherit category description;
           name = displayName;
-          id = name;
           icon = "di:bar-assistant";
+          id = name;
         };
       };
 
@@ -276,7 +270,7 @@ in
           name = meilisearchName;
           subDomain = lib.mkDefault "bar-search";
         };
-        glance = {
+        dashboard = {
           inherit category;
           name = "Meilisearch";
           parent = name;
@@ -299,7 +293,7 @@ in
         };
 
         stack = name;
-        glance = {
+        dashboard = {
           inherit category;
           name = "Redis";
           parent = name;

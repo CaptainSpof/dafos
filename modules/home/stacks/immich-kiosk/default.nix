@@ -96,18 +96,9 @@ in
         customCss = "${cfg.customCss}:/custom.css";
       };
 
-      homepage = {
-        inherit category;
-        name = displayName;
-        settings = {
-          inherit description;
-          icon = "immich";
-        };
-      };
-      glance = {
+      dashboard = {
         inherit category description;
         name = displayName;
-        id = name;
         icon = "di:immich";
       };
     };

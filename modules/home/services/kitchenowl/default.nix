@@ -45,7 +45,10 @@ in
       containers.kitchenowl-web = {
         inherit (cfg) expose;
         traefik.subDomain = cfg.subDomain;
+        # Upstream's displayName is misspelt "KitchwenOwl".
+        dashboard.name = lib.mkForce "KitchenOwl";
       };
+      containers.kitchenowl-backend.dashboard.name = lib.mkForce "KitchenOwl";
     };
   };
 }
