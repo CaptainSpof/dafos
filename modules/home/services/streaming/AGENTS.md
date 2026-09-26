@@ -33,11 +33,12 @@ hardware-acceleration block specifically. Note this box has **two** render
 nodes, so `QsvDevice` wants `/dev/dri/renderD128` explicitly rather than blank
 auto-detection.
 
-`HardwareAccelerationType`, `QsvDevice` and `EnableThrottling` are now pinned:
+`HardwareAccelerationType`, `QsvDevice`, `EnableThrottling` and
+`ThrottleDelaySeconds` are now pinned:
 `jellyfinEncoding` in [default.nix](default.nix) is written into the stateful
 `encoding.xml` by an `ExecStartPre` on every container start, so a reset is
 undone on the next restart. Change them there, not on the dashboard — a
-dashboard edit to these three lasts only until the container restarts. Every
+dashboard edit to these lasts only until the container restarts. Every
 other element stays the dashboard's. A malformed `encoding.xml` makes that
 `ExecStartPre` fail, and the container does not start: that is deliberate,
 because otherwise Jellyfin silently resets the whole file.

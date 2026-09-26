@@ -104,10 +104,14 @@ let
   #   allows. A 4K remux over the Freebox SMB share saturated dafoltop's 100
   #   Mbit NIC on 2026-09-27, and DNS (blocky), ping and SSH all timed out
   #   behind it.
+  # - ThrottleDelaySeconds: how far ffmpeg may run ahead before pausing, read at
+  #   full link speed. 300 (up from the 180 default) is sized for a gigabit
+  #   NIC; on the 100 Mbit one it saturates the link ~4 min per start or seek.
   jellyfinEncoding = {
     HardwareAccelerationType = "qsv";
     QsvDevice = "/dev/dri/renderD128";
     EnableThrottling = "true";
+    ThrottleDelaySeconds = "300";
   };
 
   jellyfinEncodingXml = "${config.nps.storageBaseDir}/streaming/jellyfin/encoding.xml";
