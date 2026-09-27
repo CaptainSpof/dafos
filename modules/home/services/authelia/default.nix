@@ -127,7 +127,19 @@ in
 
       settings = {
         access_control.default_policy = "one_factor";
-        log.level = "debug";
+        log.level = "info";
+
+        # Ban by source IP rather than by account: usernames here are easy to
+        # guess, and account bans would let anyone lock the family out.
+        # Clients reaching auth. through Freebox hairpin NAT all show up as
+        # the WAN address, so a ban there locks out the whole house for
+        # ban_time: `authelia storage bans ip revoke` lifts it early.
+        regulation = {
+          modes = [ "ip" ];
+          max_retries = 5;
+          find_time = "10m";
+          ban_time = "30m";
+        };
 
         # Home Assistant OIDC client: expose groups in the id_token and gate
         # access on the `home-assistant_user` group (deny-by-default).
