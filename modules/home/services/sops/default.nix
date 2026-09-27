@@ -102,5 +102,15 @@ in
         fi
       ''
     );
+
+    # A private key, whichever way it got there: `cp -a` above keeps the mode
+    # of whatever it backs up, and dafoltop's keys.txt had been 0644 since it
+    # was put there by hand.
+    home.activation.sopsAgeKeyPermissions = dag.entryAfter [ "sopsAgeKeyFromSshKey" ] ''
+      for f in ${lib.escapeShellArg ageKeyFile} ${lib.escapeShellArg ageKeyFile}.bak-*; do
+        [ -f "$f" ] && run ${pkgs.coreutils}/bin/chmod 600 "$f"
+      done
+      true
+    '';
   };
 }
