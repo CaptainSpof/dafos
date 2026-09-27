@@ -302,7 +302,9 @@ in
             qbittorrent = {
               volumes = lib.mkForce [
                 "/mnt/yahrr:/yahrr"
-                "${config.nps.storageBaseDir}/streaming/radarr:/config"
+                # Its own directory, not radarr's: sharing it handed qbittorrent
+                # radarr's database and API key.
+                "${config.nps.storageBaseDir}/qbittorrent/qbittorrent:/config"
               ];
             };
             qui.expose = true;
