@@ -71,6 +71,12 @@ in
     nix = {
       max-jobs = 2;
       cores = 2;
+
+      # daf is not a trusted-user here, so it cannot import unsigned paths or
+      # hand the daemon arbitrary settings. Deploys from dafbox still work
+      # because dafbox signs what it builds.
+      trust-user = false;
+      signing.trusted-keys = [ "dafbox-1:YiMcTQla/fn9tgjxQHISrZD89MJosLDWlywwP9DLupY=" ];
     };
 
     display-managers = {
