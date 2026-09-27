@@ -21,7 +21,7 @@ The first admin account is created through `/auth/setup`, guarded by the
 `SETUP_BOOTSTRAP_TOKEN` header. Read the token with:
 
 ```bash
-ssh dafoltop -- sops -d ~/.config/dafos/secrets/daf/bookorbit.yaml
+ssh dafoltop -- sops -d ~/.config/dafos/secrets/dafoltop/bookorbit.yaml
 ```
 
 ### 2. OIDC / SSO

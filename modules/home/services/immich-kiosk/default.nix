@@ -20,10 +20,10 @@ in
 
   config = mkIf cfg.enable {
     sops.secrets = {
-      "immich-kiosk-api-key-env".sopsFile = lib.snowfall.fs.get-file "secrets/daf/immich-kiosk.yaml";
-      "immich-kiosk-albums-key-env".sopsFile = lib.snowfall.fs.get-file "secrets/daf/immich-kiosk.yaml";
+      "immich-kiosk-api-key-env".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich-kiosk.yaml";
+      "immich-kiosk-albums-key-env".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich-kiosk.yaml";
       "immich-kiosk-weather-api-key-env".sopsFile =
-        lib.snowfall.fs.get-file "secrets/daf/immich-kiosk.yaml";
+        lib.snowfall.fs.get-file "secrets/dafoltop/immich-kiosk.yaml";
     };
 
     nps.stacks.immich-kiosk = {

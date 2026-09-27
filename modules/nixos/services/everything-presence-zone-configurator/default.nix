@@ -41,7 +41,7 @@ in
     tokenFile = mkOpt (types.nullOr types.path) null ''
       File holding a Home Assistant long-lived access token. Defaults to the
       `zone-configurator-ha-token` entry of
-      `secrets/daf/everything-presence.yaml`. Read by systemd as root and
+      `secrets/dafoltop/everything-presence.yaml`. Read by systemd as root and
       handed to the service through a credential, so it never needs to be
       readable by the service user.
     '';
@@ -69,7 +69,7 @@ in
     # as one (package: `packages/everything-presence-zone-configurator`).
     sops.secrets = mkIf useOwnSecret {
       "zone-configurator-ha-token".sopsFile =
-        lib.snowfall.fs.get-file "secrets/daf/everything-presence.yaml";
+        lib.snowfall.fs.get-file "secrets/dafoltop/everything-presence.yaml";
     };
 
     systemd.services.${name} = {

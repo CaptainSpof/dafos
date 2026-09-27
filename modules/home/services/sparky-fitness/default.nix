@@ -21,16 +21,16 @@ in
   config = mkIf cfg.enable {
     sops.secrets = {
       "sparky-fitness/better-auth-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/sparkyfitness.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/sparkyfitness.yaml";
       };
       "sparky-fitness/api-encryption-key" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/sparkyfitness.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/sparkyfitness.yaml";
       };
       "sparky-fitness/db-password" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/sparkyfitness.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/sparkyfitness.yaml";
       };
       "sparky-fitness/authelia/client-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/sparkyfitness.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/sparkyfitness.yaml";
       };
     };
 

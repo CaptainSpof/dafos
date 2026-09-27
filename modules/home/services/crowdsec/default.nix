@@ -16,7 +16,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    sops.secrets."crowdsec/bouncer-key".sopsFile = lib.snowfall.fs.get-file "secrets/daf/crowdsec.yaml";
+    sops.secrets."crowdsec/bouncer-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/crowdsec.yaml";
 
     # Enabling the stack makes the traefik module collect its logs, install
     # the traefik collection and append a `crowdsec` bouncer to the `public`

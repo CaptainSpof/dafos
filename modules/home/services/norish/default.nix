@@ -45,13 +45,13 @@ in
 
     sops.secrets = {
       "norish/master-key" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/norish.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/norish.yaml";
       };
       "norish/db-password" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/norish.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/norish.yaml";
       };
       "norish/authelia/client-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/norish.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/norish.yaml";
       };
     };
 

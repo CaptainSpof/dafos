@@ -45,7 +45,7 @@ in
           "bookorbit/book-request-encryption-key"
         ]
         (_: {
-          sopsFile = lib.snowfall.fs.get-file "secrets/daf/bookorbit.yaml";
+          sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/bookorbit.yaml";
         });
 
     nps.stacks.bookorbit = {

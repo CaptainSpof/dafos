@@ -39,7 +39,7 @@ in
     users.groups.yahrr.members = [ "immich" ];
 
     sops.secrets = mkIf cfg.oidc.enable {
-      "immich/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/immich.yaml";
+      "immich/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich.yaml";
     };
 
     services.immich = {

@@ -20,9 +20,9 @@ in
 
     config = mkIf cfg.enable {
       sops.secrets = {
-        "karakeep/nextauth-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/karakeep.yaml";
-        "karakeep/meili-master-key".sopsFile = lib.snowfall.fs.get-file "secrets/daf/karakeep.yaml";
-        "karakeep/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/karakeep.yaml";
+        "karakeep/nextauth-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/karakeep.yaml";
+        "karakeep/meili-master-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/karakeep.yaml";
+        "karakeep/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/karakeep.yaml";
       };
 
       nps.stacks = {

@@ -10,12 +10,12 @@ This instance runs the actual house. Nothing here is a staging environment.
 ## API access
 
 The long-lived admin token is a sops secret, `ha-admin-token` in
-`secrets/daf/home-assistant.yaml`. The server URL is not secret — it already
+`secrets/dafoltop/home-assistant.yaml`. The server URL is not secret — it already
 appears in several modules.
 
 ```bash
 export HASS_SERVER=https://home.daftdaf.dev
-export HASS_TOKEN=$(sops -d --extract '["ha-admin-token"]' secrets/daf/home-assistant.yaml)
+export HASS_TOKEN=$(sops -d --extract '["ha-admin-token"]' secrets/dafoltop/home-assistant.yaml)
 ```
 
 Keep it in a command substitution like that so it never lands in a file or the
@@ -27,7 +27,7 @@ works from any host in the fleet — see
 [secrets/AGENTS.md](../../../secrets/AGENTS.md).
 
 This is a _separate_ token from `zone-configurator-ha-token` in
-`secrets/daf/everything-presence.yaml`, which belongs to the zone-configurator
+`secrets/dafoltop/everything-presence.yaml`, which belongs to the zone-configurator
 service and is not for ad-hoc API calls.
 
 **REST covers states and services:**

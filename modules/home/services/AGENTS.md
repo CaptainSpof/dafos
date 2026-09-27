@@ -26,8 +26,8 @@ stay in sync:
 - client, claims/authorization policies and lldap groups → [authelia](authelia)
   and [lldap](lldap)
 - app-side config → `modules/nixos/services/<name>`
-- both halves read the same `secrets/daf/*.yaml` entry, which therefore has to
-  be decryptable by the user key _and_ the host key.
+- both halves read the same `secrets/dafoltop/*.yaml` entry, which therefore has
+  to be decryptable by the user key _and_ the host key.
 
 For Immich the module mirrors what `nps.stacks.immich.oidc` would have
 generated: a custom `immich` scope, `immich_role` / `immich_quota` claims, and
@@ -45,9 +45,9 @@ store.
 
 ## Secrets
 
-A stack reads `secrets/daf/*.yaml`. Prefer systemd `LoadCredential` over reading
-`/run/secrets` directly, which is what lets a unit keep `DynamicUser`. See
-[../../../secrets/AGENTS.md](../../../secrets/AGENTS.md).
+A stack reads `secrets/dafoltop/*.yaml`. Prefer systemd `LoadCredential` over
+reading `/run/secrets` directly, which is what lets a unit keep `DynamicUser`.
+See [../../../secrets/AGENTS.md](../../../secrets/AGENTS.md).
 
 ## Known upstream noise
 

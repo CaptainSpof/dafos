@@ -23,9 +23,9 @@ in
   config = mkIf cfg.enable {
     sops.secrets = {
       "bar-assistant/meili-master-key".sopsFile =
-        lib.snowfall.fs.get-file "secrets/daf/bar-assistant.yaml";
+        lib.snowfall.fs.get-file "secrets/dafoltop/bar-assistant.yaml";
       "bar-assistant/authelia/client-secret".sopsFile =
-        lib.snowfall.fs.get-file "secrets/daf/bar-assistant.yaml";
+        lib.snowfall.fs.get-file "secrets/dafoltop/bar-assistant.yaml";
     };
 
     nps.stacks.bar-assistant = {

@@ -43,11 +43,11 @@ env-formatted secrets. The Meilisearch index is rebuilt from SQLite anyway, so
 just generate a fresh key:
 
 ```bash
-sops set secrets/daf/bar-assistant.yaml '["bar-assistant"]["meili-master-key"]' "\"$(openssl rand -base64 32)\""
+sops set secrets/dafoltop/bar-assistant.yaml '["bar-assistant"]["meili-master-key"]' "\"$(openssl rand -base64 32)\""
 ```
 
-Run it where an age identity that can decrypt `secrets/daf/` is available. This
-step is not optional: sops-nix validates the key at build time, so
+Run it where an age identity that can decrypt `secrets/dafoltop/` is available.
+This step is not optional: sops-nix validates the key at build time, so
 `nixos-rebuild` fails with `the key 'bar-assistant' cannot be found` until it
 exists.
 
@@ -164,7 +164,7 @@ Add the client secret (nps hashes it for Authelia and passes the raw value to
 the server):
 
 ```bash
-cd ~/.config/dafos && sops set secrets/daf/bar-assistant.yaml '["bar-assistant"]["authelia"]["client-secret"]' "\"$(openssl rand -hex 32)\""
+cd ~/.config/dafos && sops set secrets/dafoltop/bar-assistant.yaml '["bar-assistant"]["authelia"]["client-secret"]' "\"$(openssl rand -hex 32)\""
 ```
 
 Then switch, and expect the same first-activation race as in Troubleshooting

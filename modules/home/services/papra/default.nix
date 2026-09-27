@@ -21,13 +21,13 @@ in
     config = mkIf cfg.enable {
       sops.secrets = {
         "cloudflare-api-token" = {
-          sopsFile = lib.snowfall.fs.get-file "secrets/daf/cloudflare.yaml";
+          sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/cloudflare.yaml";
         };
         "papra/auth-secret" = {
-          sopsFile = lib.snowfall.fs.get-file "secrets/daf/papra.yaml";
+          sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/papra.yaml";
         };
         "papra/authelia/client-secret" = {
-          sopsFile = lib.snowfall.fs.get-file "secrets/daf/papra.yaml";
+          sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/papra.yaml";
         };
       };
 

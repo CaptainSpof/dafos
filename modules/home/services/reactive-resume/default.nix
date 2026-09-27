@@ -21,16 +21,16 @@ in
   config = mkIf cfg.enable {
     sops.secrets = {
       "cloudflare-api-token" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/cloudflare.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/cloudflare.yaml";
       };
       "reactive-resume/auth-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/reactive-resume.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/reactive-resume.yaml";
       };
       "reactive-resume/db-password" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/reactive-resume.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/reactive-resume.yaml";
       };
       "reactive-resume/authelia/client-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/reactive-resume.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/reactive-resume.yaml";
       };
     };
 

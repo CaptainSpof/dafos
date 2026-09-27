@@ -24,7 +24,7 @@ in
 
   config = mkIf cfg.enable {
     sops.secrets."spliit/db-password" = {
-      sopsFile = lib.snowfall.fs.get-file "secrets/daf/spliit.yaml";
+      sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/spliit.yaml";
     };
 
     nps.stacks.spliit = {

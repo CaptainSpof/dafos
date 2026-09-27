@@ -19,8 +19,8 @@ in
 
   config = mkIf cfg.enable {
     sops.secrets = {
-      "grimmory/db-user-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/grimmory.yaml";
-      "grimmory/db-root-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/grimmory.yaml";
+      "grimmory/db-user-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/grimmory.yaml";
+      "grimmory/db-root-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/grimmory.yaml";
     };
 
     nps.stacks = {

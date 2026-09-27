@@ -57,7 +57,7 @@ in
     # .auth_token` because the module renders `settings` into the world-readable
     # nix store. systemd reads EnvironmentFile as root, before dropping privileges.
     sops.secrets."zigbee2mqtt-auth-token-env".sopsFile =
-      lib.snowfall.fs.get-file "secrets/daf/zigbee2mqtt.yaml";
+      lib.snowfall.fs.get-file "secrets/dafoltop/zigbee2mqtt.yaml";
 
     systemd.services.zigbee2mqtt = {
       serviceConfig = {

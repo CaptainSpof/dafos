@@ -174,10 +174,10 @@ in
 
   config = mkIf cfg.enable {
     sops.secrets = {
-      "qui/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-      "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-      "gluetun/wg-pk".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-      "gluetun/wg-address".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
+      "qui/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
+      "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
+      "gluetun/wg-pk".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
+      "gluetun/wg-address".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
     };
 
     # Plugin directories have to be writable -- Jellyfin rewrites each plugin's

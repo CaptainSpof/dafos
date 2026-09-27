@@ -13,7 +13,7 @@ Four non-obvious constraints:
 - It calls `process.exit` when HA is unreachable at startup. `Restart=always`
   with `RestartSec=30` is the reconnect strategy — there is no internal retry to
   fix.
-- The HA long-lived token lives in `secrets/daf/everything-presence.yaml` and
+- The HA long-lived token lives in `secrets/dafoltop/everything-presence.yaml` and
   reaches the service through systemd `LoadCredential`
   (`HA_LONG_LIVED_TOKEN_FILE=%d/ha-token`), so `DynamicUser` never has to read
   `/run/secrets`.

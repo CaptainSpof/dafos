@@ -16,17 +16,19 @@ not as the plan.
 
 The path decides who can decrypt. From `.sops.yaml`:
 
-| Path                             | Decryptable by                                         |
-| -------------------------------- | ------------------------------------------------------ |
-| `secrets/<name>.yaml`            | admin key only                                         |
-| `secrets/daf/<name>.yaml`        | admin + all three user keys + all three host root keys |
-| `secrets/daftop/daf/<name>.yaml` | admin + the daftop user key                            |
+| Path                             | Decryptable by                                                              |
+| -------------------------------- | --------------------------------------------------------------------------- |
+| `secrets/<name>.yaml`            | admin key only                                                              |
+| `secrets/dafoltop/<name>.yaml`   | admin + the dafoltop user and root keys + the dafbox user key (for editing) |
+| `secrets/daf/<name>.yaml`        | admin + all three user keys + all three host root keys                      |
+| `secrets/daftop/daf/<name>.yaml` | admin + the daftop user key                                                 |
 
 A secret consumed by a **NixOS** service must live somewhere the host root key
-can open, so `secrets/daf/` in practice. A secret shared between a home-manager
-stack and a NixOS service — the Authelia/Immich and Home Assistant OIDC client
-secrets, for instance — must be readable by both the user key and the host key,
-which again means `secrets/daf/`.
+can open. For anything that only runs on dafoltop that is `secrets/dafoltop/`;
+keep `secrets/daf/` for what several hosts genuinely share. A secret shared
+between a home-manager stack and a NixOS service — the Authelia/Immich and Home
+Assistant OIDC client secrets, for instance — must be readable by both the user
+key and the host key, which again means `secrets/dafoltop/`.
 
 ## Add or edit
 
@@ -86,9 +88,11 @@ ssh-keyscan -t ed25519 <host> | ssh-to-age          # public → age recipient
 Add the recipient to `.sops.yaml` under the matching `&root_<host>` anchor, then
 `sops updatekeys` every file whose rule includes it.
 
-`~/.config/sops/age/keys.txt` is the admin identity. It is the single most
-important file in this setup; without it and without a preserved host key,
-nothing decrypts.
+`~/.config/sops/age/keys.txt` holds this host's _user_ identity, derived from
+`~/.ssh/daf@<host>.pem` by the home sops module. The admin key is lost (see
+`secrets/AGENTS.md`), so these per-host identities plus the host SSH keys are
+all that decrypts anything: never re-key a file to a set that none of them is
+in.
 
 ## Verify on the target
 

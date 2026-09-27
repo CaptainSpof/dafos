@@ -16,6 +16,16 @@ creation_rules:
       - age:
           - *admin_daf
           - *user_daf_daftop
+  # Services that only run on dafoltop. The dafbox user key is here so
+  # secrets can still be edited from the workstation; daftop (a laptop) and
+  # the other hosts' root keys are deliberately left out.
+  - path_regex: secrets/dafoltop/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - age:
+          - *admin_daf
+          - *user_daf_dafbox
+          - *user_daf_dafoltop
+          - *root_dafoltop
   - path_regex: secrets/daf/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:

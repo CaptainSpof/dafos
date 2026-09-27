@@ -193,14 +193,14 @@ in
 
   config = mkIf cfg.enable {
     sops.secrets = {
-      "lldap/admin-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      "lldap/jwt-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      "lldap/key-seed".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      "lldap/users/daf-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      "lldap/users/cedric-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      "lldap/users/joaquim-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
-      "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/daf/lldap.yaml";
+      "lldap/admin-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "lldap/jwt-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "lldap/key-seed".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "lldap/users/daf-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "lldap/users/cedric-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "lldap/users/joaquim-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
     };
 
     services.podman.containers = {

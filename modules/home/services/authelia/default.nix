@@ -22,13 +22,13 @@ in
 
   config = mkIf cfg.enable {
     sops.secrets = {
-      "authelia/jwt-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/authelia.yaml";
-      "authelia/session-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/authelia.yaml";
-      "authelia/encryption-key".sopsFile = lib.snowfall.fs.get-file "secrets/daf/authelia.yaml";
-      "authelia/oidc-hmac-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/authelia.yaml";
-      "authelia/oidc-rsa-pk".sopsFile = lib.snowfall.fs.get-file "secrets/daf/authelia.yaml";
-      "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/streaming.yaml";
-      "immich/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/daf/immich.yaml";
+      "authelia/jwt-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
+      "authelia/session-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
+      "authelia/encryption-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
+      "authelia/oidc-hmac-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
+      "authelia/oidc-rsa-pk".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
+      "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
+      "immich/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich.yaml";
     };
 
     nps.stacks.authelia = {

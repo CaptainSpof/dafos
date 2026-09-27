@@ -92,7 +92,7 @@ in
       alerting = enabled;
       # Zone/room editor for the Everything Presence Lite sensors; talks to the
       # local home-assistant over its API (token in
-      # secrets/daf/everything-presence.yaml).
+      # secrets/dafoltop/everything-presence.yaml).
       everything-presence-zone-configurator = {
         enable = true;
         # Pinned because upstream's auto-detection only skips docker/br-/veth/tun/wg

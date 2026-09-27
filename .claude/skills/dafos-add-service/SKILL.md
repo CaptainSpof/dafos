@@ -40,7 +40,7 @@ in
 
   config = mkIf cfg.enable {
     sops.secrets."<name>/db-password".sopsFile =
-      lib.snowfall.fs.get-file "secrets/daf/<name>.yaml";
+      lib.snowfall.fs.get-file "secrets/dafoltop/<name>.yaml";
 
     nps.stacks.<name> = {
       enable = true;
@@ -63,9 +63,9 @@ that exit at startup.
 
 ## 3. Secrets
 
-Create `secrets/daf/<name>.yaml` and reference it with
-`lib.snowfall.fs.get-file`. Use the `dafos-secrets` skill for the mechanics and
-for which key group applies.
+Create `secrets/dafoltop/<name>.yaml` (services only run on dafoltop) and
+reference it with `lib.snowfall.fs.get-file`. Use the `dafos-secrets` skill for
+the mechanics and for which key group applies.
 
 ## 4. Authelia SSO
 
@@ -80,8 +80,8 @@ into. Register it by hand, keeping both halves in sync:
   `modules/home/services/authelia`
 - group → `modules/home/services/lldap`
 - app-side config → `modules/nixos/services/<name>`
-- one shared secrets entry in `secrets/daf/`, decryptable by both the user key
-  and the host key
+- one shared secrets entry in `secrets/dafoltop/`, decryptable by both the user
+  key and the host key
 
 `clients.home-assistant` (public + PKCE) and `clients.immich` (confidential,
 mirroring what `nps.stacks.immich.oidc` would generate) are the two worked

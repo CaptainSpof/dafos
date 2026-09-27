@@ -47,13 +47,13 @@ in
 
     sops.secrets = {
       "kaneo/auth-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/kaneo.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/kaneo.yaml";
       };
       "kaneo/db-password" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/kaneo.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/kaneo.yaml";
       };
       "kaneo/authelia/client-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/kaneo.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/kaneo.yaml";
       };
     };
 

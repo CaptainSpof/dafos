@@ -23,10 +23,10 @@ in
   config = mkIf cfg.enable {
     sops.secrets = {
       "kitchenowl/jwt-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/kitchenowl.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/kitchenowl.yaml";
       };
       "kitchenowl/authelia/client-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/daf/kitchenowl.yaml";
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/kitchenowl.yaml";
       };
     };
 
