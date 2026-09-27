@@ -35,5 +35,15 @@ in
         ];
       };
     };
+
+    # Both read the bouncer key into their env file at start. Without the
+    # ordering, the first switch that introduced it started crowdsec 30s
+    # before sops-nix had decrypted it, and the bouncer never registered.
+    services.podman.containers = lib.genAttrs [ "crowdsec" "traefik" ] (_: {
+      extraConfig.Unit = {
+        Wants = [ "sops-nix.service" ];
+        After = [ "sops-nix.service" ];
+      };
+    });
   };
 }
