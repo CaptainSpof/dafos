@@ -24,8 +24,9 @@ in
         enable = true;
 
         containers.calibre = {
-          expose = true;
-          traefik.subDomain = "livre";
+          # calibre-web has no SSO and upstream seeds admin/admin123, so keep
+          # it off the public chain; LAN and tailnet still reach it.
+          traefik.subDomain = cfg.subDomain;
 
           volumes = lib.mkForce [
             "/mnt/calibre:/calibre-library"
