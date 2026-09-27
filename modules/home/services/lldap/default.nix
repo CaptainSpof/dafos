@@ -235,6 +235,14 @@ in
         jwtSecretFile = config.sops.secrets."lldap/jwt-secret".path;
         keySeedFile = config.sops.secrets."lldap/key-seed".path;
 
+        # nps sets FORCE_LDAP_USER_PASS_RESET without the LLDAP_ prefix, which
+        # the server never reads, so lldap only applied the admin password on
+        # first start. Rotating it then locks the bootstrap script out, the
+        # users (readonly included) are never re-set, and Authelia and Jellyfin
+        # fail to bind with the new readonly password. Make the file
+        # authoritative on every start instead.
+        containers.lldap.environment.LLDAP_FORCE_LDAP_USER_PASS_RESET = "always";
+
         bootstrap = {
           users = cfg.lldapUsers;
           groups.home-assistant_user = { };
