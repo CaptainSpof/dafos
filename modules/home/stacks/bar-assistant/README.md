@@ -182,10 +182,11 @@ Authelia is the only provider.
   shelves with per-member inventories; the UI for the latter is still being
   finished upstream. See the
   [v6.0.0 release notes](https://github.com/karlomikus/bar-assistant/releases/tag/v6.0.0).
-- `allowRegistration` is `true` in the dafos wrapper to match the old
-  deployment. All three hosts are `expose = true` (public Traefik middleware),
-  so anyone who finds the domain can create an account — worth flipping to
-  `false` once every account that needs one exists.
+- `allowRegistration` is `false` in the dafos wrapper: all three hosts are
+  `expose = true` (public Traefik middleware), so an open instance lets anyone
+  who finds the domain create an account. Upstream's SSO login goes through the
+  same registration service, so a first-time Authelia login is refused as well —
+  flip it back temporarily to onboard a new user.
 - Authelia SSO is wired up (see above). `enablePasswordLogin` is still `true`,
   so the password form remains as a fallback.
 

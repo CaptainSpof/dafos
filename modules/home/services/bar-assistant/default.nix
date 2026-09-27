@@ -38,9 +38,10 @@ in
         enable = true;
         clientSecretFile = config.sops.secrets."bar-assistant/authelia/client-secret".path;
       };
-      # Kept open to match the pre-migration deployment; flip to false once
-      # every account that needs one exists.
-      allowRegistration = true;
+      # Upstream's SSO login creates accounts through the same registration
+      # service, so a first-time Authelia user is refused too: flip this back
+      # temporarily to onboard someone.
+      allowRegistration = false;
 
       # Salt Rim runs in the browser and calls the API and Meilisearch
       # directly, so all three have to be reachable from wherever the client is.
