@@ -135,10 +135,6 @@ in
 
       firewall = {
         allowedUDPPorts = [ 5353 ];
-        allowedTCPPorts = [
-          443
-          8080
-        ];
         checkReversePath = mkDefault false;
         logReversePathDrops = true;
         logRefusedConnections = true;
