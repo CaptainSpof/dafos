@@ -47,8 +47,11 @@ in
       redis.enable = true;
       machine-learning.enable = true;
       inherit (cfg) port;
+      # Still bound wide: rootless Traefik and immich-kiosk reach it through
+      # pasta's host.containers.internal, which lands on the host's own
+      # address over `lo`. Everything else goes through Traefik.
       host = "0.0.0.0";
-      openFirewall = true;
+      openFirewall = false;
 
       settings = {
         server.externalDomain = "https://${cfg.base-url}";
