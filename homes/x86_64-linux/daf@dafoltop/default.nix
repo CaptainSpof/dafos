@@ -56,6 +56,7 @@ in
       calibre = enabled;
       donetick = enabled;
       espanso = mkForce disabled;
+      gatus = enabled;
       glance = enabled;
       immich-kiosk = enabled;
       it-tools = enabled;
