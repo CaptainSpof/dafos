@@ -315,6 +315,8 @@ in
             };
           };
           bazarr = enabled;
+          # Local addition, see modules/home/stacks/dispatcharr.
+          dispatcharr = enabled;
           profilarr = enabled;
           radarr = enabled;
           seerr = enabled;
