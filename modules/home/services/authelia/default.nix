@@ -131,9 +131,9 @@ in
 
         # Ban by source IP rather than by account: usernames here are easy to
         # guess, and account bans would let anyone lock the family out.
-        # Clients reaching auth. through Freebox hairpin NAT all show up as
-        # the WAN address, so a ban there locks out the whole house for
-        # ban_time: `authelia storage bans ip revoke` lifts it early.
+        # At home blocky resolves the domain to the LAN address, so each
+        # device is banned on its own. `authelia storage bans ip revoke`
+        # lifts a ban before ban_time runs out.
         regulation = {
           modes = [ "ip" ];
           max_retries = 5;
