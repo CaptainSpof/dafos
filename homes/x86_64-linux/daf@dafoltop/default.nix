@@ -55,6 +55,7 @@ in
       grimmory = enabled;
       calibre = enabled;
       crowdsec = enabled;
+      docker-socket-proxy = enabled;
       donetick = enabled;
       espanso = mkForce disabled;
       gatus = enabled;
