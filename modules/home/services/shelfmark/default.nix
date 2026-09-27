@@ -11,35 +11,40 @@ let
 
   cfg = config.${namespace}.services.shelfmark;
 in
-  {
+{
 
-    options.${namespace}.services.shelfmark = {
-      enable = mkEnableOption "Whether or not to configure shelfmark.";
-      subDomain = mkOpt types.str "shelfmark" "The base url";
-    };
+  options.${namespace}.services.shelfmark = {
+    enable = mkEnableOption "Whether or not to configure shelfmark.";
+    subDomain = mkOpt types.str "shelfmark" "The base url";
+  };
 
-    config = mkIf cfg.enable {
-      nps.stacks = {
-        shelfmark = {
-          enable = true;
+  config = mkIf cfg.enable {
+    nps.stacks = {
+      shelfmark = {
+        enable = true;
 
-          downloadDirectory = "${config.nps.storageBaseDir}/grimmory/bookdrop";
+        downloadDirectory = "${config.nps.storageBaseDir}/grimmory/bookdrop";
 
-          containers = {
-            shelfmark = {
-              extraEnv = {
-                BOOK_LANGUAGE = "en,fr";
-                CALIBRE_WEB_URL = "book.daftdaf.dev";
-                AUDIOBOOK_LIBRARY_URL = "audibook.daftdaf.dev";
-                METADATA_PROVIDER = "openlibrary";
+        containers = {
+          shelfmark = {
+            # nps runs shelfmark with AUTH_METHOD=none, and it can queue
+            # torrent downloads; the private chain alone let anyone on the
+            # LAN or tailnet drive it.
+            forwardAuth.enable = true;
 
-                # TODO: setup prowlarr
-                PROWLARR_TORRENT_CLIENT = "qbittorrent";
-                QBITTORRENT_URL = "http://gluetun:8080";
-              };
+            extraEnv = {
+              BOOK_LANGUAGE = "en,fr";
+              CALIBRE_WEB_URL = "book.daftdaf.dev";
+              AUDIOBOOK_LIBRARY_URL = "audibook.daftdaf.dev";
+              METADATA_PROVIDER = "openlibrary";
+
+              # TODO: setup prowlarr
+              PROWLARR_TORRENT_CLIENT = "qbittorrent";
+              QBITTORRENT_URL = "http://gluetun:8080";
             };
           };
         };
       };
     };
-  }
+  };
+}

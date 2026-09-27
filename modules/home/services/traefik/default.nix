@@ -172,7 +172,13 @@ in
         };
       };
 
-      containers.traefik.extraConfig.Container.DNS = "1.1.1.1";
+      containers.traefik = {
+        extraConfig.Container.DNS = "1.1.1.1";
+
+        # The dashboard (traefik.) maps every router, middleware and backend,
+        # and only sat behind the source-IP gate. Put it behind Authelia too.
+        forwardAuth.enable = true;
+      };
 
       extraEnv = {
         CF_DNS_API_TOKEN.fromFile = config.sops.secrets."cloudflare-api-token".path;
