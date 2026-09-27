@@ -56,8 +56,11 @@ in
     # Traefik. It is passed as an env override instead of `settings.frontend
     # .auth_token` because the module renders `settings` into the world-readable
     # nix store. systemd reads EnvironmentFile as root, before dropping privileges.
-    sops.secrets."zigbee2mqtt-auth-token-env".sopsFile =
-      lib.snowfall.fs.get-file "secrets/dafoltop/zigbee2mqtt.yaml";
+    sops.secrets."zigbee2mqtt-auth-token-env" = {
+      sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/zigbee2mqtt.yaml";
+      # EnvironmentFile is only read at start, so a rotated token needs one.
+      restartUnits = [ "zigbee2mqtt.service" ];
+    };
 
     systemd.services.zigbee2mqtt = {
       serviceConfig = {

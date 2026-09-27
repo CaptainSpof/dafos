@@ -68,8 +68,11 @@ in
     # host running home-assistant natively it is just a node service, so it runs
     # as one (package: `packages/everything-presence-zone-configurator`).
     sops.secrets = mkIf useOwnSecret {
-      "zone-configurator-ha-token".sopsFile =
-        lib.snowfall.fs.get-file "secrets/dafoltop/everything-presence.yaml";
+      "zone-configurator-ha-token" = {
+        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/everything-presence.yaml";
+        # LoadCredential copies the file at start, so a new token needs one.
+        restartUnits = [ "${name}.service" ];
+      };
     };
 
     systemd.services.${name} = {
