@@ -120,6 +120,9 @@ in
       yahrr = enabled;
       common = disabled;
       common-slim = enabled;
+      # Only opens dev-server ports here (qmk and podman are off), which a
+      # server has no use for.
+      development = mkForce disabled;
     };
 
     system = {
