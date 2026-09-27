@@ -54,6 +54,7 @@ in
       bookorbit = enabled;
       grimmory = enabled;
       calibre = enabled;
+      crowdsec = enabled;
       donetick = enabled;
       espanso = mkForce disabled;
       gatus = enabled;
