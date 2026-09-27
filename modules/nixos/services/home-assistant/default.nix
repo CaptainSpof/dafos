@@ -366,6 +366,11 @@ in
       };
     };
 
+    # Kept open to the LAN on purpose, unlike immich: with internal_url unset,
+    # HA hands Cast speakers and ESPHome voice satellites media URLs on
+    # http://<lan ip>:8123 (TTS, announcements), and they fetch them directly.
+    # Closing it needs internal_url pointed at the Traefik host and a TTS test
+    # first.
     networking.firewall = {
       allowedTCPPorts = [
         8123
