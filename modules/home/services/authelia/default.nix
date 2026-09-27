@@ -27,7 +27,8 @@ in
       "authelia/encryption-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
       "authelia/oidc-hmac-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
       "authelia/oidc-rsa-pk".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/authelia.yaml";
-      "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
+      "jellyfin/authelia/client-secret".sopsFile =
+        lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
       "immich/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich.yaml";
     };
 
@@ -123,6 +124,18 @@ in
       containers.authelia = {
         traefik.subDomain = "auth";
         expose = true;
+
+        # Secrets are read at start from paths that never change, so a
+        # rotation left Authelia on the old session secret and the old lldap
+        # readonly password (every new login failed). Hashing the encrypted
+        # files into the unit makes a rotation restart it.
+        extraConfig.Unit.X-Secrets-Hash =
+          lib.concatMapStringsSep " "
+            (f: builtins.hashFile "sha256" (lib.snowfall.fs.get-file "secrets/dafoltop/${f}.yaml"))
+            [
+              "authelia"
+              "lldap"
+            ];
       };
 
       settings = {

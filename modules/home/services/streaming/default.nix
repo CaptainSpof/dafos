@@ -175,7 +175,8 @@ in
   config = mkIf cfg.enable {
     sops.secrets = {
       "qui/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
-      "jellyfin/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
+      "jellyfin/authelia/client-secret".sopsFile =
+        lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
       "gluetun/wg-pk".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
       "gluetun/wg-address".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
     };
@@ -218,6 +219,17 @@ in
           containers = {
             jellyfin = {
               expose = true;
+
+              # The LDAP and SSO plugin configs are rendered from the lldap
+              # readonly password and the OIDC client secret at start; restart
+              # when either file is rotated (see the authelia module).
+              extraConfig.Unit.X-Secrets-Hash =
+                lib.concatMapStringsSep " "
+                  (f: builtins.hashFile "sha256" (lib.snowfall.fs.get-file "secrets/dafoltop/${f}.yaml"))
+                  [
+                    "lldap"
+                    "streaming"
+                  ];
 
               # The image pin is upstream's again: nps carries 12.1 and a
               # renovate regex for linuxserver's `version-<v>ubu<n>` tag shape,

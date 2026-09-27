@@ -241,7 +241,14 @@ in
         # users (readonly included) are never re-set, and Authelia and Jellyfin
         # fail to bind with the new readonly password. Make the file
         # authoritative on every start instead.
-        containers.lldap.environment.LLDAP_FORCE_LDAP_USER_PASS_RESET = "always";
+        containers.lldap = {
+          environment.LLDAP_FORCE_LDAP_USER_PASS_RESET = "always";
+          # Restart on rotation: the bootstrap only re-applies passwords at
+          # start, and the secret paths never change (see authelia).
+          extraConfig.Unit.X-Secrets-Hash = builtins.hashFile "sha256" (
+            lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml"
+          );
+        };
 
         bootstrap = {
           users = cfg.lldapUsers;
