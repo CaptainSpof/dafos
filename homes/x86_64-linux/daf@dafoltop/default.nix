@@ -47,7 +47,7 @@ in
     };
 
     services = {
-      sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafoltop" ];
+      sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafoltop.pem" ];
 
       authelia = enabled;
       bar-assistant = enabled;
