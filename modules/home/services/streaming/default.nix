@@ -192,6 +192,26 @@ in
     nps = {
       externalStorageBaseDir = "/mnt/yahrr";
       stacks = {
+        # nps registers the Jellyfin client with the bare one_factor policy, so
+        # Authelia would issue tokens to any lldap user and leave the refusal to
+        # the SSO plugin's role check. Gate it on the same groups up front,
+        # like the home-assistant and immich clients.
+        authelia = mkIf jellyfinOidc.enable {
+          oidc.clients.jellyfin.authorization_policy = lib.mkForce "jellyfin";
+          settings.identity_providers.oidc.authorization_policies.jellyfin = {
+            default_policy = "deny";
+            rules = [
+              {
+                policy = config.nps.stacks.authelia.defaultAllowPolicy;
+                subject = [
+                  "group:${jellyfinOidc.adminGroup}"
+                  "group:${jellyfinOidc.userGroup}"
+                ];
+              }
+            ];
+          };
+        };
+
         streaming = {
           enable = true;
 
