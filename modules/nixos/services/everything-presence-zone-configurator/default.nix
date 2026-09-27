@@ -30,7 +30,9 @@ in
 
     port = mkOpt types.port 42069 "Port the zone configurator web UI listens on.";
 
-    openFirewall = mkBoolOpt true "Whether to open `port` to the LAN.";
+    # The UI has no authentication and can push OTA firmware, so it is only
+    # reached through Traefik's source-IP-gated `zones.` router by default.
+    openFirewall = mkBoolOpt false "Whether to open `port` to the LAN, bypassing Traefik.";
 
     homeAssistantUrl =
       mkOpt types.str "http://127.0.0.1:8123"
