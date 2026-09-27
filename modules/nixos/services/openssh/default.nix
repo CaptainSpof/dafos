@@ -57,7 +57,11 @@ in
 
       settings = {
         PasswordAuthentication = false;
+        # Upstream leaves this on, and with UsePAM it still accepts a
+        # password.
+        KbdInteractiveAuthentication = false;
         PermitRootLogin = if format == "install-iso" then "yes" else "no";
+        AllowUsers = mkIf (format != "install-iso") [ config.${namespace}.user.name ];
       };
 
       extraConfig = ''
