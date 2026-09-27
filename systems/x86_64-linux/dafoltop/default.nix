@@ -88,6 +88,8 @@ in
         hostAddress = "192.168.0.10";
       };
       home-assistant = enabled;
+      # Disk and failed-unit alerts, relayed to the phones by home-assistant.
+      alerting = enabled;
       # Zone/room editor for the Everything Presence Lite sensors; talks to the
       # local home-assistant over its API (token in
       # secrets/daf/everything-presence.yaml).
