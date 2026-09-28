@@ -21,5 +21,12 @@ in
       capSysAdmin = true;
       openFirewall = true;
     };
+
+    # Sunshine hangs in its portal capture init (no ports, no avahi) if the wlr
+    # portal isn't up yet or crashes on first contact at login.
+    systemd.user.services.sunshine = {
+      after = [ "xdg-desktop-portal-wlr.service" ];
+      wants = [ "xdg-desktop-portal-wlr.service" ];
+    };
   };
 }
