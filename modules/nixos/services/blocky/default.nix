@@ -6,7 +6,13 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf types;
+  inherit (lib)
+    concatStrings
+    mapAttrsToList
+    mkEnableOption
+    mkIf
+    types
+    ;
   inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.blocky;
@@ -21,6 +27,10 @@ in
     '';
 
     domain = mkOpt types.str "daftdaf.dev" "Domain resolved locally to hostAddress.";
+
+    externalSubdomains = mkOpt (types.attrsOf types.str) {
+      blog = "captainspof.github.io";
+    } "Subdomains of `domain` hosted elsewhere, as `name = cname-target`; exempt from the LAN mapping.";
 
     upstreams = mkOpt (types.listOf types.str) [
       "tcp-tls:1.1.1.1:853"
@@ -57,6 +67,16 @@ in
         # directly instead of hairpinning out through the Freebox. Subdomains
         # are covered by the zone entry.
         customDNS.mapping.${cfg.domain} = cfg.hostAddress;
+
+        # Subdomains hosted off-box would otherwise be swallowed by the mapping
+        # above. blocky checks the exact name before its parents, so a CNAME
+        # here wins and its target is resolved upstream as usual. `mapping`
+        # only takes IPs; CNAMEs need a zone.
+        customDNS.zone = concatStrings (
+          mapAttrsToList (
+            name: target: "${name}.${cfg.domain}. 3600 CNAME ${target}.\n"
+          ) cfg.externalSubdomains
+        );
 
         blocking = {
           denylists.ads = cfg.denylists;
