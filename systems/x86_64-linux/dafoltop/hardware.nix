@@ -44,6 +44,11 @@ in
       "tcp_bbr"
       "uhid"
     ];
+    # The laptop is on AC 24/7; USB autosuspend dropping the mounted media
+    # disk mid-scrub or mid-import is a real failure mode, not a theoretical
+    # one, for a bus-powered-adjacent (dock-powered but bridge-negotiated)
+    # device that's supposed to stay live.
+    kernelParams = [ "usbcore.autosuspend=-1" ];
 
     initrd = {
       availableKernelModules = [
@@ -57,7 +62,12 @@ in
       ];
       kernelModules = [ "kvm-intel" ];
     };
-    supportedFilesystems = [ "cifs" ];
+    # "btrfs" is for the USB-attached media disk (disko.nix); its root/nix are
+    # ext4, so btrfs-progs was never on this host before.
+    supportedFilesystems = [
+      "cifs"
+      "btrfs"
+    ];
     extraModulePackages = [ ];
   };
 
@@ -130,6 +140,14 @@ in
   };
 
   services.thermald.enable = true;
+
+  # The USB media disk (disko.nix) is a single used drive with no redundancy;
+  # a monthly scrub is the only thing that will notice it starting to rot.
+  services.btrfs.autoScrub = {
+    enable = true;
+    fileSystems = [ "/mnt/data" ];
+    interval = "monthly";
+  };
 
   powerManagement = {
     cpuFreqGovernor = lib.mkDefault "ondemand";

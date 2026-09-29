@@ -10,7 +10,10 @@ let
   inherit (lib) mkForce;
 in
 {
-  imports = [ ./hardware.nix ];
+  imports = [
+    ./hardware.nix
+    ./disko.nix
+  ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
