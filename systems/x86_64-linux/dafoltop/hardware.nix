@@ -131,6 +131,13 @@ in
     # Enable DHCP on the wireless link
     useDHCP = lib.mkDefault true;
     enableIPv6 = false;
+
+    # The Freebox hands 192.168.0.10 to this MAC, and blocky binds to that address
+    # (dafbox uses it as its DNS server). The lease is keyed on the USB ethernet
+    # adapter burned-in MAC, so a replacement adapter would otherwise come up with
+    # a new address and take DNS down. Clone the old MAC onto whichever ethernet
+    # device NetworkManager brings up. Wi-Fi has its own setting, unaffected.
+    networkmanager.ethernet.macAddress = "00:e0:4c:36:02:d2";
   };
 
   hardware = {
