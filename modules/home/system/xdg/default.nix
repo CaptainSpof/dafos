@@ -12,7 +12,6 @@ let
   cfg = config.${namespace}.system.xdg;
 
   browser = [
-    "firefox-beta.desktop"
     "firefox.desktop"
   ];
   editor = [ "emacs.desktop" ];

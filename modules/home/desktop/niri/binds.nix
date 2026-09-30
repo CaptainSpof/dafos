@@ -28,6 +28,12 @@ lib.mkForce {
   "Mod+Shift+Slash".action = show-hotkey-overlay;
   "Mod+W".action = spawn firefox-pkg.meta.mainProgram;
   "Mod+D".action = spawn "wezterm";
+  # Handy has no working global shortcut on Wayland; niri binds can't fire on
+  # key release, so this toggles recording instead of push-to-hold.
+  "Mod+Shift+D" = {
+    action = spawn "handy" "--toggle-transcription";
+    hotkey-overlay.title = "Toggle Speech-to-Text (Handy)";
+  };
   "Mod+M".action = spawn "dolphin";
   "Mod+Space" = {
     action = spawn "vicinae" "toggle";

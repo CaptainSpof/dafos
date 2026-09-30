@@ -157,6 +157,7 @@
 
     vicinae = {
       url = "github:vicinaehq/vicinae";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     vicinae-extensions = {
       # Pinned: upstream commits after this rev exclude the "bluetooth"

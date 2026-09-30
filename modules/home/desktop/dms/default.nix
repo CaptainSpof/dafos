@@ -360,7 +360,7 @@ in
       run install -Dm0644 ${qt6ctConf} ${lib.escapeShellArg qt6ctConfPath}
     '';
 
-    # Keep the DMS dock's pinned apps (session.json `pinnedApps`) declarative and
+    # Keep the DMS dock's pinned apps (session.json `dockPins.dock`) declarative and
     # host-overridable via the `dockApps` option above. session.json is otherwise
     # DMS-owned runtime state (DMS rewrites it on launcher use, wallpaper change,
     # …), so we can't symlink it — we patch just the one key with jq, preserving
@@ -372,14 +372,14 @@ in
       desired=${lib.escapeShellArg (builtins.toJSON cfg.dockApps)}
       run mkdir -p "$(dirname "$session")"
       if [ -f "$session" ]; then
-        current=$(${pkgs.jq}/bin/jq -c '.pinnedApps // null' "$session")
+        current=$(${pkgs.jq}/bin/jq -c '.dockPins.dock // null' "$session")
       else
         current=missing
         run sh -c "echo '{}' > $session"
       fi
       if [ "$current" != "$(printf '%s' "$desired" | ${pkgs.jq}/bin/jq -c .)" ]; then
         tmp=$(mktemp)
-        ${pkgs.jq}/bin/jq --argjson apps "$desired" '.pinnedApps = $apps' "$session" > "$tmp" \
+        ${pkgs.jq}/bin/jq --argjson apps "$desired" '.dockPins.dock = $apps' "$session" > "$tmp" \
           && run mv "$tmp" "$session"
         ${pkgs.systemd}/bin/systemctl --user restart dms.service 2>/dev/null || true
       fi

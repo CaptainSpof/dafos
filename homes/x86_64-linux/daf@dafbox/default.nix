@@ -158,11 +158,11 @@ in
       };
 
       graphical = {
+        apps.handy = enabled;
         browsers = {
           firefox = {
             enable = true;
             # package = inputs.firefox.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
-            package = pkgs.firefox-beta;
             gpuAcceleration = true;
             hardwareDecoding = true;
             settings = {
