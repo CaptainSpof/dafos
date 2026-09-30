@@ -112,5 +112,22 @@ in
       done
       true
     '';
+
+    # Containers read their secrets when they start, and sops-nix.service (a
+    # oneshot) is only ordered before the ones that remembered to say so. The rest
+    # race it: on 2026-10-01 bar-assistant-meilisearch started 2 s before the
+    # secrets existed, exited on an empty master key, and its dependents stayed
+    # down. authelia, lldap and immich-kiosk read secrets too.
+    #
+    # A dash-truncated drop-in applies to every `podman-*.service` unit, present
+    # and future, so no list of container names has to be kept in step. It is
+    # `After=` only, not `Wants=`: a oneshot that has finished is inactive, and
+    # `Wants=` would re-run the decryption on every later container restart.
+    # sd-switch only reads each unit's own `.service.d`, so adding this restarts
+    # nothing on a switch; it takes effect from the next boot.
+    xdg.configFile."systemd/user/podman-.service.d/10-after-sops-nix.conf".text = ''
+      [Unit]
+      After=sops-nix.service
+    '';
   };
 }

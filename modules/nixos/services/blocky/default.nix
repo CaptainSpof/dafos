@@ -2,6 +2,7 @@
   lib,
   config,
   namespace,
+  pkgs,
   ...
 }:
 
@@ -16,6 +17,14 @@ let
   inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.blocky;
+
+  # blocky binds `hostAddress` itself, and that address comes from DHCP a moment
+  # after the unit would otherwise start.
+  waitForAddress = pkgs.writeShellScript "blocky-wait-for-address" ''
+    until ${pkgs.iproute2}/bin/ip -4 -o addr show to ${cfg.hostAddress} | ${pkgs.gnugrep}/bin/grep -q .; do
+      sleep 0.5
+    done
+  '';
 in
 {
   options.${namespace}.services.blocky = {
@@ -96,6 +105,19 @@ in
     networking.firewall = mkIf cfg.openFirewall {
       allowedTCPPorts = [ 53 ];
       allowedUDPPorts = [ 53 ];
+    };
+
+    # `Wants=network-online.target` is not enough here: NetworkManager-wait-online
+    # is masked on dafoltop, so nothing waits for the lease. Booting without it,
+    # blocky failed to bind 4 times in under a second; the default start limit is
+    # 5 in 10 s, so one more and DNS for the LAN stays down until someone notices.
+    # Wait for the address instead, and keep retrying instead of giving up.
+    systemd.services.blocky = {
+      unitConfig.StartLimitIntervalSec = 0;
+      serviceConfig = {
+        ExecStartPre = "${waitForAddress}";
+        RestartSec = "2s";
+      };
     };
   };
 }
