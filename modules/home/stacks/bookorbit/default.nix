@@ -207,7 +207,7 @@ in
 
     services.podman.containers = {
       ${name} = {
-        image = "ghcr.io/bookorbit/bookorbit:3.1.0";
+        image = "ghcr.io/bookorbit/bookorbit:3.2.0";
 
         volumeMap = cfg.libraries // {
           data = "${storage}/data:/data";
