@@ -19,7 +19,7 @@ let
   cfg = config.${namespace}.services.blocky;
 
   # blocky binds `hostAddress` itself, and that address comes from DHCP a moment
-  # after the unit would otherwise start.
+  # after the unit would otherwise start. Run by its own oneshot unit, see below.
   waitForAddress = pkgs.writeShellScript "blocky-wait-for-address" ''
     until ${pkgs.iproute2}/bin/ip -4 -o addr show to ${cfg.hostAddress} | ${pkgs.gnugrep}/bin/grep -q .; do
       sleep 0.5
@@ -111,13 +111,27 @@ in
     # is masked on dafoltop, so nothing waits for the lease. Booting without it,
     # blocky failed to bind 4 times in under a second; the default start limit is
     # 5 in 10 s, so one more and DNS for the LAN stays down until someone notices.
-    # Wait for the address instead, and keep retrying instead of giving up.
-    systemd.services.blocky = {
-      unitConfig.StartLimitIntervalSec = 0;
+    #
+    # The wait is its own oneshot, not an ExecStartPre: blocky runs with
+    # RestrictAddressFamilies=AF_INET AF_INET6, so `ip` cannot open its netlink
+    # socket inside the unit and the wait never finishes. The first version of
+    # this did exactly that and took DNS down after the switch. `Wants`, not
+    # `Requires`: if the address never shows up the wait times out and blocky is
+    # still started, then retries every 2 s instead of never starting.
+    systemd.services.blocky-wait-for-address = {
+      description = "Wait for ${cfg.hostAddress} to exist before blocky binds it";
       serviceConfig = {
-        ExecStartPre = "${waitForAddress}";
-        RestartSec = "2s";
+        Type = "oneshot";
+        ExecStart = "${waitForAddress}";
+        TimeoutStartSec = "60s";
       };
+    };
+
+    systemd.services.blocky = {
+      wants = [ "blocky-wait-for-address.service" ];
+      after = [ "blocky-wait-for-address.service" ];
+      unitConfig.StartLimitIntervalSec = 0;
+      serviceConfig.RestartSec = "2s";
     };
   };
 }
