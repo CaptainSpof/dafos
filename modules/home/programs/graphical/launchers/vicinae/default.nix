@@ -26,17 +26,26 @@ let
     '';
   });
 
-  homeassistant-extension =
-    inputs.vicinae.lib.${pkgs.stdenv.hostPlatform.system}.mkRayCastExtension {
-      name = "homeassistant";
-      rev = "b1f5a90ffd31feb46c2f70d51328783f87a48680";
-      sha256 = "sha256-QuaaX+M0oa7cbS/sQirhYHyqF8tGbqHxFQm7vv672p8=";
-    };
+  homeassistant-extension = inputs.vicinae.lib.${pkgs.stdenv.hostPlatform.system}.mkRayCastExtension {
+    name = "homeassistant";
+    rev = "b1f5a90ffd31feb46c2f70d51328783f87a48680";
+    sha256 = "sha256-QuaaX+M0oa7cbS/sQirhYHyqF8tGbqHxFQm7vv672p8=";
+  };
 
   # Local extension built from ~/Repositories/vicinae-timezone-converter (added
   # as a flake input). Converts a time between timezones from the search bar.
   timezone-converter =
     inputs.vicinae-timezone-converter.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  # vicinae is pinned to gcc15 upstream, but its numen dependency is built with
+  # the default stdenv, which is gcc16 on our nixpkgs: libnumen then needs a
+  # newer libstdc++ than vicinae links against. Build numen with gcc15 too.
+  vicinaePackage = inputs.vicinae.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
+    numen = inputs.vicinae.inputs.numen.packages.${pkgs.stdenv.hostPlatform.system}.numen.override {
+      withRepl = false;
+      stdenv = pkgs.gcc15Stdenv;
+    };
+  };
 in
 {
   options.${namespace}.programs.graphical.launchers.vicinae = {
@@ -55,6 +64,7 @@ in
 
     programs.vicinae = {
       enable = true;
+      package = vicinaePackage;
       systemd = {
         enable = true;
         autoStart = true;
@@ -87,14 +97,16 @@ in
       };
       extensions = [
         bluetooth-alias-first
-      ] ++ (with vicinaeExtensions; [
+      ]
+      ++ (with vicinaeExtensions; [
         firefox
         it-tools
         nix
         niri
         power-profile
         wifi-commander
-      ]) ++ [
+      ])
+      ++ [
         homeassistant-extension
         timezone-converter
       ];
@@ -105,20 +117,21 @@ in
     # sops secret so it's reproducible. Runs after sops renders the secret, only
     # writes when the value differs, and restarts vicinae so it re-reads.
     home.activation.vicinaeHomeAssistantToken =
-      config.lib.dag.entryAfter [ "sops-nix" "writeBoundary" ] ''
-        db="$HOME/.local/share/vicinae/vicinae.db"
-        secret=${lib.escapeShellArg config.sops.secrets."vicinae-homeassistant-token".path}
-        ns='@tonka3000/homeassistant:preferences'
-        if [ -f "$db" ] && [ -s "$secret" ]; then
-          current=$(${pkgs.sqlite}/bin/sqlite3 -readonly "$db" \
-            "SELECT value FROM storage_data_item WHERE namespace_id='$ns' AND key='token';" 2>/dev/null || true)
-          if [ "$current" != "$(cat "$secret")" ]; then
-            run ${pkgs.systemd}/bin/systemctl --user stop vicinae.service || true
-            run ${pkgs.sqlite}/bin/sqlite3 "$db" \
-              "INSERT INTO storage_data_item (namespace_id,value_type,key,value) VALUES ('$ns',1,'token',CAST(readfile('$secret') AS TEXT)) ON CONFLICT(namespace_id,key) DO UPDATE SET value=excluded.value, value_type=1;"
-            run ${pkgs.systemd}/bin/systemctl --user start vicinae.service || true
+      config.lib.dag.entryAfter [ "sops-nix" "writeBoundary" ]
+        ''
+          db="$HOME/.local/share/vicinae/vicinae.db"
+          secret=${lib.escapeShellArg config.sops.secrets."vicinae-homeassistant-token".path}
+          ns='@tonka3000/homeassistant:preferences'
+          if [ -f "$db" ] && [ -s "$secret" ]; then
+            current=$(${pkgs.sqlite}/bin/sqlite3 -readonly "$db" \
+              "SELECT value FROM storage_data_item WHERE namespace_id='$ns' AND key='token';" 2>/dev/null || true)
+            if [ "$current" != "$(cat "$secret")" ]; then
+              run ${pkgs.systemd}/bin/systemctl --user stop vicinae.service || true
+              run ${pkgs.sqlite}/bin/sqlite3 "$db" \
+                "INSERT INTO storage_data_item (namespace_id,value_type,key,value) VALUES ('$ns',1,'token',CAST(readfile('$secret') AS TEXT)) ON CONFLICT(namespace_id,key) DO UPDATE SET value=excluded.value, value_type=1;"
+              run ${pkgs.systemd}/bin/systemctl --user start vicinae.service || true
+            fi
           fi
-        fi
-      '';
+        '';
   };
 }

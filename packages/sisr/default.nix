@@ -97,8 +97,13 @@ stdenv.mkDerivation rec {
   # GL calls behind it resolve against the driver matching the running kernel.
   # dlopen'd deps use LD_LIBRARY_PATH, not the executable's RUNPATH, hence the
   # wrapper env rather than appendRunpaths.
+  #
+  # WebKitGTK's DMABUF renderer aborts the process on AMD/Wayland here
+  # ("No provider of eglQueryDmaBufFormatsEXT found" -> SIGABRT in
+  # webview_navigate); fall back to the SHM path.
   preFixup = ''
     gappsWrapperArgs+=(
+      --set-default WEBKIT_DISABLE_DMABUF_RENDERER 1
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libglvnd ]}:/run/opengl-driver/lib"
     )
   '';

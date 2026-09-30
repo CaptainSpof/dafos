@@ -379,7 +379,7 @@
   # `dock*` settings; they now live inside one config object per dock, the same
   # shape as a bar.
   #
-  # `pinnedApps` is NOT here — that is runtime session state, kept declarative
+  # `dockPins` is NOT here — that is runtime session state, kept declarative
   # through `dafos.desktop.dms.dockApps` (see ../default.nix).
   dockConfigs = [
     {
