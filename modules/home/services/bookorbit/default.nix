@@ -61,9 +61,10 @@ in
       libraries = {
         root = "/mnt/bookorbit:/libraries";
 
-        # Audiobooks stay shared: `/mnt/audio` is the Freebox CIFS share, and
-        # nothing in this fleet writes to it.
-        audiobooks = "/mnt/audio/Audiobooks:/audiobooks";
+        # Audiobooks stay shared with grimmory: they live on the local media disk
+        # (`/mnt/data/Audio`, copied from the Freebox `Audio` share), and nothing
+        # in this fleet writes to them.
+        audiobooks = "/mnt/data/Audio/Audiobooks:/audiobooks";
       };
 
       containers = {

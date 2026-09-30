@@ -191,7 +191,7 @@ in
     );
 
     nps = {
-      externalStorageBaseDir = "/mnt/yahrr";
+      externalStorageBaseDir = "/mnt/data/yahrr";
       stacks = {
         # nps registers the Jellyfin client with the bare one_factor policy, so
         # Authelia would issue tokens to any lldap user and leave the refusal to
@@ -259,8 +259,8 @@ in
               # own entries (dropping its single `media` mount for the two paths
               # below) and leaves the generated configs to append.
               volumeMap = lib.mkForce {
-                movies = "/mnt/videos/Movies:/movies";
-                shows = "/mnt/videos/Shows:/shows";
+                movies = "/mnt/data/Movies:/movies";
+                shows = "/mnt/data/Shows:/shows";
                 config = "${config.nps.storageBaseDir}/streaming/jellyfin:/config";
                 brandingXml = "${brandingXml}:/config/branding.xml";
               };
@@ -292,15 +292,15 @@ in
             };
             sonarr = {
               volumes = lib.mkForce [
-                "/mnt/videos/Shows:/media"
-                "/mnt/yahrr:/yahrr"
+                "/mnt/data/Shows:/media"
+                "/mnt/data/yahrr:/yahrr"
                 "${config.nps.storageBaseDir}/streaming/sonarr:/config"
               ];
             };
             radarr = {
               volumes = lib.mkForce [
-                "/mnt/videos/Movies:/media"
-                "/mnt/yahrr:/yahrr"
+                "/mnt/data/Movies:/media"
+                "/mnt/data/yahrr:/yahrr"
                 "${config.nps.storageBaseDir}/streaming/radarr:/config"
               ];
             };
@@ -335,7 +335,7 @@ in
             };
             qbittorrent = {
               volumes = lib.mkForce [
-                "/mnt/yahrr:/yahrr"
+                "/mnt/data/yahrr:/yahrr"
                 # Its own directory, not radarr's: sharing it handed qbittorrent
                 # radarr's database and API key.
                 "${config.nps.storageBaseDir}/qbittorrent/qbittorrent:/config"

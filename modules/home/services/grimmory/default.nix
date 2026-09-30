@@ -34,7 +34,7 @@ in
           volumes = lib.mkForce [
             "/mnt/grimmory/livres:/livres"
             "/mnt/grimmory/books:/books"
-            "/mnt/audio/Audiobooks:/audiobooks"
+            "/mnt/data/Audio/Audiobooks:/audiobooks"
             "${config.nps.storageBaseDir}/grimmory/bookdrop:/bookdrop"
             "${config.nps.storageBaseDir}/grimmory/data:/app/data"
           ];
