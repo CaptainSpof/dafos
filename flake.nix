@@ -150,11 +150,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     vicinae = {
       url = "github:vicinaehq/vicinae";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -231,7 +226,6 @@
       homes.modules = with inputs; [
         nix-podman-stacks.homeModules.nps
         nix-index-database.homeModules.nix-index
-        noctalia.homeModules.default
         plasma-manager.homeModules.plasma-manager
         sops-nix.homeManagerModules.sops
         zen-browser.homeModules.beta
