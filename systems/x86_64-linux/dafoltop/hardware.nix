@@ -108,6 +108,12 @@ in
 
   systemd.tmpfiles.rules = [
     "d /mnt/livres 0775 calibre calibre - -"
+    # Book libraries (calibre, grimmory, bookorbit) that live on the root disk.
+    # They existed only as container bind-mount sources, so a reinstall would
+    # have produced empty libraries. Owners match what is on disk today.
+    "d /mnt/calibre 0755 daf users - -"
+    "d /mnt/grimmory 0755 daf root - -"
+    "d /mnt/bookorbit 0755 daf root - -"
   ];
 
   systemd.services.wait-freebox-available = {
