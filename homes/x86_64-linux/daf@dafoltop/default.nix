@@ -50,6 +50,7 @@ in
       sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafoltop.pem" ];
 
       authelia = enabled;
+      backup-dumps = enabled;
       bar-assistant = enabled;
       bookorbit = enabled;
       grimmory = enabled;

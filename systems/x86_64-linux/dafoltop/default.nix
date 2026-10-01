@@ -13,6 +13,7 @@ in
   imports = [
     ./hardware.nix
     ./disko.nix
+    ./disko-backup.nix
   ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
@@ -99,6 +100,9 @@ in
       home-assistant = enabled;
       # Disk and failed-unit alerts, relayed to the phones by home-assistant.
       alerting = enabled;
+      # Nightly encrypted restic backup of the state that cannot be regenerated, to
+      # the Samsung in the dock (see modules/nixos/services/backup/README.md).
+      backup = enabled;
       # Zone/room editor for the Everything Presence Lite sensors; talks to the
       # local home-assistant over its API (token in
       # secrets/dafoltop/everything-presence.yaml).
