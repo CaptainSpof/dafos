@@ -48,22 +48,6 @@ while read -r name image; do
       keep_previous "$rel"
     fi
     ;;
-  *dispatcharr*)
-    # All-in-one image with its own Postgres 17 (role "dispatch", local socket, no
-    # password), so the image name says nothing about the database inside.
-    rel="postgres/$name.dump"
-    echo "postgres (embedded): $name"
-    dumped+=("$name")
-    if podman exec "$name" pg_dump -U dispatch -h /var/run/postgresql -d dispatcharr -Fc \
-      </dev/null >"$new/$rel.tmp" &&
-      podman exec -i "$name" pg_restore --list <"$new/$rel.tmp" >/dev/null; then
-      mv "$new/$rel.tmp" "$new/$rel"
-    else
-      rm -f "$new/$rel.tmp"
-      fail "pg_dump $name"
-      keep_previous "$rel"
-    fi
-    ;;
   *mariadb* | *mysql*)
     rel="mariadb/$name.sql"
     echo "mariadb: $name"

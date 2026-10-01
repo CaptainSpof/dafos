@@ -22,9 +22,9 @@ models, Immich `thumbs/` and `encoded-video/`, Home Assistant's recorder databas
 
 ## Rules that are easy to break
 
-- **Embedded databases are special-cased, and a guard catches new ones.** Dispatcharr is
-  an all-in-one image with its own Postgres 17, so image-name matching cannot find it; it has
-  its own case in `backup-dumps.sh`. After the dumps, the script scans `~/stacks` for any
+- **A guard catches databases the dump step cannot see.** Dumps are found by image name,
+  so an all-in-one image with an embedded database (Dispatcharr was one, with its own
+  Postgres 17) would be missed. After the dumps, the script scans `~/stacks` for any
   Postgres or MariaDB data directory (`PG_VERSION`, `ibdata1`) that is not under a dumped
   container's mount and fails the job if it finds one. That guard was proven to fire by
   planting a fake data directory (see the git history for the bug that first disabled it:
