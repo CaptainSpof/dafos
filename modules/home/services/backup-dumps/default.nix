@@ -17,7 +17,10 @@ let
 
   script = pkgs.writeShellApplication {
     name = "backup-dumps";
+    # `podman unshare sh -c` needs a shell of its own: this PATH is all the unit gets.
+    # Missing it failed all 32 SQLite copies on the first real run.
     runtimeInputs = with pkgs; [
+      bash
       podman
       sqlite
       coreutils
