@@ -101,14 +101,14 @@ for root in "$HOME/stacks" /mnt/calibre /mnt/grimmory /mnt/bookorbit; do
     esac
   done < <(podman unshare find "$root" -type f \
     \( -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' \) \
-    ! -name logs.db ! -path '*/booklore/*' ! -path '*/karakeep/*' \
+    ! -name logs.db \
     ! -path '*.bak/*' -print0)
 done
 echo "sqlite: $copied file(s) copied and verified"
 
 # --- Coverage guard ---------------------------------------------------------
 # Every database data directory under the stacks must sit under a mount of a
-# container that was dumped above (or be the known stale booklore one). Anything
+# container that was dumped above. Anything
 # else would only ever be backed up as raw files from under a running server, so
 # fail loudly now rather than discover it on the day of a restore.
 covered=()
@@ -125,7 +125,6 @@ while IFS= read -r -d '' marker; do
   for src in "${covered[@]}"; do
     case "$dir/" in "$src"/*) ok=1 ;; esac
   done
-  case "$dir" in */booklore/*) ok=1 ;; esac
   [ "$ok" -eq 1 ] || fail "database data directory not covered by any dump: $dir"
 done < <(podman unshare find "$HOME/stacks" -maxdepth 6 \( -name PG_VERSION -o -name ibdata1 \) -print0)
 
