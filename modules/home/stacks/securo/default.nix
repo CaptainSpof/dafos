@@ -70,6 +70,10 @@ let
     OIDC_CLIENT_SECRET.fromFile = cfg.oidc.clientSecretFile;
     OIDC_SCOPES = "openid email profile";
     OIDC_AUTO_REGISTER = "true";
+    # Authelia is the only identity provider and only securo_user members get
+    # through, so an OIDC login may claim a local account with the same verified
+    # email (the default, `disabled`, refuses and the login fails).
+    OIDC_EXISTING_USER_LINK_MODE = "verified_email";
     LOCAL_AUTH_ENABLED = lib.boolToString (!cfg.oidc.disableLocalAuth);
   };
 
