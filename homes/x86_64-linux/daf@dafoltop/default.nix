@@ -60,7 +60,10 @@ in
       donetick = enabled;
       espanso = mkForce disabled;
       gatus = enabled;
-      glance = enabled;
+      glance = {
+        enable = true;
+        engine = "dynacat";
+      };
       immich-kiosk = enabled;
       it-tools = enabled;
       kaneo = enabled;
