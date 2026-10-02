@@ -73,6 +73,7 @@ in
       };
       papra = enabled;
       reactive-resume = enabled;
+      securo = enabled;
       shelfmark = enabled;
       sparky-fitness = enabled;
       spliit = enabled;

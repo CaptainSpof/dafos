@@ -19,7 +19,7 @@ dark room.
 
 home-assistant, ollama (local LLM), immich + immich-kiosk, authelia,
 bar-assistant, bookorbit, traefik, lldap, glance, calibre, donetick, grimmory,
-it-tools, norish, papra, reactive-resume, shelfmark, streaming,
+it-tools, norish, papra, reactive-resume, securo, shelfmark, streaming,
 everything-presence-zone-configurator.
 
 Most are home-manager nps stacks rather than NixOS services — see
