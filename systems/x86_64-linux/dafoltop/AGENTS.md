@@ -80,6 +80,12 @@ FIDECO dual-bay dock:
 - Nothing is backed up from `/mnt/data` (re-acquirable media). State is backed
   up nightly to `/mnt/backup`: see
   [../../../modules/nixos/services/backup/README.md](../../../modules/nixos/services/backup/README.md).
+- `/mnt/data` is exported read-only over NFSv4 to dafbox
+  ([media-export](../../../modules/nixos/services/media-export/default.nix)): TCP
+  2049 is open only to the listed LAN addresses (dafbox's depends on a DHCP
+  lease, so pin it in Freebox OS), plus the tailnet. The server is tied to the
+  `/mnt/data` mount, so it stops when the dock drops and starts when the mount
+  returns.
 - The Freebox is no longer primary storage. Its CIFS mounts in `hardware.nix`
   are still declared but nothing uses them. The share is `sec=none`, readable by
   anyone on the LAN, so never put anything unencrypted on it.
