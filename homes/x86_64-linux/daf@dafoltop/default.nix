@@ -73,7 +73,10 @@ in
       };
       papra = enabled;
       reactive-resume = enabled;
-      securo = enabled;
+      securo = {
+        enable = true;
+        enableBankingAppId = "2d512d1c-a7f8-45d3-9a17-7b2c5e1f97ae";
+      };
       shelfmark = enabled;
       sparky-fitness = enabled;
       spliit = enabled;
