@@ -64,3 +64,20 @@ image-pin and `vm-test.nix` rules.
 ## Adding one
 
 Use the `dafos-add-service` skill (`.claude/skills/dafos-add-service`).
+
+## Storage
+
+- **Bulk data** (media, downloads) lives under `/mnt/data` on the btrfs media
+  disk. **Stack config and databases** live under `nps.storageBaseDir` on the
+  NVMe, never on the USB disk.
+- **Container-visible paths are load-bearing**: Jellyfin, Sonarr, Radarr and the
+  rest store them in their databases. Change the host side of a bind mount and
+  leave the container side alone.
+- **Hardlinks need a single mount**: `link()` fails across separate bind mounts
+  even of one filesystem, so downloads and library must sit under one mount to
+  hardlink.
+- **Databases are dumped by image name** (`backup-dumps`). A new Postgres or
+  MariaDB container is picked up automatically; an all-in-one image with an
+  embedded database is not, and the dump job fails loudly until it is handled.
+  See
+  [../../nixos/services/backup/README.md](../../nixos/services/backup/README.md).
