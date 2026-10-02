@@ -38,3 +38,64 @@ documents the one-time HA integration step (config flow, not YAML) and the
 Sleep, suspend and hibernate targets are disabled, documentation generation is
 off, journald is capped at 500M, and `nh` keeps 5 generations / 7 days. None of
 these are fleet-wide defaults — do not assume them when editing a shared module.
+
+## Disks
+
+`/`, `/boot` and `/home` are on the internal NVMe and stay hand-written UUID
+entries in [hardware.nix](hardware.nix) — the inverse of dafbox. That is
+deliberate: adopting the live ext4 root into disko would be a destructive
+reinstall of the live house. disko owns only the two USB disks, which sit in a
+FIDECO dual-bay dock:
+
+| File                                 | Disk                         | Mount         |
+| ------------------------------------ | ---------------------------- | ------------- |
+| [disko.nix](disko.nix)               | 4 TB IronWolf, btrfs `media` | `/mnt/data`   |
+| [disko-backup.nix](disko-backup.nix) | 1 TB Samsung, btrfs `backup` | `/mnt/backup` |
+
+- **Run disko in file mode, one file at a time** (`--mode destroy|format` on
+  `disko.nix` or `disko-backup.nix` alone, with `--dry-run` first). Pointed at
+  the flake, destroy and format act on _every_ disk in the config, and the flake
+  mode ignores `--root-mountpoint`. Only the intended `by-id` path may appear in
+  the printed script.
+- **Never hot-add, hot-remove or GUI-eject a drive while the other is in use.**
+  The dock drops both. `/mnt/data` unmounts and the nine media containers keep
+  running on stale mounts: `systemctl start mnt-data.mount`, then
+  `systemctl --user restart` them.
+- **Identify disks by `by-id`, never `sdX`** (the names swap when the dock
+  re-enumerates). The bridge reports an all-zero serial, so `usb-ASMT…-0:0` and
+  `-0:1` name the bays, not the drives; the Samsung uses its `ata-` id.
+- **Both mounts are `nofail` with a 10 s device timeout**, and booting without
+  the dock is tested: the nine media containers (jellyfin, sonarr, radarr,
+  qbittorrent, bazarr, qui, prowlarr, bookorbit, grimmory) fail closed with
+  `start-limit-hit` and everything else comes up. After the dock returns:
+  `systemctl start mnt-data.mount`, `systemctl --user reset-failed` the nine (a
+  plain start is refused), then start them.
+- **One btrfs subvolume holds all media.** `link()` returns EXDEV across
+  subvolumes and across bind mounts, so Sonarr/Radarr cannot hardlink between
+  `/mnt/data/yahrr` and `/mnt/data/Shows` as mounted today; the plan relies on
+  reflinks (same filesystem, shared extents). That has not yet been confirmed
+  with a real import — check `filefrag -v` for `shared` before trusting it.
+- **No redundancy.** A scrub on a single device detects bad data but cannot
+  repair it, so the backups are the recovery path.
+- Nothing is backed up from `/mnt/data` (re-acquirable media). State is backed
+  up nightly to `/mnt/backup`: see
+  [../../../modules/nixos/services/backup/README.md](../../../modules/nixos/services/backup/README.md).
+- The Freebox is no longer primary storage. Its CIFS mounts in `hardware.nix`
+  are still declared but nothing uses them. The share is `sec=none`, readable by
+  anyone on the LAN, so never put anything unencrypted on it.
+
+## Network identity
+
+- The address `192.168.0.10` is keyed on the Freebox DHCP lease for the USB
+  ethernet adapter's MAC. blocky binds it and dafbox uses it as its DNS server.
+  `hardware.nix` clones that MAC onto whichever ethernet device NetworkManager
+  brings up, so replacing the adapter keeps the address.
+- **blocky waits for the address in its own oneshot**
+  (`blocky-wait-for-address`), not in `ExecStartPre`: blocky's sandbox has no
+  netlink, so `ip` inside the unit fails forever. This once took DNS down for 19
+  minutes. Test readiness changes under the unit's own restrictions
+  (`systemd-run -p RestrictAddressFamilies=…`).
+- Every `podman-*` user unit is ordered after `sops-nix.service` by a prefix
+  drop-in (`podman-.service.d`, in the home sops module), because containers
+  reading secrets raced it at boot. sd-switch does not see prefix drop-ins, so a
+  switch never restarts containers because of it.
