@@ -54,26 +54,27 @@ in
   # `/`, `/home`, `/boot`, `/nix`, `/var/log` and swap are now declared in
   # ./disko.nix (disko generates the fileSystems + swapDevices entries).
   # Only the network share remains hand-defined here.
-  fileSystems = {
-    "/mnt/videos" = {
-      depends = [ "/" ];
-      device = "//192.168.0.254/Freebox/Vidéos";
-      fsType = "cifs";
-      options = [
-        "guest"
-        "noauto"
-        "uid=1000"
-        # SMB1 (vers=1.0) is deprecated/insecure; modern Freeboxes speak SMB2/3.
-        # Fall back to "2.1" or "2.0" if the mount fails, or "1.0" for a very old Freebox.
-        "vers=3.0"
-        # noserverino: Freebox doesn't report stable server inode numbers; silences
-        # the "Autodisabling server inode numbers"/"Hardlinks will not be recognized" warnings.
-        "noserverino"
-        "nounix"
-        "x-systemd.automount"
-        "x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s"
-      ];
-    };
+  #
+  # The media pool lives on dafoltop and is exported read-only over NFSv4 (see
+  # modules/nixos/services/media-export). It is mounted by dafoltop's LAN
+  # address, not its tailnet name, so it keeps working when tailscale is down.
+  # `soft` so a powered-off dafoltop gives an error instead of a hung Dolphin.
+  fileSystems."/mnt/data" = {
+    depends = [ "/" ];
+    device = "192.168.0.10:/mnt/data";
+    fsType = "nfs";
+    options = [
+      "ro"
+      "nfsvers=4.2"
+      "soft"
+      "timeo=50"
+      "retrans=2"
+      "noauto"
+      "nofail"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=300"
+      "x-systemd.mount-timeout=10s"
+    ];
   };
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
