@@ -103,6 +103,13 @@ in
       # Nightly encrypted restic backup of the state that cannot be regenerated, to
       # the Samsung in the dock (see modules/nixos/services/backup/README.md).
       backup = enabled;
+      # Read-only NFS export of the media pool for dafbox. LAN first (works without
+      # tailscale), tailnet as a second path. See modules/nixos/services/media-export.
+      media-export = {
+        enable = true;
+        lanClients = [ "192.168.0.12" ];
+        tailnetClients = [ "100.106.29.60" ];
+      };
       # Zone/room editor for the Everything Presence Lite sensors; talks to the
       # local home-assistant over its API (token in
       # secrets/dafoltop/everything-presence.yaml).
