@@ -17,8 +17,7 @@ Home Assistant (`alert-failure@`).
 
 The 600 GB of media on `/mnt/data` (re-acquirable), container images, ollama
 models, Immich `thumbs/` and `encoded-video/`, Home Assistant's recorder database
-(history only), caches. Stale directories (`~/stacks/booklore`, `karakeep`,
-`qui.bak`) are excluded by name.
+(history only), caches.
 
 ## Rules that are easy to break
 
