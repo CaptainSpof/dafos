@@ -658,9 +658,22 @@ in
                 }
               ))
               {
-                type = "weather";
-                title = "Météo";
-                location = "Nanterre, France";
+                type = "group";
+                widgets = [
+                  {
+                    type = "weather";
+                    title = "Aujourd'hui";
+                    location = "Nanterre, France";
+                  }
+                  (liveWidget (
+                    import ./weather-week.nix {
+                      title = "Semaine";
+                      # Nanterre, where the `weather` widget's geocoding lands.
+                      latitude = 48.8924;
+                      longitude = 2.2069;
+                    }
+                  ))
+                ];
               }
             ];
           };

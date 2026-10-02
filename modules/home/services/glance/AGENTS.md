@@ -62,3 +62,7 @@
   the header row by `userCss`. Dynacat's root font size is 10px; size in rem
   accordingly. FotMob ids come from
   `fotmob.com/api/data/search/suggest?term=<name>`.
+- `weather-week.nix`: Open-Meteo daily forecast (the built-in `weather` widget
+  has no multi-day option), WMO codes mapped to French labels and MDI
+  `weather-*` icons. Index parallel `daily.*` arrays with
+  `printf "daily.x.%d" $i` from the root, not through the range variable.
