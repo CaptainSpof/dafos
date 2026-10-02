@@ -98,6 +98,13 @@ ISO on a USB stick. Also note your LUKS/user passwords if any.
 
 ---
 
+> **Where the key lives now (2026-10-02):** the old copy on the Freebox share was
+> guest-readable and has been deleted. The June 2026 keys, REINSTALL notes and home
+> tarball are in the dafoltop restic repo (snapshot tag `dafbox-oneoff`, restore with
+> `sudo restic-local restore latest --tag dafbox-oneoff --target /tmp/dafbox-keys`).
+> For a new reinstall, copy the host key into restic (never a plain share) and keep it
+> off any guest-readable path.
+
 **0.5 — Preserve the host SSH key (CRITICAL for sops).** dafbox's host key
 `/etc/ssh/ssh_host_ed25519_key` derives the `root_dafbox` age identity
 (`age1v7p9…`) that system secrets in `secrets/daf/*` are encrypted to. A reinstall
@@ -189,6 +196,10 @@ findmnt -R /mnt
 nixos-install --flake /tmp/dafos#dafbox --no-root-passwd
 # set passwords after first boot, or via your declarative users + sops
 ```
+
+> The `/mnt/videos/dafbox-host-keys` paths below no longer exist: restore them from the
+> restic snapshot first (see the note at step 0.5) and point the `install` lines at
+> that directory.
 
 **2.45 — Restore the host SSH key BEFORE first boot** (so sops decrypts on boot and
 the machine keeps its identity). The new install just generated fresh host keys under
