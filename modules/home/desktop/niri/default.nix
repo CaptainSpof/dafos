@@ -85,7 +85,7 @@ in
 
           binds = import ./binds.nix {
             inherit config lib firefox-pkg;
-            proofreader = config.${namespace}.desktop.dms.proofreader.enable;
+            proofreader = config.programs.dms-proofreader.enable;
           };
 
           layer-rules = import ./layer-rules.nix;

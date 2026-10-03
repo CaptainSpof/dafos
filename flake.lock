@@ -199,6 +199,26 @@
         "type": "github"
       }
     },
+    "dms-proofreader": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791089410,
+        "narHash": "sha256-JLGegFEBf2TEcTriziijUqjj/+cgc2Z62LO0iFX3Ank=",
+        "owner": "CaptainSpof",
+        "repo": "dms-proofreader",
+        "rev": "85df12957994490490ed4708868c8f9aebba895b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CaptainSpof",
+        "repo": "dms-proofreader",
+        "type": "github"
+      }
+    },
     "donetick-hass": {
       "flake": false,
       "locked": {
@@ -1115,6 +1135,7 @@
         "deploy-rs": "deploy-rs",
         "dgop": "dgop",
         "disko": "disko",
+        "dms-proofreader": "dms-proofreader",
         "donetick-hass": "donetick-hass",
         "emacs-overlay": "emacs-overlay",
         "firefox": "firefox",
