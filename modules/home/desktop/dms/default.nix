@@ -139,8 +139,12 @@ let
   dmsSessionPath = "${config.xdg.stateHome}/DankMaterialShell/session.json";
 in
 {
-  # The "Games" launcher folder (plugin + desktop-entry sync) lives on its own.
-  imports = [ (import ./games.nix { inherit namespace; }) ];
+  # The "Games" launcher folder (plugin + desktop-entry sync) and the
+  # proofreader widget (plugin + translation wrapper) live on their own.
+  imports = [
+    (import ./games.nix { inherit namespace; })
+    (import ./proofreader.nix { inherit namespace; })
+  ];
 
   options.${namespace}.desktop.dms = {
     enable = mkBoolOpt true "Whether or not to use dms";

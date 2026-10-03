@@ -59,6 +59,29 @@ Plugin enable-state is seeded once into the runtime-owned
 `plugin_settings.json`. Turning the option off runs `dms-games-sync --unhide`
 from activation to put the games back.
 
+## The proofreader widget
+
+`dafos.desktop.dms.proofreader` ([proofreader.nix](proofreader.nix) +
+[plugins/proofreader](plugins/proofreader)) checks text against a LanguageTool
+server and translates offline with Bergamot.
+
+- **Per-host values reach the plugin through a generated
+  `~/.config/DankMaterialShell/proofreader.json`** (server URL, the
+  `dms-translate` path, reachable language pairs), not through
+  `plugin_settings.json`, which is runtime-owned. A non-empty URL in the
+  plugin's own settings wins over it.
+- The server is `dafos.services.languagetool` (NixOS); its README covers
+  pointing a laptop at dafoltop instead of a local instance.
+- **Errors are drawn, not highlighted**: Qt Quick has no QML syntax highlighter,
+  so underlines are rectangles laid over the `TextArea` from
+  `positionToRectangle()`. LanguageTool offsets are UTF-16 code units, the same
+  as QML strings — never convert them.
+- `translatelocally` is overridden with `-Wno-error=array-bounds`: nixpkgs'
+  build fails under gcc 16. Drop the override once nixpkgs builds it again.
+- Plugin state is cached in memory by `PluginService` on first load; editing
+  `~/.local/state/DankMaterialShell/plugins/proofreader_state.json` by hand only
+  takes effect after a DMS restart.
+
 ## Plugin edits look like no-ops
 
 Qt caches plugin components. After editing a plugin, run `plugins reload` —

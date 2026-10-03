@@ -2,7 +2,6 @@
   lib,
   config,
   namespace,
-  pkgs,
   ...
 }:
 
@@ -23,6 +22,10 @@ in
       niri.screencastOutput = "DP-2";
 
       dms = {
+        # Spelling/grammar scratchpad, checked by the local LanguageTool
+        # (dafos.services.languagetool in systems/x86_64-linux/dafbox).
+        proofreader = enabled;
+
         # Main bar everywhere; the vertical utility bar only on the secondary
         # LG panel, so it never covers the M27Q that games and Remote Play
         # stream from.
@@ -50,6 +53,10 @@ in
               centerWidgets = [
                 {
                   id = "notepadButton";
+                  enabled = true;
+                }
+                {
+                  id = "proofreader";
                   enabled = true;
                 }
                 {
