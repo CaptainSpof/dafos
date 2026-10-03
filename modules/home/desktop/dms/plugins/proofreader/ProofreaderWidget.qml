@@ -39,6 +39,10 @@ PluginComponent {
     readonly property string englishVariant: pluginData.englishVariant || "en-US"
 
     // ── state ────────────────────────────────────────────────────────────
+    // `html` is what the editor shows (bold, underline...); `text` is its plain
+    // projection, which is what LanguageTool checks and translation reads.
+    // Document positions map 1:1 onto `text`, so match offsets work on both.
+    property string html: ""
     property string text: ""
     property string language: "auto"
     property string targetLanguage: ""
@@ -64,6 +68,13 @@ PluginComponent {
 
     readonly property bool upToDate: text === checkedText
     readonly property int issueCount: upToDate ? matches.length : 0
+    // Only the owner instance drives a slideout; it publishes its count so every
+    // bar's pill shows the same badge.
+    readonly property int sharedIssueCount: (PluginService.globalVars["proofreader"] || {}).issueCount ?? 0
+    onIssueCountChanged: {
+        if (ipcOwner)
+            PluginService.setGlobalVar("proofreader", "issueCount", issueCount);
+    }
 
     // Fallback when /v2/languages is unreachable.
     readonly property var fallbackLanguages: [
@@ -123,8 +134,22 @@ PluginComponent {
         return (code || "").split("-")[0];
     }
 
+    // French first, then English, then everything else by name.
+    function languageRank(code) {
+        const base = baseCode(code);
+        if (base === "fr")
+            return code === "fr" ? 0 : 1;
+        if (base === "en")
+            return code === "en-US" ? 2 : code === "en-GB" ? 3 : 4;
+        return 5;
+    }
+
+    function plainToHtml(plain) {
+        return plain.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+    }
+
     readonly property string sourceLanguage: baseCode(language !== "auto" ? language : detectedCode)
-    readonly property var translationTargets: translationPairs[sourceLanguage] || []
+    readonly property var translationTargets: (translationPairs[sourceLanguage] || []).slice().sort((a, b) => languageRank(a) - languageRank(b) || langName(a).localeCompare(langName(b)))
     readonly property string effectiveTarget: {
         const targets = translationTargets;
         if (targets.indexOf(targetLanguage) >= 0)
@@ -139,6 +164,8 @@ PluginComponent {
         if (!pluginService)
             return;
         text = pluginService.loadPluginState("proofreader", "text", "");
+        // Before rich text only `text` was stored.
+        html = pluginService.loadPluginState("proofreader", "html", "") || plainToHtml(text);
         // Bare en/de (no spell checker) were selectable before; move them to a variant.
         const saved = pluginService.loadPluginState("proofreader", "language", "auto");
         language = saved === "en" ? englishVariant : saved === "de" ? "de-DE" : saved;
@@ -152,6 +179,8 @@ PluginComponent {
     }
 
     onPluginServiceChanged: loadState()
+
+    onHtmlChanged: saveState("html", html)
 
     onTextChanged: {
         saveState("text", text);
@@ -206,7 +235,6 @@ PluginComponent {
                 // spelling when surveyed, so the list stays explicit.
                 const noSpelling = ["en", "de"];
                 const list = JSON.parse(xhr.responseText).filter(l => noSpelling.indexOf(l.longCode) < 0);
-                list.sort((a, b) => a.name.localeCompare(b.name));
                 root.languages = list;
             } catch (e) {
                 console.warn("proofreader: bad /v2/languages response:", e);
@@ -215,7 +243,7 @@ PluginComponent {
         xhr.send();
     }
 
-    readonly property var languageList: languages.length > 0 ? languages : fallbackLanguages
+    readonly property var languageList: (languages.length > 0 ? languages : fallbackLanguages).slice().sort((a, b) => languageRank(a.longCode) - languageRank(b.longCode) || a.name.localeCompare(b.name))
 
     function filterIgnored(list, source) {
         if (ignoredWords.length === 0)
@@ -405,7 +433,7 @@ PluginComponent {
         model: root.ipcOwner ? Quickshell.screens : []
 
         delegate: DankSlideout {
-            id: slideout
+            id: slideoutWindow
             layerNamespace: "dms:plugins:proofreader"
             title: "Correcteur"
             slideoutWidth: 480
@@ -418,7 +446,9 @@ PluginComponent {
             content: Component {
                 ProofreaderPanel {
                     ctl: root
-                    slideout: slideout
+                    // Not `slideout: slideout`: inside the panel that name is its own
+                    // (still unset) property, not this window.
+                    slideout: slideoutWindow
                 }
             }
         }
@@ -453,8 +483,8 @@ PluginComponent {
             }
 
             StyledText {
-                visible: root.issueCount > 0
-                text: root.issueCount
+                visible: root.sharedIssueCount > 0
+                text: root.sharedIssueCount
                 font.pixelSize: root.textSize
                 color: Theme.widgetTextColor
                 anchors.verticalCenter: parent.verticalCenter
@@ -474,8 +504,8 @@ PluginComponent {
             }
 
             StyledText {
-                visible: root.issueCount > 0
-                text: root.issueCount
+                visible: root.sharedIssueCount > 0
+                text: root.sharedIssueCount
                 font.pixelSize: root.textSize
                 color: Theme.widgetTextColor
                 anchors.horizontalCenter: parent.horizontalCenter

@@ -122,6 +122,8 @@ let
     inherit (proofCfg) languageToolUrl;
     translateBin = if transCfg.enable then lib.getExe translate else "";
     translationPairs = if transCfg.enable then translationPairs else { };
+    # Checks that a formatted copy really landed on the clipboard.
+    wlPasteBin = lib.getExe' pkgs.wl-clipboard "wl-paste";
   };
 in
 {
