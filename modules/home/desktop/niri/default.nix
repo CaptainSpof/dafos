@@ -83,7 +83,10 @@ in
           screenshot-path = "~/Pictures/Screenshots/%Y-%m-%dT%H:%M:%S.png";
           hotkey-overlay.skip-at-startup = true;
 
-          binds = import ./binds.nix { inherit config lib firefox-pkg; };
+          binds = import ./binds.nix {
+            inherit config lib firefox-pkg;
+            proofreader = config.${namespace}.desktop.dms.proofreader.enable;
+          };
 
           layer-rules = import ./layer-rules.nix;
 
