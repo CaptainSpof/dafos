@@ -1,8 +1,9 @@
 # LanguageTool
 
 Spelling and grammar server behind the DMS proofreader plugin
-(`modules/home/desktop/dms/plugins/proofreader`). The plugin only needs an HTTP
-URL, set per home in `dafos.desktop.dms.proofreader.languageToolUrl`.
+([CaptainSpof/dms-proofreader](https://github.com/CaptainSpof/dms-proofreader)).
+The plugin only needs an HTTP URL, set per home in
+`programs.dms-proofreader.languageToolUrl`.
 
 dafbox runs its own instance on `127.0.0.1:8081`, which is the plugin's default.
 
@@ -41,7 +42,7 @@ Nothing here is enabled yet. Do it only if daftop needs it — the JVM costs up 
 3. In `homes/x86_64-linux/daf@daftop/default.nix`:
 
    ```nix
-   desktop.dms.proofreader = {
+   programs.dms-proofreader = {
      enable = true;
      languageToolUrl = "https://languagetool.daftdaf.dev";
    };

@@ -59,37 +59,14 @@ Plugin enable-state is seeded once into the runtime-owned
 `plugin_settings.json`. Turning the option off runs `dms-games-sync --unhide`
 from activation to put the games back.
 
-## The proofreader widget
+## The proofreader widget lives in its own repo
 
-`dafos.desktop.dms.proofreader` ([proofreader.nix](proofreader.nix) +
-[plugins/proofreader](plugins/proofreader)) checks text against a LanguageTool
-server and translates offline with Bergamot.
-
-- **Per-host values reach the plugin through a generated
-  `~/.config/DankMaterialShell/proofreader.json`** (server URL, the
-  `dms-translate` path, reachable language pairs), not through
-  `plugin_settings.json`, which is runtime-owned. A non-empty URL in the
-  plugin's own settings wins over it.
-- The server is `dafos.services.languagetool` (NixOS); its README covers
-  pointing a laptop at dafoltop instead of a local instance.
-- **Errors are drawn, not highlighted**: Qt Quick has no QML syntax highlighter,
-  so underlines are rectangles laid over the `TextArea` from
-  `positionToRectangle()`. LanguageTool offsets are UTF-16 code units, the same
-  as QML strings — never convert them.
-- **The editor is rich text; LanguageTool sees its plain projection.** Document
-  positions map 1:1 onto `getText()`, but Qt returns `<br>` as U+2028 and
-  paragraph breaks as U+2029: normalise both to `\n` (one for one) before
-  checking, translating or copying. Write them as `` escapes — a raw U+2028 in a
-  QML regex is a line terminator and breaks the parse.
-- Plugin QML siblings need `components/` + `qmldir` + `import "./components"`:
-  DMS loads plugins from a `?revision=N` URL, which defeats implicit directory
-  imports. A component that failed once stays cached across `plugins reload`;
-  restart `dms`.
-- `translatelocally` is overridden with `-Wno-error=array-bounds`: nixpkgs'
-  build fails under gcc 16. Drop the override once nixpkgs builds it again.
-- Plugin state is cached in memory by `PluginService` on first load; editing
-  `~/.local/state/DankMaterialShell/plugins/proofreader_state.json` by hand only
-  takes effect after a DMS restart.
+The spelling/grammar/translation widget is
+[CaptainSpof/dms-proofreader](https://github.com/CaptainSpof/dms-proofreader)
+(checkout in `~/Projects/dms-proofreader`), consumed as the `dms-proofreader`
+flake input; hosts turn it on with `programs.dms-proofreader.enable`. Its
+gotchas live in that repo's `AGENTS.md`. The LanguageTool server it talks to is
+`dafos.services.languagetool`.
 
 ## Plugin edits look like no-ops
 

@@ -150,6 +150,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Our own DMS plugin: spelling/grammar (LanguageTool) and offline
+    # translation. Developed in ~/Projects/dms-proofreader.
+    dms-proofreader = {
+      url = "github:CaptainSpof/dms-proofreader";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     vicinae = {
       url = "github:vicinaehq/vicinae";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -234,6 +241,7 @@
         dank-material-shell.homeModules.dank-material-shell
         dank-material-shell.homeModules.niri
         dank-calendar.homeModules.dank-calendar
+        dms-proofreader.homeModules.default
       ];
 
       systems.modules.nixos = with inputs; [

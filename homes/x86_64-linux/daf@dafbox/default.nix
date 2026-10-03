@@ -22,10 +22,6 @@ in
       niri.screencastOutput = "DP-2";
 
       dms = {
-        # Spelling/grammar scratchpad, checked by the local LanguageTool
-        # (dafos.services.languagetool in systems/x86_64-linux/dafbox).
-        proofreader = enabled;
-
         # Main bar everywhere; the vertical utility bar only on the secondary
         # LG panel, so it never covers the M27Q that games and Remote Play
         # stream from.
@@ -221,6 +217,10 @@ in
       video = enabled;
     };
   };
+
+  # Spelling/grammar scratchpad (github:CaptainSpof/dms-proofreader), checked
+  # by the local LanguageTool (dafos.services.languagetool on this host).
+  programs.dms-proofreader.enable = true;
 
   programs.niri.settings.input = {
     tablet = {
