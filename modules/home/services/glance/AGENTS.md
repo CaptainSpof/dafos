@@ -66,3 +66,7 @@
   has no multi-day option), WMO codes mapped to French labels and MDI
   `weather-*` icons. Index parallel `daily.*` arrays with
   `printf "daily.x.%d" $i` from the root, not through the range variable.
+- **No templated values in inline `style`.** custom-api templates go through
+  html/template, which replaces a templated CSS value with `ZgotmplZ` and can
+  drop the attribute. Pick a class in the template and style it in `userCss`
+  (the RER `rer-ok` / `rer-hurry` / `rer-missed` stripes do this).

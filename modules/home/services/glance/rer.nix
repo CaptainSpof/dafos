@@ -12,6 +12,17 @@
   limit ? 6,
   # HTML put before the list; the "open in Citymapper" button.
   button ? "",
+  # Minutes from home to the platform. Each row gets a state class, drawn
+  # as a coloured stripe by `.rer-*` in the module's userCss: `ok` when
+  # there is time to spare (leave in `margin` minutes or more), `hurry`
+  # when leaving right now still makes it, `missed` when even the fastest
+  # walk is too slow. Classes, not inline styles: html/template replaces a
+  # templated CSS value with "ZgotmplZ".
+  walk ? {
+    min = 7;
+    max = 8;
+  },
+  margin ? 3,
 }:
 let
   call = "MonitoredVehicleJourney.MonitoredCall";
@@ -42,7 +53,13 @@ in
           {{ $n = add $n 1 }}
           {{ $late := toInt ($expected.Sub $aimed).Minutes }}
           {{ $cancelled := eq (.String "${call}.DepartureStatus") "cancelled" }}
-          <li class="flex items-center gap-10">
+          {{ $leave := sub $in ${toString walk.max} }}
+          {{ $state := "ok" }}
+          {{ if $cancelled }}{{ $state = "cancelled" }}
+          {{ else if lt $in ${toString walk.min} }}{{ $state = "missed" }}
+          {{ else if lt $leave ${toString margin} }}{{ $state = "hurry" }}
+          {{ end }}
+          <li class="flex items-center gap-10 rer-row rer-{{ $state }}">
             <div class="shrink-0 color-highlight" style="min-width:3.2rem">{{ $expected.Local.Format "15:04" }}</div>
             <div class="grow min-width-0">
               <div class="text-truncate color-highlight">{{ $dest }}</div>
@@ -51,8 +68,15 @@ in
                 {{ if gt $late 0 }}<span class="color-negative"> · +{{ $late }} min</span>{{ end }}
               </div>
             </div>
-            <div class="shrink-0 text-right {{ if $cancelled }}color-negative{{ else }}color-highlight size-h3{{ end }}">
-              {{ if $cancelled }}Supprimé{{ else if eq $in 0 }}à quai{{ else }}{{ $in }} min{{ end }}
+            <div class="shrink-0 text-right">
+              <div class="{{ if $cancelled }}color-negative{{ else }}color-highlight size-h3{{ end }}">
+                {{ if $cancelled }}Supprimé{{ else if eq $in 0 }}à quai{{ else }}{{ $in }} min{{ end }}
+              </div>
+              {{ if not $cancelled }}
+                <div class="size-h6 rer-status">
+                  {{ if lt $in ${toString walk.min} }}trop tard{{ else if lt $leave ${toString margin} }}pars maintenant{{ else }}pars dans {{ $leave }} min{{ end }}
+                </div>
+              {{ end }}
             </div>
           </li>
         {{ end }}
