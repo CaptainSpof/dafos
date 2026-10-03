@@ -441,6 +441,23 @@ in
             filter: invert(0.58);
           }
 
+          /* RER departures (rer.nix): a stripe per row saying whether the
+             walk to the station still makes it. Fixed colours rather than
+             theme tokens: Dynacat's positive colour defaults to the primary
+             purple, which says nothing here. */
+          .rer-row {
+            border-left: 0.4rem solid transparent;
+            padding-left: 0.8rem;
+            border-radius: 0.2rem;
+          }
+          .rer-ok { border-left-color: hsl(135, 45%, 50%); }
+          .rer-ok .rer-status { color: hsl(135, 45%, 50%); }
+          .rer-hurry { border-left-color: hsl(38, 85%, 60%); }
+          .rer-hurry .rer-status { color: hsl(38, 85%, 60%); }
+          .rer-missed { border-left-color: var(--color-negative); opacity: 0.45; }
+          .rer-missed .rer-status { color: var(--color-negative); }
+          .rer-cancelled { opacity: 0.45; }
+
           /* Site-logo buttons (linkButton). The absolute one is centred on
              the header row of the nearest positioned widget; inside a group
              that is the group itself, so each tab's button lands on the tab
