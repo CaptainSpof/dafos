@@ -76,6 +76,15 @@ server and translates offline with Bergamot.
   so underlines are rectangles laid over the `TextArea` from
   `positionToRectangle()`. LanguageTool offsets are UTF-16 code units, the same
   as QML strings — never convert them.
+- **The editor is rich text; LanguageTool sees its plain projection.** Document
+  positions map 1:1 onto `getText()`, but Qt returns `<br>` as U+2028 and
+  paragraph breaks as U+2029: normalise both to `\n` (one for one) before
+  checking, translating or copying. Write them as `` escapes — a raw U+2028 in a
+  QML regex is a line terminator and breaks the parse.
+- Plugin QML siblings need `components/` + `qmldir` + `import "./components"`:
+  DMS loads plugins from a `?revision=N` URL, which defeats implicit directory
+  imports. A component that failed once stays cached across `plugins reload`;
+  restart `dms`.
 - `translatelocally` is overridden with `-Wno-error=array-bounds`: nixpkgs'
   build fails under gcc 16. Drop the override once nixpkgs builds it again.
 - Plugin state is cached in memory by `PluginService` on first load; editing

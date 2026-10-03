@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import qs.Common
+import qs.Services
 import qs.Widgets
 
 // Slideout body. All state and the LanguageTool/translation calls live on the
@@ -12,18 +13,89 @@ Item {
     required property var ctl
     required property var slideout
 
+    // Set while the editor is being filled from `ctl`, so that load does not
+    // echo back as an edit.
+    property bool loading: false
+
     Keys.onEscapePressed: slideout.hide()
 
+    // Only one slideout is visible at a time, so the editor pulls the shared
+    // document when it is shown and pushes edits while it is the one in use.
     function onShown() {
         ctl.loadState();
+        loading = true;
+        textArea.text = ctl.html;
+        loading = false;
+        // Re-derive rather than trust the stored projection (older saves kept U+2028).
+        if (ctl.text !== plainText())
+            ctl.text = plainText();
+        textArea.cursorPosition = textArea.length;
         if (ctl.languages.length === 0)
             ctl.fetchLanguages();
         if (!ctl.upToDate)
             ctl.runCheck();
-        Qt.callLater(() => textArea.forceActiveFocus());
+        focusEditor();
     }
 
-    Component.onCompleted: onShown()
+    // The layer surface only takes the keyboard once it is mapped, so focus
+    // again once the slide-in has started rather than only at load time.
+    function focusEditor() {
+        textArea.forceActiveFocus();
+        focusRetry.restart();
+    }
+
+    Timer {
+        id: focusRetry
+        interval: 120
+        onTriggered: textArea.forceActiveFocus()
+    }
+
+    // Qt hands <br> back as U+2028 and paragraph breaks as U+2029. Swap both
+    // for "\n" (one character for one, so match offsets still line up) before
+    // the text reaches LanguageTool, translation or a plain-text copy.
+    function plainText() {
+        return textArea.getText(0, textArea.length).replace(/[\u2028\u2029]/g, "\n");
+    }
+
+    function toggleFormat(prop) {
+        const f = textArea.cursorSelection.font;
+        f[prop] = !f[prop];
+        textArea.cursorSelection.font = f;
+        textArea.forceActiveFocus();
+    }
+
+    function clearFormat() {
+        const f = textArea.cursorSelection.font;
+        f.bold = false;
+        f.italic = false;
+        f.underline = false;
+        f.strikeout = false;
+        textArea.cursorSelection.font = f;
+        textArea.forceActiveFocus();
+    }
+
+    // Qt's own copy puts both text/html and text/plain on the clipboard, so
+    // formatting survives into a mail or a document and a terminal still
+    // gets plain text. Wayland only honours it right after an input event on
+    // this surface, so check, and fall back to a plain-text copy (`dms cl`
+    // offers a single MIME type) if it did not take.
+    function copyFormatted() {
+        const pos = textArea.cursorPosition;
+        textArea.selectAll();
+        textArea.copy();
+        textArea.deselect();
+        textArea.cursorPosition = pos;
+
+        const wlPaste = ctl.nixDefaults.wlPasteBin || "wl-paste";
+        Proc.runCommand("proofreader.verifyCopy", [wlPaste, "--list-types"], (stdout, exitCode) => {
+            if (stdout.indexOf("text/html") >= 0) {
+                ToastService.showInfo("Copié avec la mise en forme");
+                return;
+            }
+            ctl.copy(ctl.text);
+        }, 150, 3000);
+    }
+
 
     Connections {
         target: panel.slideout
@@ -59,7 +131,7 @@ Item {
         ctl.matches = rest;
         ctl.activeIndex = -1;
         textArea.remove(m.offset, end);
-        textArea.insert(m.offset, value);
+        textArea.insert(m.offset, ctl.plainToHtml(value));
         textArea.cursorPosition = m.offset + value.length;
         textArea.forceActiveFocus();
     }
@@ -77,7 +149,7 @@ Item {
         textArea.selectAll();
         textArea.remove(0, textArea.length);
         if (value)
-            textArea.insert(0, value);
+            textArea.insert(0, ctl.plainToHtml(value));
     }
 
     ColumnLayout {
@@ -129,8 +201,8 @@ Item {
             }
             DankActionButton {
                 iconName: "content_copy"
-                tooltipText: "Copier le texte"
-                onClicked: panel.ctl.copy(panel.ctl.text)
+                tooltipText: "Copier le texte (avec mise en forme)"
+                onClicked: panel.copyFormatted()
             }
             DankActionButton {
                 iconName: "delete_sweep"
@@ -161,6 +233,52 @@ Item {
             }
         }
 
+        // ── formatting ──
+        Row {
+            spacing: Theme.spacingXS
+
+            Repeater {
+                model: [
+                    {
+                        icon: "format_bold",
+                        prop: "bold",
+                        tip: "Gras (Ctrl+B)"
+                    },
+                    {
+                        icon: "format_italic",
+                        prop: "italic",
+                        tip: "Italique (Ctrl+I)"
+                    },
+                    {
+                        icon: "format_underlined",
+                        prop: "underline",
+                        tip: "Souligné (Ctrl+U)"
+                    },
+                    {
+                        icon: "strikethrough_s",
+                        prop: "strikeout",
+                        tip: "Barré"
+                    }
+                ]
+
+                DankActionButton {
+                    required property var modelData
+                    iconName: modelData.icon
+                    tooltipText: modelData.tip
+                    readonly property bool active: textArea.cursorSelection.font[modelData.prop] === true
+                    iconColor: active ? Theme.primary : Theme.surfaceVariantText
+                    backgroundColor: active ? Theme.withAlpha(Theme.primary, 0.15) : "transparent"
+                    onClicked: panel.toggleFormat(modelData.prop)
+                }
+            }
+
+            DankActionButton {
+                iconName: "format_clear"
+                tooltipText: "Effacer la mise en forme"
+                onClicked: panel.clearFormat()
+            }
+        }
+
         // ── editor ──
         Rectangle {
             Layout.fillWidth: true
@@ -185,7 +303,6 @@ Item {
 
                     property var segments: []
 
-                    text: panel.ctl.text
                     font.family: SettingsData.fontFamily
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceText
@@ -193,7 +310,7 @@ Item {
                     selectionColor: Theme.primary
                     selectByMouse: true
                     wrapMode: TextArea.Wrap
-                    textFormat: TextEdit.PlainText
+                    textFormat: TextEdit.RichText
                     persistentSelection: true
                     padding: Theme.spacingM
                     background: null
@@ -212,9 +329,13 @@ Item {
                     }
 
                     onTextChanged: {
-                        if (panel.ctl.text !== text)
-                            panel.ctl.text = text;
                         segmentTimer.restart();
+                        if (panel.loading)
+                            return;
+                        panel.ctl.html = text;
+                        const plain = panel.plainText();
+                        if (panel.ctl.text !== plain)
+                            panel.ctl.text = plain;
                     }
                     onWidthChanged: segmentTimer.restart()
                     onContentHeightChanged: segmentTimer.restart()
@@ -230,10 +351,26 @@ Item {
                     }
 
                     Keys.onPressed: event => {
-                        if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && (event.modifiers & Qt.ControlModifier)) {
+                        if (!(event.modifiers & Qt.ControlModifier))
+                            return;
+                        switch (event.key) {
+                        case Qt.Key_Return:
+                        case Qt.Key_Enter:
                             panel.ctl.runCheck();
-                            event.accepted = true;
+                            break;
+                        case Qt.Key_B:
+                            panel.toggleFormat("bold");
+                            break;
+                        case Qt.Key_I:
+                            panel.toggleFormat("italic");
+                            break;
+                        case Qt.Key_U:
+                            panel.toggleFormat("underline");
+                            break;
+                        default:
+                            return;
                         }
+                        event.accepted = true;
                     }
 
                     Connections {
@@ -243,11 +380,6 @@ Item {
                         }
                         function onCheckedTextChanged() {
                             segmentTimer.restart();
-                        }
-                        function onTextChanged() {
-                            // Another screen's slideout, or loadState(), changed the text.
-                            if (textArea.text !== panel.ctl.text)
-                                textArea.text = panel.ctl.text;
                         }
                     }
 
@@ -262,7 +394,7 @@ Item {
                     // One underline per visual line a match covers, found by
                     // walking positions until the line's y changes.
                     function computeSegments() {
-                        if (!panel.ctl.upToDate || text !== panel.ctl.checkedText)
+                        if (!panel.ctl.upToDate || panel.plainText() !== panel.ctl.checkedText)
                             return [];
                         const out = [];
                         panel.ctl.matches.forEach((m, i) => {
