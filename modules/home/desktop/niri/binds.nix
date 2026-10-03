@@ -2,6 +2,8 @@
   config,
   lib,
   firefox-pkg,
+  # Mod+P opens the DMS proofreader instead of the Notepad where it is enabled.
+  proofreader ? false,
 }:
 
 with config.lib.niri.actions;
@@ -58,10 +60,17 @@ lib.mkForce {
     action = dms-ipc "notifications" "toggle";
     hotkey-overlay.title = "Toggle Notification Center";
   };
-  "Mod+P" = {
-    action = dms-ipc "notepad" "toggle";
-    hotkey-overlay.title = "Toggle Notepad";
-  };
+  "Mod+P" =
+    if proofreader then
+      {
+        action = dms-ipc "proofreader" "toggle";
+        hotkey-overlay.title = "Toggle Proofreader";
+      }
+    else
+      {
+        action = dms-ipc "notepad" "toggle";
+        hotkey-overlay.title = "Toggle Notepad";
+      };
   "Mod+Shift+P" = {
     action = dms-call "color" "pick" "-a";
     hotkey-overlay.title = "Open Color Picker";
