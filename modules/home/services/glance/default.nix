@@ -420,8 +420,12 @@ in
         };
 
         settings.branding = {
-          hide-footer = true;
           logo-text = "dafos";
+          # The footer is the only place Dynacat renders raw HTML straight
+          # into the page, so it carries the RER countdown script (widget
+          # templates arrive via innerHTML, where a <script> never runs).
+          # `.footer` itself is hidden in userCss.
+          custom-footer = "<script>${builtins.readFile ./rer-ticker.js}</script>";
         }
         // lib.optionalAttrs (cfg.engine == "dynacat") {
           # Home-screen name when installed as an app; defaults to "Dynacat".
@@ -457,6 +461,15 @@ in
           .rer-missed { border-left-color: var(--color-negative); opacity: 0.45; }
           .rer-missed .rer-status { color: var(--color-negative); }
           .rer-cancelled { opacity: 0.45; }
+          /* Spare rows wait hidden until rer-ticker.js promotes them; the
+             list's flex rows would otherwise override [hidden]. */
+          .rer-list > li[hidden], .rer-extra, .rer-empty[hidden] { display: none !important; }
+          .rer-refresh { border: 0; cursor: pointer; }
+          .rer-refresh.is-loading img { animation: rer-spin 0.8s linear infinite; }
+          @keyframes rer-spin { to { rotate: 360deg; } }
+
+          /* Footer holds only the RER ticker script (branding.custom-footer). */
+          .footer { display: none; }
 
           /* Site-logo buttons (linkButton). The absolute one is centred on
              the header row of the nearest positioned widget; inside a group
@@ -475,6 +488,23 @@ in
             transform: translateY(-50%);
           }
           .widget-type-group .widget-link-button { top: 2.7rem; }
+          /* Several buttons in one header (RER: refresh + Citymapper). */
+          .widget:has(.widget-link-button-group) { position: relative; }
+          .widget:has(> .widget-content .widget-link-button-group) > .widget-header {
+            padding-right: 9rem;
+          }
+          .widget-link-button-group {
+            position: absolute;
+            top: 1.1rem;
+            right: calc(var(--widget-content-horizontal-padding) + 1px);
+            transform: translateY(-50%);
+            display: flex;
+            gap: 0.6rem;
+          }
+          .widget-link-button-group .widget-link-button {
+            position: static;
+            transform: none;
+          }
           .widget-link-button, .inline-link-button {
             display: inline-flex;
             align-items: center;

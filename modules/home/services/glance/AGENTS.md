@@ -70,3 +70,17 @@
   html/template, which replaces a templated CSS value with `ZgotmplZ` and can
   drop the attribute. Pick a class in the template and style it in `userCss`
   (the RER `rer-ok` / `rer-hurry` / `rer-missed` stripes do this).
+- **Per-widget polling bypasses the cache.** A custom-api widget's
+  `update-interval` (default 10s, 0 rejected) makes every visible tab call
+  `/api/widgets/<id>/content/`, which runs `update()` unconditionally; only page
+  loads and the SSE loop honour `cache`. Budget rate-limited APIs on "calls per
+  open tab". PRIM allows 1000/day per token (response headers `x-ratelimit-*`),
+  not the documented million: the RER widget refetches every 15 min and counts
+  down in the browser instead.
+- **Page JavaScript goes in `branding.custom-footer`** (`rer-ticker.js`): it is
+  the only raw HTML Dynacat renders into the page. Widget templates arrive via
+  innerHTML, so their `<script>` never runs, though inline `onclick` does (CSP
+  allows it). `window.dynacatRefreshWidget(id)` forces a widget refresh.
+- **No dollar-brace anywhere in the config**, JS and comments included: Dynacat
+  expands each one as an environment variable and refuses the whole config if it
+  is unset.
