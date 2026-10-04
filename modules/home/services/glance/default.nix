@@ -608,11 +608,6 @@ in
                         url = "https://tarow.github.io/nix-podman-stacks/docs";
                         icon = "si:podman";
                       }
-                      {
-                        title = "Dynacat";
-                        url = "https://dynacat.artur.zone";
-                        icon = "mdi:view-dashboard";
-                      }
                     ];
                   }
                   {
@@ -629,7 +624,7 @@ in
                         icon = "si:reddit";
                       }
                       {
-                        title = "Mes étoiles GitHub";
+                        title = "GitHub Stars";
                         url = "https://github.com/CaptainSpof?tab=stars";
                         icon = "si:github";
                       }
