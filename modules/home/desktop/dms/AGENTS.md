@@ -74,6 +74,11 @@ Qt caches plugin components. After editing a plugin, run `plugins reload` —
 otherwise the old component keeps serving and the edit appears to have done
 nothing.
 
+A reload that _fails_ is stickier: the cache-busting revision is only bumped
+after a successful unload, so once a component errors, every further `reload`
+serves the same broken build (same `?revision=N` in the journal error) until
+`dms restart`.
+
 ## settings.json is extracted, not authored
 
 DMS persists only values that differ from its own defaults, so a running

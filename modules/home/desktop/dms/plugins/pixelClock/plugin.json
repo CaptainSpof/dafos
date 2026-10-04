@@ -1,0 +1,14 @@
+{
+	"id": "pixelClock",
+	"name": "Pixel Clock",
+	"description": "Pixel-style stacked hour over minute desktop clock",
+	"version": "1.0.0",
+	"author": "CaptainSpof",
+	"icon": "schedule",
+	"type": "desktop",
+	"capabilities": ["desktop-widget", "clock"],
+	"component": "./PixelClockWidget.qml",
+	"settings": "./PixelClockSettings.qml",
+	"requires_dms": ">=1.2.0",
+	"permissions": ["settings_read", "settings_write"]
+}

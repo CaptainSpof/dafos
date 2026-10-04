@@ -41,6 +41,21 @@ in
   displaySettings.src = "${lucyfire}/displaySettings";
   wallpaperDiscovery.src = "${lucyfire}/wallpaperDiscovery";
 
+  # Local plugins
+  # The widget loads Google Sans Flex from its own directory: the font isn't in
+  # nixpkgs' google-fonts snapshot yet, and only the variable file has ROND.
+  pixelClock.src = pkgs.runCommand "dms-pixel-clock" { } ''
+    cp -r ${./plugins/pixelClock} $out
+    chmod u+w $out
+    cp ${
+      pkgs.fetchurl {
+        name = "GoogleSansFlex.ttf";
+        url = "https://raw.githubusercontent.com/google/fonts/a0e3dbcdc3a3ecfafff3f071159ae0221628922d/ofl/googlesansflex/GoogleSansFlex%5BGRAD%2CROND%2Copsz%2Cslnt%2Cwdth%2Cwght%5D.ttf";
+        hash = "sha256-wxpIL77L8uB+aJATTSAHhyOq33Msm5xsmkT4b4Jltv4=";
+      }
+    } $out/GoogleSansFlex.ttf
+  '';
+
   # Individual repos
   dankAudioVisualizer.src = fetchFromGitHub {
     owner = "odtgit";
