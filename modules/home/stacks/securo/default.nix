@@ -212,7 +212,7 @@ in
       # nginx: serves the SPA and proxies /api to the backend.
       ${name} = {
         # renovate: versioning=semver
-        image = "ghcr.io/securo-finance/securo-frontend:0.16.2";
+        image = "ghcr.io/securo-finance/securo-frontend:0.16.3";
 
         extraEnv = {
           BACKEND_URL = "http://${backendName}:8000";
