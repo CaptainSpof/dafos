@@ -102,6 +102,9 @@ in
           )
         ];
 
+        # Written by `dms-save-widget-positions`.
+        desktopWidgetPositions = ./dms-widget-positions.json;
+
         dockApps = [
           "${toString firefox-pkg.meta.mainProgram}"
           "emacs"

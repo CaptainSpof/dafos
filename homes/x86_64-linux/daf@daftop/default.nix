@@ -27,6 +27,11 @@ in
       # Neither bar is pinned to a named output: daftop docks to different
       # panels (its niri outputs below currently disable eDP-1 in favour of an
       # external HDMI-A-1), so an output name would just make a bar disappear.
+
+      # Written by `dms-save-widget-positions` (positions are kept per output,
+      # so docked and undocked layouts both survive).
+      dms.desktopWidgetPositions = ./dms-widget-positions.json;
+
       dms.bar = {
         configs = [
           # Top bar as a DMS island — the pill carries media, the clock, the
