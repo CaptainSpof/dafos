@@ -55,7 +55,7 @@ why in a comment — the norish module is the reference for how much detail that
 deserves.
 
 A local stack (row two) follows `modules/home/stacks/AGENTS.md`, with
-bar-assistant and bookorbit as the worked examples. The stack takes secret
+bar-assistant as the worked example. The stack takes secret
 _file_ options and never touches sops; the wrapper in `services/<name>` feeds it
 sops paths. Pin images as inline `image = "repo:tag";` so Renovate can see them,
 and ship a `vm-test.nix`. Build that test before you commit; it catches images

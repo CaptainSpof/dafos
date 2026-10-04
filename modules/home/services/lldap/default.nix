@@ -53,15 +53,6 @@ let
   avatarFileUrl = id: "file://${avatarDir}/${id}.jpg";
   avatarUrl = id: "https://${cfg.avatarSubDomain}.${cfg.domain}/${id}.jpg";
 
-  # BookOrbit's stack is local to dafos (modules/home/stacks/bookorbit), so
-  # its group is not in the upstream `with config.nps.stacks` lists below.
-  # Guarded on the stack being on: LLDAP's bootstrap would otherwise put users
-  # in a group nothing declares.
-  inherit (config.nps.stacks) bookorbit;
-  bookorbitGroups = lib.optional (
-    bookorbit.enable && bookorbit.oidc.registerClient
-  ) bookorbit.oidc.userGroup;
-
   users = with config.nps.stacks; {
     readonly = {
       id = "readonly";
@@ -97,8 +88,8 @@ let
         qbittorrent.qui.oidc.userGroup
         securo.oidc.userGroup
         sparky-fitness.oidc.userGroup
-      ]
-      ++ bookorbitGroups;
+        bookorbit.oidc.userGroup
+      ];
     };
     cedric = {
       id = "cedric";
@@ -117,8 +108,8 @@ let
         donetick.oidc.userGroup
         kitchenowl.oidc.userGroup
         norish.oidc.userGroup
-      ]
-      ++ bookorbitGroups;
+        bookorbit.oidc.userGroup
+      ];
     };
     joaquim = {
       id = "joaquim";
@@ -134,8 +125,8 @@ let
         grimmory.oidc.userGroup
         kitchenowl.oidc.userGroup
         norish.oidc.userGroup
-      ]
-      ++ bookorbitGroups;
+        bookorbit.oidc.userGroup
+      ];
     };
     test = {
       id = "test";
@@ -149,8 +140,8 @@ let
         grimmory.oidc.userGroup
         papra.oidc.userGroup
         donetick.oidc.userGroup
-      ]
-      ++ bookorbitGroups;
+        bookorbit.oidc.userGroup
+      ];
     };
   };
 

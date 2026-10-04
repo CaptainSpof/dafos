@@ -573,7 +573,7 @@ in
                 import ./health.nix {
                   inherit lib;
                   socketUrl = lib.replaceStrings [ "tcp://" ] [ "http://" ] config.nps.stacks.socket-proxy.address;
-                  # Children read "Parent · Child" (BookOrbit · PostgreSQL),
+                  # Children read "Parent · Child" (Securo · PostgreSQL),
                   # since a bare "PostgreSQL" could be any of several.
                   labels = lib.mapAttrs (
                     _: c:

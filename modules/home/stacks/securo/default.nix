@@ -1,6 +1,6 @@
 # nps-style stack module for Securo, following the conventions of the stacks
 # shipped by nix-podman-stacks. Shape and naming mirror `nps/modules/papra`
-# (OIDC) and the local bookorbit stack (Postgres sidecar), so it can be lifted
+# (OIDC) and `nps/modules/bookorbit` (Postgres sidecar), so it can be lifted
 # upstream as-is if a stack ever lands there.
 #
 # Securo is five processes from two images: the nginx frontend (serves the SPA
