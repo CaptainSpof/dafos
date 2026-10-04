@@ -3,7 +3,7 @@
 	"animationDuration": 500,
 	"blurBorderOpacity": 1,
 	"textRenderType": 1,
-	"powerActionHoldDuration": 1,
+	"powerActionHoldDuration": 0.75,
 	"powerMenuActions": [
 		"reboot",
 		"logout",
@@ -13,7 +13,9 @@
 		"restart",
 		"hibernate"
 	],
+	"powerMenuDefaultAction": "lock",
 	"popupTransparency": 0.5,
+	"dmsWindowsFloatingSeeded": ["niri", "niri"],
 	"widgetBackgroundColor": "sth",
 	"widgetColorMode": "colorful",
 	"niriLayoutGapsOverride": 22,
@@ -23,6 +25,7 @@
 	"foregroundLayerTransparency": 0.4,
 	"blurredWallpaperLayer": true,
 	"systemTrayIconTintMode": "monochrome",
+	"centeringMode": "geometric",
 	"appLauncherGridColumns": 5,
 	"spotlightSectionViewModes": {
 		"apps": "grid"
@@ -32,6 +35,29 @@
 	},
 	"dankLauncherV2UnloadOnClose": true,
 	"launcherUseOverlayLayer": true,
+	"dashTabsEvenlySpaced": false,
+	"dashTabs": [
+		{
+			"id": "overview",
+			"enabled": true
+		},
+		{
+			"id": "media",
+			"enabled": true
+		},
+		{
+			"id": "wallpaper",
+			"enabled": true
+		},
+		{
+			"id": "weather",
+			"enabled": true
+		},
+		{
+			"id": "notifications",
+			"enabled": true
+		}
+	],
 	"dashCards": [
 		{
 			"id": "clock",
@@ -136,6 +162,9 @@
 					"graphics": true
 				}
 			]
+		},
+		"user": {
+			"compositor": false
 		}
 	},
 	"cursorSettings": {
@@ -154,7 +183,6 @@
 		"size": 24,
 		"theme": "System Default"
 	},
-	"launcherLogoColorOverride": "primary",
 	"acMonitorTimeout": 900,
 	"acProfileName": "2",
 	"batteryMonitorTimeout": 600,
@@ -233,7 +261,7 @@
 				"viewMode": "compact",
 				"clickThrough": true
 			},
-			"enabled": true,
+			"enabled": false,
 			"id": "dw_1767712288732_fxhd6k1tx",
 			"name": "Dank Desktop Weather",
 			"widgetType": "dankDesktopWeather"
@@ -294,7 +322,7 @@
 			"id": "dw_1787044031225_ua33zzzjl",
 			"widgetType": "weatherArt",
 			"name": "Weather Art",
-			"enabled": true,
+			"enabled": false,
 			"config": {
 				"displayPreferences": ["all"],
 				"backgroundOpacity": 0,
@@ -307,7 +335,7 @@
 			"id": "dw_1787824414926_nw3ov7n39",
 			"widgetType": "nothingClock",
 			"name": "Nothing Clock",
-			"enabled": true,
+			"enabled": false,
 			"config": {
 				"displayPreferences": ["all"],
 				"backgroundOpacity": 0,
@@ -318,6 +346,40 @@
 				"showOnOverview": true,
 				"accentColorSource": "custom",
 				"clickThrough": true
+			}
+		},
+		{
+			"id": "dw_1790507096445_cn28f0nqt",
+			"widgetType": "materialWeather",
+			"name": "Material Weather",
+			"enabled": true,
+			"config": {
+				"displayPreferences": ["all"],
+				"shapeMode": "pill",
+				"colorMode": "primary",
+				"backgroundOpacity": 0,
+				"cookieRotation": true,
+				"showSourceFooter": false,
+				"showOnOverlay": false,
+				"clickThrough": true,
+				"showOnOverview": true,
+				"syncPositionAcrossScreens": true
+			}
+		},
+		{
+			"id": "dw_1791127951676_g5sc1ndzg",
+			"widgetType": "pixelClock",
+			"name": "Pixel Clock",
+			"enabled": true,
+			"config": {
+				"displayPreferences": ["all"],
+				"backgroundOpacity": 0,
+				"roundness": 100,
+				"weight": 850,
+				"showOnOverlay": false,
+				"showOnOverview": true,
+				"clickThrough": true,
+				"syncPositionAcrossScreens": true
 			}
 		}
 	],
@@ -339,5 +401,5 @@
 	"frameThickness": 8,
 	"frameShowOnOverview": true,
 	"frameLauncherArcExtender": true,
-	"configVersion": 28
+	"configVersion": 37
 }

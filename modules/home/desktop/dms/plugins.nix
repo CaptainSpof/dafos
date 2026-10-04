@@ -81,6 +81,12 @@ in
     rev = "0d3cd45f6a094582db5f9209b3dc1f72c1cfb067";
     hash = "sha256-YScGw1b4OHX3s7f+JUCoCuK+BcWGDLgpYxgSI+N3EPI=";
   };
+  materialWeather.src = fetchFromGitHub {
+    owner = "notsopreety";
+    repo = "materialWeather";
+    rev = "06d047c1f98c8f8248a440415eb9ff1d5fe1f49a";
+    hash = "sha256-1tDeFepjHypy9M5qFXaOKMzT+++KxXs38nNxxoKTNLE=";
+  };
   nixMonitor.src = fetchFromGitHub {
     owner = "antonjah";
     repo = "nix-monitor";

@@ -39,7 +39,7 @@ in
               transparency = 0.8;
 
               leftWidgets = [
-                "launcherButton"
+                dmsParts.launcherButton
                 {
                   id = "workspaceSwitcher";
                   enabled = true;
@@ -216,38 +216,6 @@ in
             w = 2;
             h = 1;
           }
-        ];
-
-        dockConfigs = [
-          (
-            builtins.head dmsParts.dockConfigs
-            // {
-              transparency = 0.8;
-              # No border: the island above already draws one edge, and a
-              # second outline on a 14" panel is noise.
-              borderEnabled = false;
-
-              widgets = [
-                {
-                  id = "dock_launcher";
-                  widgetId = "dockLauncher";
-                  enabled = true;
-                }
-                {
-                  id = "dock_apps";
-                  widgetId = "appsDock";
-                  enabled = true;
-                  appsDockColorizeActive = true;
-                  appsDockActiveColorMode = "primaryContainer";
-                }
-                {
-                  id = "dock_trash";
-                  widgetId = "dockTrash";
-                  enabled = true;
-                }
-              ];
-            }
-          )
         ];
       };
 

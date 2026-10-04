@@ -128,7 +128,7 @@ let
       useAutoLocation = false;
 
       networkPreference = "ethernet";
-      launcherLogoMode = "os";
+      # (launcherLogoMode moved into the launcherButton widget — see bar.nix.)
     }
   );
 

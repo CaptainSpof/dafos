@@ -37,15 +37,10 @@ in
                 }
               ];
 
-              # A desk machine can afford a busy edge: everything the fleet bar
-              # leaves off goes here, tightened up to fit and outlined so the
-              # icons stay apart without a background behind them.
-              clickThrough = true;
-              innerPadding = 6;
-              spacing = 10;
-              widgetOutlineEnabled = true;
-
-              leftWidgets = [ ];
+              # Same look as daftop's (the fleet piece as-is, pomodoro parked at
+              # the top); a desk machine just hangs more off it. Not
+              # click-through: with autoHide that only reveals the bar from a
+              # thin strip at the screen edge.
               centerWidgets = [
                 {
                   id = "notepadButton";
@@ -65,10 +60,6 @@ in
                 }
                 {
                   id = "dankKDEConnect";
-                  enabled = true;
-                }
-                {
-                  id = "dankPomodoroTimer";
                   enabled = true;
                 }
                 {

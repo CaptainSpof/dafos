@@ -17,7 +17,20 @@
 # GUI minted when the side bar was first created; `connectedFrameBarStyleBackups`
 # in ./settings.json keys off it, so it is kept verbatim rather than renamed to
 # something readable.
+let
+  # The OS logo in the theme's primary colour. DMS moved these two settings off
+  # the top level and into the widget (configVersion 37), so every bar that
+  # shows a launcher button has to carry them itself.
+  launcherButton = {
+    id = "launcherButton";
+    enabled = true;
+    launcherLogoMode = "os";
+    launcherLogoColorOverride = "primary";
+  };
+in
 {
+  inherit launcherButton;
+
   # Top bar, every display. Workspaces + focused window on the left, media /
   # clock / weather in the middle, system status on the right.
   mainBar = {
@@ -39,7 +52,7 @@
     followInterfaceStyle = false;
 
     leftWidgets = [
-      "launcherButton"
+      launcherButton
       {
         id = "workspaceSwitcher";
         enabled = true;
@@ -53,10 +66,6 @@
         id = "focusedWindow";
         enabled = true;
         focusedWindowCompactMode = true;
-      }
-      {
-        id = "dankPomodoroTimer";
-        enabled = true;
       }
     ];
     centerWidgets = [
@@ -102,10 +111,6 @@
       }
       {
         id = "notificationButton";
-        enabled = true;
-      }
-      {
-        id = "battery";
         enabled = true;
       }
       {
@@ -291,87 +296,167 @@
 
   # Control-center quick-settings tiles (DMS `controlCenterWidgets`).
   #
-  # Each is { id; enabled; w; h } on an 8-column grid — `w = 8` is a full row,
-  # `w = 4` a half, `w = 2` a quarter. (DMS replaced the old percentage `width`
-  # field with this grid.)
+  # Each sits on an 8-column grid: `w = 8` is a full row, `w = 4` a half,
+  # `w = 2` a quarter. `col`/`row` pin a tile in place (rows step in the tiles'
+  # own heights, hence the halves under the 1.5-high user header); a tile
+  # without them is packed by DMS. `footer` tiles sit in the bottom strip.
   controlCenterWidgets = [
     {
+      actions = [
+        "user"
+        "settings"
+        "power"
+        "edit"
+        "lock"
+      ];
+      background = false;
+      col = 0;
+      compositor = false;
+      enabled = true;
+      h = 1.5;
+      hostname = true;
+      id = "user";
+      row = 0;
+      w = 7;
+    }
+    {
+      col = 0;
+      enabled = true;
+      h = 1;
       id = "volumeSlider";
-      enabled = true;
+      row = 1.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 4;
+      enabled = true;
+      h = 1;
       id = "brightnessSlider";
-      enabled = true;
+      row = 1.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 0;
+      enabled = true;
+      h = 1;
       id = "audioOutput";
-      enabled = true;
+      row = 2.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 4;
+      enabled = true;
+      h = 1;
       id = "audioInput";
-      enabled = true;
+      row = 2.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 0;
+      enabled = true;
+      h = 1;
       id = "wifi";
-      enabled = true;
+      row = 3.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 4;
+      enabled = true;
+      h = 1;
       id = "builtin_vpn";
-      enabled = true;
+      row = 3.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 0;
+      enabled = true;
+      h = 1;
       id = "bluetooth";
-      enabled = true;
+      row = 4.5;
       w = 8;
-      h = 1;
     }
     {
+      col = 0;
+      enabled = true;
+      h = 1;
       id = "plugin_dankKDEConnect";
-      enabled = true;
-      w = 8;
-      h = 1;
+      row = 5.5;
+      w = 4;
     }
     {
+      col = 0;
+      enabled = true;
+      h = 1;
       id = "nightMode";
-      enabled = true;
+      row = 6.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 4;
+      enabled = true;
+      h = 1;
       id = "darkMode";
-      enabled = true;
+      row = 6.5;
       w = 4;
-      h = 1;
     }
     {
+      col = 0;
+      enabled = true;
+      h = 1;
       id = "idleInhibitor";
-      enabled = true;
+      row = 7.5;
       w = 2;
-      h = 1;
     }
     {
+      col = 2;
+      enabled = true;
+      h = 1;
       id = "colorPicker";
-      enabled = true;
+      row = 7.5;
       w = 4;
-      h = 1;
     }
     {
-      id = "doNotDisturb";
+      col = 6;
       enabled = true;
-      w = 2;
       h = 1;
+      id = "doNotDisturb";
+      row = 7.5;
+      w = 2;
+    }
+    {
+      col = 0;
+      enabled = true;
+      h = 1;
+      id = "runningApps";
+      row = 8.5;
+      small = true;
+      w = 8;
+    }
+    {
+      col = 7;
+      enabled = true;
+      h = 1;
+      id = "power";
+      row = 0;
+      small = false;
+      w = 1;
+    }
+    {
+      enabled = true;
+      footer = true;
+      footerEnd = true;
+      h = 1;
+      id = "edit";
+      small = true;
+      w = 1;
+    }
+    {
+      col = 4;
+      enabled = true;
+      h = 1;
+      id = "builtin_tailscale";
+      row = 5.5;
+      w = 4;
     }
   ];
 
@@ -379,82 +464,107 @@
   # `dock*` settings; they now live inside one config object per dock, the same
   # shape as a bar.
   #
-  # `dockPins` is NOT here — that is runtime session state, kept declarative
-  # through `dafos.desktop.dms.dockApps` (see ../default.nix).
-  dockConfigs = [
-    {
-      id = "dock";
-      name = "Dock";
-      enabled = true;
-      screenPreferences = [ "all" ];
-      showOnLastDisplay = true;
-      position = 1; # bottom
+  # Shared by the whole fleet; only the pinned apps differ per host. Those are
+  # NOT here: they are runtime session state, kept declarative through
+  # `dafos.desktop.dms.dockApps` (see ../default.nix). `order` leaves them out
+  # on purpose — DMS slots pins missing from it in just before the running-apps
+  # widget (`unitList` in Common/settings/DockConfig.js), which is where they
+  # belong, so the same order works whatever a host pins.
+  dockConfigs =
+    let
+      # Ids are the ones the DMS editor minted; they only have to be unique,
+      # but `order` refers to them.
+      widget =
+        id: widgetId: extra:
+        {
+          inherit id widgetId;
+          enabled = true;
+        }
+        // extra;
+      spacer = id: size: widget id "spacer" { inherit size; };
+      separator = id: widget id "separator" { };
 
-      mode = "compact";
-      taskbarAlign = "center";
-      widgetExpansion = "popout";
-
-      # Geometry / spacing
-      iconSize = 48;
-      spacing = 8;
-      itemSpacing = 4;
-      margin = 0;
-      bottomGap = 0;
-
-      # Behaviour
-      autoHide = false;
-      smartAutoHide = true;
-      useOverlayLayer = true;
-      editOnRightClick = false;
-      showOnFullscreen = false;
-      openOnOverview = true;
-      groupByApp = false;
-      separatePinnedAndRunningApps = false;
-      restoreSpecialWorkspaceOnClick = false;
-      isolateDisplays = false;
-
-      # Appearance
-      transparency = 0.85;
-      followInterfaceStyle = false;
-      indicatorStyle = "line";
-      borderEnabled = true;
-      borderColor = "primary";
-      borderOpacity = 0.55;
-      borderThickness = 2;
-
-      launcherEnabled = true;
-      launcherLogoMode = "apps";
-      launcherLogoCustomPath = "";
-      launcherLogoColorOverride = "";
-      launcherLogoSizeOffset = 0;
-      launcherLogoBrightness = 0.5;
-      launcherLogoContrast = 1;
-
-      maxVisibleApps = 0;
-      maxVisibleRunningApps = 0;
-      showOverflowBadge = true;
-      showTrash = true;
-      trashFileManager = "default";
-      trashCustomCommand = "";
-
-      order = [ ];
+      # Left to right: launcher, a pomodoro fenced off by separators, [pins],
+      # running apps, trash, weather.
       widgets = [
-        {
-          id = "dock_launcher";
-          widgetId = "dockLauncher";
-          enabled = true;
-        }
-        {
-          id = "dock_apps";
-          widgetId = "appsDock";
-          enabled = true;
-        }
-        {
-          id = "dock_trash";
-          widgetId = "dockTrash";
-          enabled = true;
-        }
+        (widget "dock_launcher" "dockLauncher" { })
+        (spacer "dock_1790156046154" 1)
+        (separator "dock_1790156171810")
+        (spacer "dock_1790156378298" 1)
+        (widget "dock_1790155966987" "dankPomodoroTimer" { })
+        (spacer "dock_1790156353557" 1)
+        (separator "dock_1790156138183")
+        (spacer "dock_1790156038067" 10)
+        # Running apps from every workspace, not just the current one.
+        (widget "dock_apps" "appsDock" { runningAppsCurrentWorkspace = false; })
+        (spacer "dock_1790156008598" 10)
+        (separator "dock_1790155984913")
+        (widget "dock_trash" "dockTrash" { })
+        (separator "dock_1790155931029")
+        (spacer "dock_1790156128025" 10)
+        (widget "dock_1790155897383" "weather" { })
       ];
-    }
-  ];
+    in
+    [
+      {
+        id = "dock";
+        name = "Dock";
+        enabled = true;
+        screenPreferences = [ "all" ];
+        showOnLastDisplay = false;
+        position = 1; # bottom
+
+        mode = "compact";
+        taskbarAlign = "center";
+        # Widget popouts (pomodoro, weather) open inside the dock.
+        widgetExpansion = "inline";
+
+        # Geometry / spacing
+        iconSize = 48;
+        spacing = 8;
+        itemSpacing = 4;
+        margin = 0;
+        bottomGap = 0;
+
+        # Behaviour
+        autoHide = false;
+        smartAutoHide = true;
+        useOverlayLayer = true;
+        # Right-click opens the in-place editor.
+        editOnRightClick = true;
+        showOnFullscreen = false;
+        openOnOverview = true;
+        groupByApp = false;
+        separatePinnedAndRunningApps = false;
+        restoreSpecialWorkspaceOnClick = false;
+        isolateDisplays = false;
+
+        # Appearance
+        transparency = 0.85;
+        followInterfaceStyle = false;
+        indicatorStyle = "line";
+        borderEnabled = true;
+        borderColor = "primary";
+        borderOpacity = 0.55;
+        borderThickness = 2;
+
+        launcherEnabled = true;
+        launcherLogoMode = "apps";
+        launcherLogoCustomPath = "";
+        launcherLogoColorOverride = "";
+        launcherLogoSizeOffset = 0;
+        launcherLogoBrightness = 0.5;
+        launcherLogoContrast = 1;
+
+        maxVisibleApps = 0;
+        maxVisibleRunningApps = 0;
+        showOverflowBadge = true;
+        showTrash = true;
+        trashFileManager = "default";
+        trashCustomCommand = "";
+
+        inherit widgets;
+        order = map (w: w.id) widgets;
+      }
+    ];
 }
