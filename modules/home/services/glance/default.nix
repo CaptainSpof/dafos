@@ -14,7 +14,7 @@ let
 
   dynacat = {
     # renovate: versioning=semver
-    image = "docker.io/panonim/dynacat:3.0.0";
+    image = "docker.io/panonim/dynacat:3.0.1";
   };
 
   # `update-interval` is how Dynacat refreshes a widget in place; upstream
