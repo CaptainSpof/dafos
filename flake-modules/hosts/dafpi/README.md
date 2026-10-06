@@ -24,7 +24,7 @@ Insert the SD card and the NVMe, plug Ethernet, power on. Find the board's DHCP
 lease on the Freebox (or read it on the debug UART, 1 500 000 baud), then:
 
 ```bash
-ssh root@<ip>
+ssh root@dafpi-installer.local
 cat /proc/mtd                      # expect an mtd0 for the SPI NOR
 flashcp -v /etc/dafpi/u-boot-rockchip-spi.bin /dev/mtd0
 lsblk /dev/nvme0n1                 # the SSD must be visible
@@ -35,7 +35,7 @@ If `/proc/mtd` is empty: `modprobe spi_rockchip_sfc` and retry.
 ## 3. Install onto the NVMe (~20 min, mostly copying the closure)
 
 ```bash
-nix run nixpkgs#nixos-anywhere -- --phases disko,install --flake .#dafpi root@<ip>
+nix run nixpkgs#nixos-anywhere -- --phases disko,install --flake .#dafpi root@dafpi-installer.local
 ```
 
 `disko,install` skips the kexec phase: the installer is already NixOS. The NVMe

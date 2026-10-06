@@ -84,6 +84,19 @@ let
             networkConfig.DHCP = "yes";
           };
 
+          # Headless: reachable as `dafpi-installer.local` without looking up
+          # the DHCP lease.
+          services.avahi = {
+            enable = true;
+            nssmdns4 = true;
+            ipv6 = false;
+            openFirewall = true;
+            publish = {
+              enable = true;
+              addresses = true;
+            };
+          };
+
           nix.settings.experimental-features = [
             "nix-command"
             "flakes"
