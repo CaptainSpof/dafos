@@ -125,6 +125,16 @@ in
             dmsParts.sideBar
             // {
               screenPreferences = [ "all" ];
+              # The proofreader next to the notepad, as on dafbox.
+              centerWidgets =
+                lib.take 1 dmsParts.sideBar.centerWidgets
+                ++ [
+                  {
+                    id = "proofreader";
+                    enabled = true;
+                  }
+                ]
+                ++ lib.drop 1 dmsParts.sideBar.centerWidgets;
             }
           )
         ];
@@ -311,6 +321,10 @@ in
     # calibre
     uget
   ];
+
+  # Spelling/grammar scratchpad (github:CaptainSpof/dms-proofreader), checked
+  # by the local LanguageTool (dafos.services.languagetool on this host).
+  programs.dms-proofreader.enable = true;
 
   # daftop's display layout, pinned so it doesn't auto-reset each boot.
   programs.niri.settings.outputs = {

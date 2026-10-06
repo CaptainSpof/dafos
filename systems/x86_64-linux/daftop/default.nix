@@ -47,6 +47,8 @@ in
 
     # services.syncthing = enabled;
     services.sunshine = enabled;
+    # Backs the DMS proofreader plugin (localhost only).
+    services.languagetool = enabled;
 
     suites = {
       desktop = enabled;
