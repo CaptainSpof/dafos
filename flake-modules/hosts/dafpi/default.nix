@@ -9,6 +9,7 @@ in
   configurations.nixos.dafpi.module = {
     imports = with nixos; [
       avahi
+      blocky
       home
       locale
       networking
@@ -28,6 +29,14 @@ in
 
       services = {
         avahi.enable = true;
+        # Secondary LAN DNS (dafoltop is primary). The domain keeps resolving
+        # to dafoltop, where Traefik runs. 192.168.0.15 is a static lease in
+        # Freebox OS, keyed to the board's stable MAC 46:dc:f5:c3:82:84.
+        blocky = {
+          enable = true;
+          hostAddress = "192.168.0.15";
+          domainAddress = "192.168.0.10";
+        };
         openssh.enable = true;
         tailscale.enable = true;
       };
