@@ -26,7 +26,12 @@ in
     dafos = {
       nix.nh.enable = true;
 
-      security.sops.enable = true;
+      # No home-manager sops module here (yet), so no user keys.txt: the host
+      # key (root_dafpi) decrypts everything dafpi needs.
+      security.sops = {
+        enable = true;
+        userKey = false;
+      };
 
       services = {
         avahi.enable = true;
