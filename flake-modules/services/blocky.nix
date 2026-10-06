@@ -1,6 +1,9 @@
 # LAN DNS: ad-blocking resolver that also answers the public domain with a
 # LAN address, so clients reach Traefik directly instead of hairpinning
-# through the Freebox. dafoltop is the primary, dafpi the secondary.
+# through the Freebox. dafoltop is the primary, dafpi the secondary; the
+# Freebox DHCP hands out both as the LAN's only DNS servers (2026-10-06).
+# Rollback: set the Freebox DHCP DNS back to the Freebox itself,
+# 192.168.0.254 (also the default gateway: `ip route | grep default`).
 {
   flake.modules.nixos.blocky =
     {
