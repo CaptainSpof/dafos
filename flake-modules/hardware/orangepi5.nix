@@ -18,10 +18,16 @@
         "phy_rockchip_naneng_combphy"
       ];
 
-      # Debug UART (3-pin header) runs at 1.5 Mbaud; HDMI gets the console too.
       kernelParams = [
+        # Debug UART (3-pin header) runs at 1.5 Mbaud; HDMI gets the console too.
         "console=ttyS2,1500000"
         "console=tty1"
+        # Without these the NVMe (seen with a Kingston OM3PDP3, Steam Deck
+        # OEM) drops into a power state it never leaves: read timeouts ~40 s
+        # after boot, failed reset, device disabled until the next power
+        # cycle. Tested 2026-10-06: steady 415 MB/s with both set.
+        "nvme_core.default_ps_max_latency_us=0"
+        "pcie_aspm=off"
       ];
     };
 

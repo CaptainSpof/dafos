@@ -80,3 +80,18 @@ qemu-user on dafbox.
   if U-Boot in SPI is broken, erase it from the SD system
   (`flash_erase /dev/mtd0 0 0`) and the board falls back to the SD's U-Boot.
 - Serial console: 3-pin debug header, 1 500 000 baud, `console=ttyS2`.
+
+## Lessons from the first install (2026-10-06)
+
+- **Power**: the first USB-C supply left the board in a reset loop (red LED
+  only, no green heartbeat, never on the network). A phone charger rated
+  5 V / 3 A booted it. The board only takes 5 V; budget 4 A with the NVMe.
+- **SPI already holding an old bootloader** wins over the SD (the boot ROM
+  tries SPI first). Writing ours from dafbox in maskrom mode works without
+  any SD: unplug, data USB-C cable to dafbox, hold MaskROM while plugging
+  power, then `rkdeveloptool db <loader>` (rkbin's
+  `RKBOOT/RK3588MINIALL.ini` through `tools/boot_merger`), `cs 9`,
+  `wl 0 u-boot-rockchip-spi.bin`.
+- **NVMe dropping out ~40 s after boot** (timeouts, failed reset): NVMe
+  APST / PCIe ASPM. The orangepi5 aspect disables both on the kernel
+  command line.
