@@ -39,6 +39,11 @@ in
       };
 
       virtualisation.podman.enable = true;
+
+      # Legacy hosts get wheel implicitly from the vendored
+      # snowfallorg.users module (admin = true); dendritic hosts must ask.
+      # Moves into the user aspect when the compat layer goes (phase 3).
+      user.extraGroups = [ "wheel" ];
     };
 
     home-manager.users.daf = {
