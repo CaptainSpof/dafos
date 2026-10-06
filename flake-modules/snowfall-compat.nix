@@ -54,7 +54,11 @@ in
     # kept for `nix repl` archaeology and parity while migrating.
     pkgs = compat.channels-by-system;
 
-    deploy = compat.user-lib.mkDeploy { inherit (inputs) self; };
+    deploy = compat.user-lib.mkDeploy {
+      inherit (inputs) self;
+      # Native aarch64 builds on the Pi beat qemu-user on an x86 box.
+      overrides.dafpi.remoteBuild = true;
+    };
 
     # devenv project shells: `devinit <name>`, or `nix flake init -t self#<name>`.
     templates =

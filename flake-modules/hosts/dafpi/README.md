@@ -1,0 +1,81 @@
+# dafpi — install runbook
+
+Orange Pi 5 (RK3588S, 16 GB) with an M.2 NVMe SSD. U-Boot lives in the board's
+SPI flash; NixOS lives entirely on the NVMe. The SD card is only used once, to
+get there.
+
+Everything below runs from dafbox (it has
+`boot.binfmt.emulatedSystems =
+[ "aarch64-linux" ]`), in the repo.
+
+## 1. Build and write the installer SD card (~10 min)
+
+```bash
+nix build .#packages.aarch64-linux.dafpi-installer
+sudo dd if=result/sd-image/dafpi-installer.img of=/dev/sdX bs=4M conv=fsync status=progress
+```
+
+The image carries U-Boot (`pkgs.ubootOrangePi5`) at 32 KiB, so it boots even
+with an empty SPI flash (the RK3588 boot ROM tries SPI, then eMMC, then SD).
+
+## 2. Boot it and flash U-Boot to SPI (~5 min)
+
+Insert the SD card and the NVMe, plug Ethernet, power on. Find the board's DHCP
+lease on the Freebox (or read it on the debug UART, 1 500 000 baud), then:
+
+```bash
+ssh root@<ip>
+cat /proc/mtd                      # expect an mtd0 for the SPI NOR
+flashcp -v /etc/dafpi/u-boot-rockchip-spi.bin /dev/mtd0
+lsblk /dev/nvme0n1                 # the SSD must be visible
+```
+
+If `/proc/mtd` is empty: `modprobe spi_rockchip_sfc` and retry.
+
+## 3. Install onto the NVMe (~20 min, mostly copying the closure)
+
+```bash
+nix run nixpkgs#nixos-anywhere -- --phases disko,install --flake .#dafpi root@<ip>
+```
+
+`disko,install` skips the kexec phase: the installer is already NixOS. The NVMe
+is wiped and partitioned by `./disko.nix`.
+
+## 4. Reboot from NVMe
+
+Power off, remove the SD card, power on. U-Boot (SPI) finds
+`/boot/extlinux/extlinux.conf` on the NVMe. Then:
+
+- Freebox: give dafpi a fixed DHCP lease.
+- `ssh daf@<ip>`; set a password (`passwd`), the initial one is the repo
+  default.
+- `sudo tailscale up`.
+
+## 5. Secrets
+
+The host's age identity comes from its SSH host key:
+
+```bash
+ssh daf@dafpi 'cat /etc/ssh/ssh_host_ed25519_key.pub' | nix run nixpkgs#ssh-to-age
+```
+
+Add it to `.sops.yaml` as `&root_dafpi`, plus a `&user_daf_dafpi` key if
+user-level secrets are needed, then `sops updatekeys` on the files dafpi must
+read (dafos-secrets skill). Also put a `daf@dafpi.pem` key in `~/.ssh` on dafpi:
+the openssh aspect points every Host block at it.
+
+## Later deploys
+
+```bash
+nix run .#deploy -- .#dafpi
+```
+
+deploy-rs builds on the Pi itself (`remoteBuild`), which is faster than
+qemu-user on dafbox.
+
+## Recovery
+
+- No boot from NVMe: plug the SD card back in; the boot ROM tries SPI first, so
+  if U-Boot in SPI is broken, erase it from the SD system
+  (`flash_erase /dev/mtd0 0 0`) and the board falls back to the SD's U-Boot.
+- Serial console: 3-pin debug header, 1 500 000 baud, `console=ttyS2`.

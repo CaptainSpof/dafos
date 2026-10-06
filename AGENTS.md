@@ -1,10 +1,15 @@
 # dafos
 
 `dafos` is Cédric's (CaptainSpof) personal fleet of NixOS + Home Manager
-configs, built with [Snowfall Lib](https://snowfall.org/guides/lib/quickstart/)
-under the `dafos` namespace — options live at `dafos.*` (`dafos.services.foo`,
+configs. Options live at `dafos.*` (`dafos.services.foo`,
 `dafos.suites.desktop`). Repo: `github.com/CaptainSpof/dafos`, cloned at
 `~/.config/dafos`. Apache 2.0.
+
+The flake is built with [flake-parts](https://flake.parts) + import-tree (the
+dendritic pattern) and is mid-migration from
+[Snowfall Lib](https://snowfall.org/guides/lib/quickstart/): a compat layer
+still evaluates the Snowfall-shaped trees. See
+[flake-modules/AGENTS.md](flake-modules/AGENTS.md).
 
 User is `daf` / Cédric Da Fonseca, uid 1000, shell fish, single-user boxes.
 
@@ -28,6 +33,7 @@ to the module or host it describes. Longer rationale goes in that directory's
 | `dafbox`   | x86_64-linux | Desktop/workstation                                                  | Niri (autologin) + DMS greeter    |
 | `dafoltop` | x86_64-linux | Laptop repurposed as homelab server — runs most self-hosted services | Plasma (autologin), Niri disabled |
 | `daftop`   | x86_64-linux | Laptop                                                               | Niri                              |
+| `dafpi`    | aarch64-linux | Orange Pi 5, small always-on server taking load off dafoltop        | none                              |
 
 `dafoltop` is the de facto home server and the live house — see
 [systems/x86_64-linux/dafoltop/AGENTS.md](systems/x86_64-linux/dafoltop/AGENTS.md)
@@ -35,7 +41,8 @@ before touching anything that runs on it.
 
 ## Layout and composition
 
-Standard Snowfall layout: `systems/`, `homes/`, `modules/{nixos,home}/`,
+`flake-modules/` holds the dendritic aspects and hosts (dafpi is built only
+from it). The rest is the legacy Snowfall layout: `systems/`, `homes/`, `modules/{nixos,home}/`,
 `packages/`, `overlays/`, `lib/`, `secrets/`, `shells/`, `checks/`. Read the
 tree rather than a description of it.
 
@@ -67,6 +74,8 @@ Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkOpt'`,
 
 ## Scoped guidance
 
+- [flake-modules/AGENTS.md](flake-modules/AGENTS.md) — dendritic aspects,
+  hosts and the Snowfall compat layer
 - [modules/AGENTS.md](modules/AGENTS.md) — module conventions, option ownership
 - [systems/AGENTS.md](systems/AGENTS.md) — host configuration and validation
 - [lib/AGENTS.md](lib/AGENTS.md) — custom library namespaces

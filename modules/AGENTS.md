@@ -1,5 +1,10 @@
 # Reusable modules
 
+This is the legacy (Snowfall-shaped) tree. Modules are moving one by one to
+`flake-modules/` as dendritic aspects; new modules go there, not here. See
+[../flake-modules/AGENTS.md](../flake-modules/AGENTS.md). The rules below
+still apply to everything that remains in this tree.
+
 ## Wrapper shape
 
 ```nix

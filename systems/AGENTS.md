@@ -36,3 +36,5 @@ Build the host you changed; do not evaluate the whole fleet by default. The
 
 - [x86_64-linux/dafbox/AGENTS.md](x86_64-linux/dafbox/AGENTS.md)
 - [x86_64-linux/dafoltop/AGENTS.md](x86_64-linux/dafoltop/AGENTS.md)
+- [../flake-modules/hosts/dafpi/AGENTS.md](../flake-modules/hosts/dafpi/AGENTS.md)
+  — dendritic hosts live under `flake-modules/hosts/`, not here
