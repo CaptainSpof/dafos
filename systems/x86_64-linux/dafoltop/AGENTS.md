@@ -11,7 +11,7 @@ dark room.
 
 - Changes to service readiness, ordering or `Type=` get **tested**, not reasoned
   about. A `Type=notify` guess once crash-looped zigbee2mqtt here.
-- Deploys need an interactive sudo prompt; a fully unattended `nix run .#deploy`
+- Deploys need an interactive sudo prompt; a fully unattended `deploy`
   will stall.
 - Prefer switching during a window where a rollback is practical.
 

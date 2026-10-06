@@ -68,7 +68,7 @@ the openssh aspect points every Host block at it.
 ## Later deploys
 
 ```bash
-nix run .#deploy -- .#dafpi
+deploy .#dafpi --interactive-sudo true
 ```
 
 deploy-rs builds on the Pi itself (`remoteBuild`), which is faster than

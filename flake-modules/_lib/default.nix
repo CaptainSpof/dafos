@@ -738,7 +738,11 @@ let
             }
           ) file { }
         )
-      ) (get-default-nix-files-recursive dir)
+      )
+      # Path values, not the interpolated strings get-files returns: those copy
+      # `dir` alone into the store, and a relative import such as
+      # checks/pre-commit-hooks' `../../treefmt.nix` then resolves outside it.
+      (builtins.filter (p: baseNameOf p == "default.nix") (lib0.filesystem.listFilesRecursive dir))
     );
 in
 {
