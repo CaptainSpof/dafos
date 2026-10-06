@@ -74,7 +74,7 @@ sudo nixos-rebuild switch --flake .#dafbox
 Hosts wired up for [`deploy-rs`](https://github.com/serokell/deploy-rs) can be pushed from anywhere:
 
 ```bash
-deploy .#daftop
+deploy -s .#daftop
 ```
 
 ### Dev shell

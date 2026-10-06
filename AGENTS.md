@@ -61,7 +61,7 @@ archetype/suite chain — never just the host file.
 ```bash
 nix fmt path/to/changed.nix                        # treefmt; changed paths only, never the repo
 sudo nixos-rebuild switch --flake .#<host>         # local
-deploy .#<host>                                    # remote (deploy-rs CLI from the nix aspect; config via lib/deploy)
+deploy -s .#<host>                                 # remote (deploy-rs CLI; -s: checks.pre-commit-hooks is broken)
 ```
 
 `direnv`/`use flake` is set up, so `nix develop` auto-activates here. Pre-commit
