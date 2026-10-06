@@ -86,9 +86,11 @@ qemu-user on dafbox.
 - **Power**: the first USB-C supply left the board in a reset loop (red LED
   only, no green heartbeat, never on the network). A phone charger rated
   5 V / 3 A booted it. The board only takes 5 V; budget 4 A with the NVMe.
-- **SPI already holding an old bootloader** wins over the SD (the boot ROM
-  tries SPI first). Writing ours from dafbox in maskrom mode works without
-  any SD: unplug, data USB-C cable to dafbox, hold MaskROM while plugging
+- **SPI from maskrom**: an old bootloader in SPI would win over the SD (the
+  boot ROM tries SPI first). That was suspected but never confirmed — the
+  power supply alone explains the first failure. Writing ours from dafbox
+  in maskrom mode works without any SD and replaces README step 2: unplug,
+  data USB-C cable to dafbox, hold MaskROM while plugging
   power, then `rkdeveloptool db <loader>` (rkbin's
   `RKBOOT/RK3588MINIALL.ini` through `tools/boot_merger`), `cs 9`,
   `wl 0 u-boot-rockchip-spi.bin`.
