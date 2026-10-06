@@ -20,8 +20,9 @@ with an empty SPI flash (the RK3588 boot ROM tries SPI, then eMMC, then SD).
 
 ## 2. Boot it and flash U-Boot to SPI (~5 min)
 
-Insert the SD card and the NVMe, plug Ethernet, power on. Find the board's DHCP
-lease on the Freebox (or read it on the debug UART, 1 500 000 baud), then:
+Insert the SD card and the NVMe, plug Ethernet, power on. The installer
+announces itself over mDNS within a minute or so; no screen or keyboard is
+needed:
 
 ```bash
 ssh root@dafpi-installer.local
