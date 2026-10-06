@@ -1,0 +1,119 @@
+# SD-card installer for dafpi: boots the Orange Pi 5 with U-Boot embedded
+# in the image (the SPI flash may still be empty), offers SSH as root with
+# daf's keys, and carries the tools to flash U-Boot to SPI and install
+# onto the NVMe. Build: nix build .#packages.aarch64-linux.dafpi-installer
+{ config, inputs, ... }:
+let
+  inherit (config.flake.modules) nixos;
+
+  # Firmware, not part of the running system, so it is cross-built from
+  # x86_64 (dafbox): qemu-user needs ~30 min for the same bytes.
+  # makeFlags drops nixpkgs' DTC: dtc 1.8 rejects binman's `@atf-SEQ`
+  # template nodes in U-Boot 2026.07's rockchip-u-boot.dtsi ("Empty node
+  # name"); U-Boot's bundled dtc accepts them.
+  uboot =
+    (import inputs.nixpkgs {
+      system = "x86_64-linux";
+      crossSystem = "aarch64-linux";
+      config.allowUnfree = true;
+    }).ubootOrangePi5.overrideAttrs
+      (old: {
+        makeFlags = builtins.filter (flag: builtins.substring 0 4 flag != "DTC=") old.makeFlags;
+      });
+
+  installer = inputs.nixpkgs.lib.nixosSystem {
+    modules = [
+      nixos.orangepi5
+      nixos.user
+      (
+        {
+          config,
+          modulesPath,
+          pkgs,
+          ...
+        }:
+        {
+          imports = [
+            (modulesPath + "/installer/sd-card/sd-image.nix")
+            (modulesPath + "/profiles/base.nix")
+          ];
+
+          networking.hostName = "dafpi-installer";
+
+          sdImage = {
+            imageBaseName = "dafpi-installer";
+            compressImage = false;
+
+            # u-boot-rockchip.bin = idbloader at 32 KiB + u-boot.itb at 8 MiB;
+            # keep the (unused) firmware partition clear of it.
+            firmwarePartitionOffset = 16;
+            firmwareSize = 16;
+            populateFirmwareCommands = "";
+
+            populateRootCommands = ''
+              mkdir -p ./files/boot
+              ${config.boot.loader.generic-extlinux-compatible.populateCmd} \
+                -c ${config.system.build.toplevel} -d ./files/boot
+            '';
+
+            postBuildCommands = ''
+              dd if=${uboot}/u-boot-rockchip.bin of=$img seek=64 conv=notrunc
+            '';
+          };
+
+          # The SPI image for the first boot: see README.md, step "flash SPI".
+          environment.etc."dafpi/u-boot-rockchip-spi.bin".source = "${uboot}/u-boot-rockchip-spi.bin";
+
+          environment.systemPackages = with pkgs; [
+            mtdutils
+            nvme-cli
+            pciutils
+          ];
+
+          boot.kernelModules = [ "spi_rockchip_sfc" ];
+
+          services.openssh = {
+            enable = true;
+            settings.PermitRootLogin = "prohibit-password";
+          };
+          users.users.root.openssh.authorizedKeys.keys = config.dafos.user.authorizedKeys;
+
+          networking.useNetworkd = true;
+          systemd.network.networks."10-lan" = {
+            matchConfig.Name = "en* eth*";
+            networkConfig.DHCP = "yes";
+          };
+
+          # Headless: reachable as `dafpi-installer.local` without looking up
+          # the DHCP lease.
+          services.avahi = {
+            enable = true;
+            nssmdns4 = true;
+            ipv6 = false;
+            openFirewall = true;
+            publish = {
+              enable = true;
+              addresses = true;
+            };
+          };
+
+          nix.settings.experimental-features = [
+            "nix-command"
+            "flakes"
+          ];
+
+          system.stateVersion = "26.11";
+        }
+      )
+    ];
+  };
+in
+{
+  perSystem =
+    { lib, system, ... }:
+    {
+      packages = lib.mkIf (system == "aarch64-linux") {
+        dafpi-installer = installer.config.system.build.sdImage;
+      };
+    };
+}

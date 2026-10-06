@@ -82,7 +82,7 @@ cleanup".
 
 ```bash
 sudo nixos-rebuild switch --flake .#<host>          # local
-nix run .#deploy -- .#<host>                        # remote, deploy-rs
+deploy -s .#<host>                                  # remote, deploy-rs CLI; -s skips `nix flake check`, whose pre-commit check fails repo-wide
 ```
 
 `lib/deploy` switches to `doas -u` instead of sudo on hosts where

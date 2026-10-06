@@ -29,11 +29,22 @@
     # Hardware Configuration
     nixos-hardware.url = "github:nixos/nixos-hardware";
 
-    # Snowfall Lib
+    # Snowfall Lib (no longer used — kept temporarily so the generated nix
+    # registry / /etc/nix/inputs only gain entries during the flake-parts
+    # migration; remove in the cleanup phase)
     snowfall-lib = {
       url = "github:snowfallorg/lib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Flake framework (snowfall replacement)
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+
+    # Auto-import of flake-modules/ (dendritic pattern)
+    import-tree.url = "github:vic/import-tree";
 
     # Weekly updating nix-index database
     nix-index-database = {
@@ -195,96 +206,7 @@
 
   outputs =
     inputs:
-    let
-      lib = inputs.snowfall-lib.mkLib {
-        inherit inputs;
-        src = ./.;
-
-        snowfall = {
-          namespace = "dafos";
-
-          meta = {
-            name = "dafos";
-            title = "It ain't pretty, but it's mine.";
-          };
-        };
-      };
-    in
-    lib.mkFlake {
-      channels-config = {
-        allowUnfree = true;
-        permittedInsecurePackages = [
-          # "aspnetcore-runtime-6.0.36"
-          # "emacs-unstable-pgtk-30.1"
-          # "emacs-unstable-pgtk-with-packages-30.1"
-          # "dotnet-sdk-6.0.428"
-          # "qtwebengine-5.15.19"
-          # "olm-3.2.16"
-        ];
-      };
-
-      overlays = with inputs; [
-        claude-desktop.overlays.default
-        emacs-overlay.overlays.default
-        niri.overlays.niri
-        nix-firefox-addons.overlays.default
-      ];
-
-      homes.modules = with inputs; [
-        nix-podman-stacks.homeModules.nps
-        nix-index-database.homeModules.nix-index
-        plasma-manager.homeModules.plasma-manager
-        sops-nix.homeManagerModules.sops
-        zen-browser.homeModules.beta
-        niri.homeModules.niri
-        vicinae.homeManagerModules.default
-        dank-material-shell.homeModules.dank-material-shell
-        dank-material-shell.homeModules.niri
-        dank-calendar.homeModules.dank-calendar
-        dms-proofreader.homeModules.default
-      ];
-
-      systems.modules.nixos = with inputs; [
-        disko.nixosModules.disko
-        home-manager.nixosModules.home-manager
-        nix-gaming.nixosModules.platformOptimizations
-        sops-nix.nixosModules.sops
-        vault-service.nixosModules.nixos-vault-service
-      ];
-
-      # devenv project shells: `devinit <name>`, or `nix flake init -t self#<name>`.
-      templates = {
-        devenv.description = "Bare devenv shell, activated by direnv";
-        python.description = "devenv shell: Python with uv and a venv";
-        node.description = "devenv shell: Node.js with pnpm";
-        rust.description = "devenv shell: stable Rust toolchain";
-        go.description = "devenv shell: Go, static builds by default";
-      };
-      alias.templates.default = "devenv";
-
-      deploy = lib.mkDeploy { inherit (inputs) self; };
-
-      outputs-builder = channels: {
-        formatter = inputs.treefmt-nix.lib.mkWrapper channels.nixpkgs ./treefmt.nix;
-
-        # VM boot tests for the local nps stacks, one per
-        # modules/home/stacks/<name>/vm-test.nix. Kept out of `checks`: they
-        # pull images, so they need `--option sandbox false`. See
-        # modules/home/stacks/AGENTS.md.
-        integrationTests =
-          let
-            inherit (channels.nixpkgs) lib;
-            stacks = builtins.filter (name: builtins.pathExists ./modules/home/stacks/${name}/vm-test.nix) (
-              builtins.attrNames (
-                lib.filterAttrs (_: type: type == "directory") (builtins.readDir ./modules/home/stacks)
-              )
-            );
-            mkTest = import ./tests/integration/vm.nix {
-              inherit inputs;
-              pkgs = channels.nixpkgs;
-            };
-          in
-          lib.genAttrs' stacks (name: lib.nameValuePair "${name}-integration" (mkTest name));
-      };
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [ (inputs.import-tree ./flake-modules) ];
     };
 }

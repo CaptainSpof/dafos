@@ -6,6 +6,8 @@ keys:
   - &root_dafoltop age1ekfdvtw4949t3jclxnthtj8k68vhhhqs4g5x0j2h43nrdfgu5yrsjulhqu
   - &root_daftop age1e7qyrvn6uz9ndpfpc4kpgudqt2qvyzhsr8v9dnvfvzpprnyttgsqjqnj7h
   - &root_dafbox age1v7p9tkz4vyzhp3penujtzs8slf64hemxjqzmyndwhqgmy92zhgfs7qzgwx
+  - &user_daf_dafpi age1vgxuvm5xuzawqpjl54qv4p28cu02ez0n5pf84ym5u24hl2z2kg5q0sh0ac
+  - &root_dafpi age1u4dy2ew3kn59h7xz42wwvhv97mrc5zeg55vtukelxv5ga6qyz3tq2gtrs0
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
@@ -26,6 +28,15 @@ creation_rules:
           - *user_daf_dafbox
           - *user_daf_dafoltop
           - *root_dafoltop
+  # Services moved to dafpi (Orange Pi 5), same shape as dafoltop: editable
+  # from the workstation, no laptop or other root key.
+  - path_regex: secrets/dafpi/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - age:
+          - *admin_daf
+          - *user_daf_dafbox
+          - *user_daf_dafpi
+          - *root_dafpi
   - path_regex: secrets/daf/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
@@ -33,6 +44,8 @@ creation_rules:
           - *user_daf_daftop
           - *user_daf_dafoltop
           - *user_daf_dafbox
+          - *user_daf_dafpi
           - *root_dafoltop
           - *root_daftop
           - *root_dafbox
+          - *root_dafpi

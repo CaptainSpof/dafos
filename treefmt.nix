@@ -62,6 +62,9 @@
       "*Makefile"
       "*flake.lock"
       "*makefile"
+      # vendored byte-for-byte from flake-utils-plus: reformatting it changes
+      # its store path and every system closure with it
+      "flake-modules/_compat/repl.nix"
     ];
 
     formatter.ruff-format.options = [ "--isolated" ];

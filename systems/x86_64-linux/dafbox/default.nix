@@ -107,7 +107,11 @@ in
       networking = {
         enable = true;
         optimizeTcp = true;
-        nameservers = [ "192.168.0.10" ];
+        # blocky: dafoltop first, dafpi as fallback.
+        nameservers = [
+          "192.168.0.10"
+          "192.168.0.15"
+        ];
       };
     };
   };
