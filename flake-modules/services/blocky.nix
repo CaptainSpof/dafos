@@ -27,11 +27,20 @@
 
       # blocky binds `hostAddress` itself, and that address comes from DHCP a moment
       # after the unit would otherwise start. Run by its own oneshot unit, see below.
-      waitForAddress = pkgs.writeShellScript "blocky-wait-for-address" ''
-        until ${pkgs.iproute2}/bin/ip -4 -o addr show to ${cfg.hostAddress} | ${pkgs.gnugrep}/bin/grep -q .; do
-          sleep 0.5
-        done
-      '';
+      # An IPv6 address must also be past duplicate address detection: a
+      # tentative one cannot be bound.
+      waitForAddress = pkgs.writeShellScript "blocky-wait-for-address" (
+        ''
+          until ${pkgs.iproute2}/bin/ip -4 -o addr show to ${cfg.hostAddress} | ${pkgs.gnugrep}/bin/grep -q .; do
+            sleep 0.5
+          done
+        ''
+        + lib.optionalString (cfg.hostAddress6 != null) ''
+          until ${pkgs.iproute2}/bin/ip -6 -o addr show to ${cfg.hostAddress6} -tentative | ${pkgs.gnugrep}/bin/grep -q .; do
+            sleep 0.5
+          done
+        ''
+      );
     in
     {
       options.dafos.services.blocky = {
@@ -43,6 +52,17 @@
           description = ''
             LAN address blocky binds :53 on.
             Must be set: binding 0.0.0.0 collides with systemd-resolved's stub listener.
+          '';
+        };
+
+        hostAddress6 = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "2a01:e0a:b6c:4b90::15";
+          description = ''
+            Optional IPv6 address blocky also binds :53 on. The Freebox
+            advertises its own IPv6 resolver to the LAN unless a custom DNSv6
+            is forced, and that custom address must be one blocky listens on.
           '';
         };
 
@@ -107,7 +127,14 @@
 
           settings = {
             ports = {
-              dns = "${cfg.hostAddress}:53";
+              dns =
+                if cfg.hostAddress6 == null then
+                  "${cfg.hostAddress}:53"
+                else
+                  [
+                    "${cfg.hostAddress}:53"
+                    "[${cfg.hostAddress6}]:53"
+                  ];
               http = "${cfg.hostAddress}:4000";
             };
 

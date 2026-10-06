@@ -42,6 +42,10 @@ in
           enable = true;
           hostAddress = "192.168.0.15";
           domainAddress = "192.168.0.10";
+          # Forced as the custom DNSv6 in Freebox OS (it otherwise advertises
+          # its own IPv6 resolver, which bypasses blocky). Fixed suffix ::15 on
+          # the Free /64: see the networkd token in ./hardware.nix.
+          hostAddress6 = "2a01:e0a:b6c:4b90::15";
         };
         openssh.enable = true;
         tailscale.enable = true;
