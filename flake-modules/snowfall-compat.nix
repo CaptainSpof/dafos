@@ -24,6 +24,7 @@ let
         "nix" = nix;
         "security/sops" = sops;
         "services/avahi" = avahi;
+        "services/blocky" = blocky;
         "services/openssh" = openssh;
         "services/tailscale" = tailscale;
         "system/locale" = locale;
