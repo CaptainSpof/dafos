@@ -6,6 +6,21 @@
 let
   inherit (config.flake.modules) nixos;
 
+  # Firmware, not part of the running system, so it is cross-built from
+  # x86_64 (dafbox): qemu-user needs ~30 min for the same bytes.
+  # makeFlags drops nixpkgs' DTC: dtc 1.8 rejects binman's `@atf-SEQ`
+  # template nodes in U-Boot 2026.07's rockchip-u-boot.dtsi ("Empty node
+  # name"); U-Boot's bundled dtc accepts them.
+  uboot =
+    (import inputs.nixpkgs {
+      system = "x86_64-linux";
+      crossSystem = "aarch64-linux";
+      config.allowUnfree = true;
+    }).ubootOrangePi5.overrideAttrs
+      (old: {
+        makeFlags = builtins.filter (flag: builtins.substring 0 4 flag != "DTC=") old.makeFlags;
+      });
+
   installer = inputs.nixpkgs.lib.nixosSystem {
     modules = [
       nixos.orangepi5
@@ -17,9 +32,6 @@ let
           pkgs,
           ...
         }:
-        let
-          uboot = pkgs.ubootOrangePi5;
-        in
         {
           imports = [
             (modulesPath + "/installer/sd-card/sd-image.nix")
