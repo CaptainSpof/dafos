@@ -203,7 +203,6 @@ let
         "crowdsec"
         "gluetun"
         "socket-proxy"
-        "gatus"
       ];
       sites = [
         {
@@ -239,7 +238,6 @@ let
     crowdsec = "Protection collaborative contre les attaques";
     donetick = "Tâches du quotidien";
     flaresolverr = "Contournement de Cloudflare";
-    gatus = "Surveillance de disponibilité";
     gluetun = "Client VPN";
     grimmory = "Collection de livres";
     immich-kiosk = "Cadre photo Immich";

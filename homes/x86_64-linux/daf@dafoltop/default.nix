@@ -59,7 +59,8 @@ in
       socket-proxy = enabled;
       donetick = enabled;
       espanso = mkForce disabled;
-      gatus = enabled;
+      # gatus moved to dafpi (flake-modules/services/gatus.nix): it watches
+      # this box from outside now.
       glance = {
         enable = true;
         engine = "dynacat";

@@ -10,6 +10,7 @@ in
     imports = with nixos; [
       avahi
       blocky
+      gatus
       home
       locale
       networking
