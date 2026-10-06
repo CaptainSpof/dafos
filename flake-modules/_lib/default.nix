@@ -366,8 +366,7 @@ let
   # modules/{nixos,home} gets snowfall's modified args.
   # ------------------------------------------------------------------
   wrap-module =
-    file:
-    args:
+    file: args:
     let
       system = args.system or args.pkgs.stdenv.hostPlatform.system;
       target = args.target or system;
@@ -415,8 +414,7 @@ let
   # nested its definitions would land after every top-level module and
   # reorder list options. Unwrap it to the defining modules themselves.
   unwrap-aspect =
-    aspect:
-    flatten (map (merged: map (def: def.imports) merged.imports) (aspect { }).imports);
+    aspect: flatten (map (merged: map (def: def.imports) merged.imports) (aspect { }).imports);
 
   with-migrated =
     class: legacy:

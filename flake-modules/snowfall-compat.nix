@@ -20,8 +20,17 @@ let
     # add a line here when deleting a legacy module.
     migrated = {
       nixos = with config.flake.modules.nixos; {
+        "home" = home;
         "nix" = nix;
+        "security/sops" = sops;
+        "services/avahi" = avahi;
+        "services/openssh" = openssh;
+        "services/tailscale" = tailscale;
+        "system/locale" = locale;
+        "system/networking" = networking;
+        "system/time" = time;
         "user" = user;
+        "virtualisation/podman" = podman;
       };
       home = with config.flake.modules.homeManager; {
         "user" = user;
@@ -50,16 +59,19 @@ in
     # devenv project shells: `devinit <name>`, or `nix flake init -t self#<name>`.
     templates =
       let
-        templates = lib.mapAttrs (name: description: {
-          inherit description;
-          path = src + "/templates/${name}";
-        }) {
-          devenv = "Bare devenv shell, activated by direnv";
-          python = "devenv shell: Python with uv and a venv";
-          node = "devenv shell: Node.js with pnpm";
-          rust = "devenv shell: stable Rust toolchain";
-          go = "devenv shell: Go, static builds by default";
-        };
+        templates =
+          lib.mapAttrs
+            (name: description: {
+              inherit description;
+              path = src + "/templates/${name}";
+            })
+            {
+              devenv = "Bare devenv shell, activated by direnv";
+              python = "devenv shell: Python with uv and a venv";
+              node = "devenv shell: Node.js with pnpm";
+              rust = "devenv shell: stable Rust toolchain";
+              go = "devenv shell: Go, static builds by default";
+            };
       in
       templates // { default = templates.devenv; };
 
@@ -70,11 +82,13 @@ in
     integrationTests = lib.genAttrs config.systems (
       system:
       let
-        stacks = builtins.filter (name: builtins.pathExists (src + "/modules/home/stacks/${name}/vm-test.nix")) (
-          builtins.attrNames (
-            lib.filterAttrs (_: type: type == "directory") (builtins.readDir (src + "/modules/home/stacks"))
-          )
-        );
+        stacks =
+          builtins.filter (name: builtins.pathExists (src + "/modules/home/stacks/${name}/vm-test.nix"))
+            (
+              builtins.attrNames (
+                lib.filterAttrs (_: type: type == "directory") (builtins.readDir (src + "/modules/home/stacks"))
+              )
+            );
         mkTest = import (src + "/tests/integration/vm.nix") {
           inherit inputs;
           pkgs = compat.channels-by-system.${system}.nixpkgs;

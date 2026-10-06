@@ -178,7 +178,9 @@
         ;
 
       cfg = config.dafos.user;
-      opt = type: default: description: mkOption { inherit type default description; };
+      opt =
+        type: default: description:
+        mkOption { inherit type default description; };
 
       dirs = rec {
         config = "${home}/.config";
