@@ -14,6 +14,19 @@ let
   compat = import ./_lib {
     inherit inputs;
     inherit (config) systems;
+
+    # Aspects migrated out of modules/{nixos,home}, keyed by their old path
+    # there. Legacy hosts get them at that path's place in the import order;
+    # add a line here when deleting a legacy module.
+    migrated = {
+      nixos = with config.flake.modules.nixos; {
+        "nix" = nix;
+        "user" = user;
+      };
+      home = with config.flake.modules.homeManager; {
+        "user" = user;
+      };
+    };
   };
   src = ../.;
 in
@@ -23,7 +36,9 @@ in
     "aarch64-linux"
   ];
 
-  flake = compat.configurations // {
+  flake = {
+    inherit (compat.configurations) nixosConfigurations;
+
     lib = compat.user-lib;
 
     # snowfall/FUP exported the instantiated channels as `pkgs.<system>`;

@@ -20,7 +20,15 @@
 #   - the FUP host module (hostname, nixpkgs.pkgs, registry options,
 #     nix.package/extraOptions defaults) and snowfallorg user modules are
 #     vendored under ../_compat.
-{ inputs, systems }:
+{
+  inputs,
+  systems,
+  # Dendritic aspects standing in for deleted legacy modules, keyed by the
+  # legacy path relative to modules/{nixos,home} (e.g. "services/openssh").
+  # The key keeps the aspect at the legacy module's place in the import
+  # order, so list-option merge order — and the nix-diff gate — is unchanged.
+  migrated ? { },
+}:
 let
   lib0 = inputs.nixpkgs.lib;
 
@@ -396,13 +404,35 @@ let
       map (
         file:
         nameValuePair (builtins.unsafeDiscardStringContext (
-          removePrefix "/" (builtins.replaceStrings [ (toString root) "/default.nix" ] [ "" "" ] file)
+          removePrefix "/" (builtins.replaceStrings [ "${root}" "/default.nix" ] [ "" "" ] file)
         )) (wrap-module file)
       ) (get-default-nix-files-recursive root)
     );
 
-  wrapped-nixos-modules = mapAttrsToList (_: m: m) (wrapped-modules-attrs (src + "/modules/nixos"));
-  wrapped-home-modules-attrs = wrapped-modules-attrs (src + "/modules/home");
+  # A `flake.modules.<class>.<name>` value is three import levels deep
+  # (flake-parts' class wrapper -> deferredModule merge -> one entry per
+  # definition). The module system collects imports breadth-first, so left
+  # nested its definitions would land after every top-level module and
+  # reorder list options. Unwrap it to the defining modules themselves.
+  unwrap-aspect =
+    aspect:
+    flatten (map (merged: map (def: def.imports) merged.imports) (aspect { }).imports);
+
+  with-migrated =
+    class: legacy:
+    let
+      aspects = migrated.${class} or { };
+      clashes = builtins.filter (key: legacy ? ${key}) (builtins.attrNames aspects);
+    in
+    if clashes != [ ] then
+      throw "dafos compat: ${class} module(s) ${toString clashes} exist both as legacy modules and as migrated aspects; delete the legacy copy"
+    else
+      mapAttrs (_: m: [ m ]) legacy // mapAttrs (_: unwrap-aspect) aspects;
+
+  wrapped-nixos-modules = flatten (
+    mapAttrsToList (_: ms: ms) (with-migrated "nixos" (wrapped-modules-attrs (src + "/modules/nixos")))
+  );
+  wrapped-home-modules-attrs = with-migrated "home" (wrapped-modules-attrs (src + "/modules/home"));
 
   # ------------------------------------------------------------------
   # home-manager embedding (snowfall home.create-home-system-modules)
@@ -485,11 +515,11 @@ let
     };
   };
 
-  shared-user-modules = mapAttrsToList (module-path: module: {
+  shared-user-modules = mapAttrsToList (module-path: modules: {
     _file = "${toString src}/modules/home/${module-path}/default.nix";
 
     config = {
-      home-manager.sharedModules = [ module ];
+      home-manager.sharedModules = modules;
     };
   }) wrapped-home-modules-attrs;
 
