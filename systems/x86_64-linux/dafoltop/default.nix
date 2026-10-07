@@ -115,12 +115,18 @@ in
       # the Samsung in the dock (see flake-modules/services/backup/README.md).
       backup = {
         enable = true;
-        # Undeclared-by-design local libraries (grimmory, bookorbit, calibre).
         extraPaths = [
+          "/home/daf/Documents"
+          # Undeclared-by-design local libraries (grimmory, bookorbit, calibre).
           "/mnt/calibre"
           "/mnt/grimmory"
           "/mnt/bookorbit"
         ];
+      };
+      # Serves dafpi's restic repository (append-only) on the backup disk.
+      backup-server = {
+        enable = true;
+        clients.dafpi.sopsFile = ../../../secrets/dafpi/restic.yaml;
       };
       # Read-only NFS export of the media pool for dafbox. LAN first (works without
       # tailscale), tailnet as a second path. See modules/nixos/services/media-export.

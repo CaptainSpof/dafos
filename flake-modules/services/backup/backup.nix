@@ -43,7 +43,6 @@
         userDumps
         rootDumps
         "${home}/stacks"
-        "${home}/Documents"
       ]
       ++ cfg.extraPaths
       ++ [

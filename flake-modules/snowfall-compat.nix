@@ -25,6 +25,8 @@ let
         "security/sops" = sops;
         "services/avahi" = avahi;
         "services/backup" = backup;
+        # New aspect, no legacy module behind it: the key only places it.
+        "services/backup-server" = backup-server;
         "services/blocky" = blocky;
         # New aspect, no legacy module behind it: the key only places it.
         "services/host-watch" = host-watch;

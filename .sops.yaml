@@ -39,6 +39,18 @@ creation_rules:
           - *user_daf_dafbox
           - *user_daf_dafoltop
           - *root_dafoltop
+  # dafpi's restic repository lives on dafoltop's rest-server: dafpi backs up
+  # with these (repository password, REST credentials), dafoltop checks and
+  # prunes with the same repository password and serves the htpasswd line.
+  - path_regex: secrets/dafpi/restic\.yaml$
+    key_groups:
+      - age:
+          - *admin_daf
+          - *user_daf_dafbox
+          - *user_daf_dafpi
+          - *root_dafpi
+          - *user_daf_dafoltop
+          - *root_dafoltop
   # Services moved to dafpi (Orange Pi 5), same shape as dafoltop: editable
   # from the workstation, no laptop or other root key.
   - path_regex: secrets/dafpi/[^/]+\.(yaml|json|env|ini)$
