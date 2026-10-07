@@ -39,6 +39,7 @@ let
         # New aspect, no legacy module behind it: the key only places it.
         "services/dozzle" = dozzle;
         "services/health-push" = health-push;
+        "services/it-tools" = it-tools;
         "services/sops" = sops;
         "services/traefik" = traefik;
         "user" = user;
