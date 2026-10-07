@@ -44,12 +44,11 @@
       # private@file): the Freebox forwards :443 to dafoltop only, and tailnet
       # clients outside the LAN come through here too. On the LAN, blocky
       # sends clients straight to the peer (blocky's `peers`).
-      peerContainers =
+      peerPodmanContainers =
         peer:
-        lib.filter (c: c.traefik.name != null) (
-          lib.attrValues
-            inputs.self.nixosConfigurations.${peer}.config.home-manager.users.daf.services.podman.containers
-        );
+        inputs.self.nixosConfigurations.${peer}.config.home-manager.users.daf.services.podman.containers;
+      peerContainers =
+        peer: lib.filter (c: c.traefik.name != null) (lib.attrValues (peerPodmanContainers peer));
       peerRouters = lib.concatMapAttrs (
         peer: _:
         lib.listToAttrs (
@@ -65,12 +64,24 @@
           ) (peerContainers peer)
         )
       ) cfg.peers;
-      # The peer's Traefik routes on the Host header; its certificate is not
-      # checked (nps sets serversTransport.insecureSkipVerify).
+      # The peer's Traefik routes on the Host header. It is sniStrict (nps
+      # default), so a connection to its bare address (no SNI) fails the
+      # handshake and every relayed route answered 502: send its own
+      # dashboard hostname as SNI, which the wildcard certificate covers and
+      # verifies.
       peerServices = lib.mapAttrs' (
         peer: address:
         lib.nameValuePair "peer-${peer}" {
-          loadBalancer.servers = [ { url = "https://${address}"; } ];
+          loadBalancer = {
+            servers = [ { url = "https://${address}"; } ];
+            serversTransport = "peer-${peer}";
+          };
+        }
+      ) cfg.peers;
+      peerTransports = lib.mapAttrs' (
+        peer: _:
+        lib.nameValuePair "peer-${peer}" {
+          serverName = (peerPodmanContainers peer).traefik.traefik.serviceHost;
         }
       ) cfg.peers;
     in
@@ -264,6 +275,8 @@
               }
               // peerServices
             );
+
+            serversTransports = nonEmpty peerTransports;
           };
 
           containers.traefik = {
