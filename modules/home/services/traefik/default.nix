@@ -14,6 +14,15 @@ let
   inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.traefik;
+
+  # nps routes traffic from other containers (reaching Traefik through its
+  # network aliases) to a separate websecure-internal entrypoint, and its own
+  # label routers attach to every entrypoint. A hand-written router pinned to
+  # websecure alone answers those containers with a 404.
+  entryPoints = [
+    "websecure"
+    "websecure-internal"
+  ];
 in
 {
 
@@ -67,21 +76,21 @@ in
             # immich client.
             rule = "Host(`immich.${cfg.base-url}`) || Host(`photos.${cfg.base-url}`) || Host(`photo.${cfg.base-url}`)";
             service = "immich-service";
-            entryPoints = [ "websecure" ];
+            inherit entryPoints;
             middlewares = [ "public@file" ];
             tls.certResolver = "letsencrypt"; # NPS default resolver name
           };
           home-assistant-nix = {
             rule = "Host(`home.${cfg.base-url}`)";
             service = "home-assistant-service";
-            entryPoints = [ "websecure" ];
+            inherit entryPoints;
             middlewares = [ "public@file" ];
             tls.certResolver = "letsencrypt"; # NPS default resolver name
           };
           zone-configurator-nix = {
             rule = "Host(`zones.${cfg.base-url}`)";
             service = "zone-configurator-service";
-            entryPoints = [ "websecure" ];
+            inherit entryPoints;
             # The zone configurator has no authentication of its own and can
             # rewrite sensor zones and push OTA firmware, so keep it on the
             # same source-IP gate as zigbee2mqtt.
@@ -91,7 +100,7 @@ in
           zigbee2mqtt-nix = {
             rule = "Host(`z2m.${cfg.base-url}`)";
             service = "zigbee2mqtt-service";
-            entryPoints = [ "websecure" ];
+            inherit entryPoints;
             # zigbee2mqtt has no authentication of its own and can pair/remove
             # devices on the mesh, so keep it source-IP gated. Traefik matches
             # routers on the Host header, not on the address the client dialled,
@@ -107,7 +116,7 @@ in
             # The redirect middleware always answers first, but a router still
             # has to name a service.
             service = "noop@internal";
-            entryPoints = [ "websecure" ];
+            inherit entryPoints;
             middlewares = [
               (if r.expose then "public@file" else "private@file")
               "redirect-${alias}@file"
