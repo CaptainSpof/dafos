@@ -107,9 +107,11 @@ FIDECO dual-bay dock:
   link, and that option also leaves the firewall without any ip6tables rule, so
   a link with IPv6 is **unfiltered**. Every NetworkManager profile here sets
   `ipv6.method = disabled` (the `lan` profile does; the auto-generated
-  `Wired connection 1` still in use until the next reboot was changed by hand).
-  Check with `ip -6 addr | grep global` (must be empty). blocky's IPv6 listener
-  is dafpi's alone.
+  `Wired connection 1` still in use until the next reboot and the undeclared
+  `DafWifi - 5Ghz` were changed by hand). A new profile (another Wi-Fi, a new
+  adapter) defaults to `auto` and reopens the hole. Check with
+  `ip -6 addr | grep global` (must be empty). blocky's IPv6 listener is dafpi's
+  alone.
 - **blocky waits for the address in its own oneshot**
   (`blocky-wait-for-address`), not in `ExecStartPre`: blocky's sandbox has no
   netlink, so `ip` inside the unit fails forever. This once took DNS down for 19
