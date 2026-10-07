@@ -54,7 +54,16 @@ in
 
       system = {
         locale.enable = true;
-        networking.enable = true;
+        networking = {
+          enable = true;
+          # blocky (itself, then dafoltop) only: with the public resolvers next
+          # to them, resolved raced and sent *.daftdaf.dev out to the Freebox,
+          # i.e. to dafoltop, for services that live here (gatus probe 404).
+          nameservers = [
+            "192.168.0.15"
+            "192.168.0.10"
+          ];
+        };
         time.enable = true;
       };
 
