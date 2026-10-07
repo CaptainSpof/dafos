@@ -50,6 +50,9 @@ in
       sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafoltop.pem" ];
 
       authelia = enabled;
+      # Serve the OIDC clients and lldap groups of the apps running on dafpi
+      # (flake-modules/services/authelia-peers.nix).
+      authelia-peers.peers = [ "dafpi" ];
       backup-dumps = enabled;
       bar-assistant = enabled;
       bookorbit = enabled;

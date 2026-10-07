@@ -40,6 +40,8 @@ let
       };
       home = with config.flake.modules.homeManager; {
         # New aspect, no legacy module behind it: the key only places it.
+        # New aspect, no legacy module behind it: the key only places it.
+        "services/authelia-peers" = authelia-peers;
         "services/backup-dumps" = backup-dumps;
         "services/dozzle" = dozzle;
         "services/health-push" = health-push;
