@@ -38,6 +38,41 @@
       # included: on dafpi, with no native routers or redirects, every route
       # then failed with a 404.
       nonEmpty = attrs: mkIf (attrs != { }) attrs;
+
+      # Every hostname a peer's own Traefik routes, relayed there from this
+      # one with the same gate (public@file for exposed containers, else
+      # private@file): the Freebox forwards :443 to dafoltop only, and tailnet
+      # clients outside the LAN come through here too. On the LAN, blocky
+      # sends clients straight to the peer (blocky's `peers`).
+      peerContainers =
+        peer:
+        lib.filter (c: c.traefik.name != null) (
+          lib.attrValues
+            inputs.self.nixosConfigurations.${peer}.config.home-manager.users.daf.services.podman.containers
+        );
+      peerRouters = lib.concatMapAttrs (
+        peer: _:
+        lib.listToAttrs (
+          map (
+            c:
+            lib.nameValuePair "peer-${peer}-${c.traefik.name}" {
+              rule = "Host(`${c.traefik.serviceHost}`)";
+              service = "peer-${peer}";
+              inherit entryPoints;
+              middlewares = [ (if c.expose then "public@file" else "private@file") ];
+              tls.certResolver = "letsencrypt"; # NPS default resolver name
+            }
+          ) (peerContainers peer)
+        )
+      ) cfg.peers;
+      # The peer's Traefik routes on the Host header; its certificate is not
+      # checked (nps sets serversTransport.insecureSkipVerify).
+      peerServices = lib.mapAttrs' (
+        peer: address:
+        lib.nameValuePair "peer-${peer}" {
+          loadBalancer.servers = [ { url = "https://${address}"; } ];
+        }
+      ) cfg.peers;
     in
     {
 
@@ -65,6 +100,10 @@
         dashboardAuth =
           opt types.bool true
             "Whether the Traefik dashboard sits behind Authelia forwardAuth (needs the authelia stack on the same host).";
+
+        peers =
+          opt (types.attrsOf types.str) { }
+            "Other hosts running their own rootless Traefik, by name -> LAN address: every hostname they route is relayed to them from here.";
       };
 
       config = mkIf cfg.enable {
@@ -150,6 +189,7 @@
                   tls.certResolver = "letsencrypt"; # NPS default resolver name
                 }
               ) cfg.redirects
+              // peerRouters
             );
 
             middlewares = {
@@ -191,36 +231,39 @@
               }
             ) cfg.redirects;
 
-            services = mkIf cfg.nativeRouters.enable {
-              immich-service = {
-                loadBalancer.servers = [
-                  {
-                    url = "http://host.containers.internal:2283";
-                  }
-                ];
-              };
-              home-assistant-service = {
-                loadBalancer.servers = [
-                  {
-                    url = "http://host.containers.internal:8123";
-                  }
-                ];
-              };
-              zone-configurator-service = {
-                loadBalancer.servers = [
-                  {
-                    url = "http://host.containers.internal:42069";
-                  }
-                ];
-              };
-              zigbee2mqtt-service = {
-                loadBalancer.servers = [
-                  {
-                    url = "http://host.containers.internal:8090";
-                  }
-                ];
-              };
-            };
+            services = nonEmpty (
+              lib.optionalAttrs cfg.nativeRouters.enable {
+                immich-service = {
+                  loadBalancer.servers = [
+                    {
+                      url = "http://host.containers.internal:2283";
+                    }
+                  ];
+                };
+                home-assistant-service = {
+                  loadBalancer.servers = [
+                    {
+                      url = "http://host.containers.internal:8123";
+                    }
+                  ];
+                };
+                zone-configurator-service = {
+                  loadBalancer.servers = [
+                    {
+                      url = "http://host.containers.internal:42069";
+                    }
+                  ];
+                };
+                zigbee2mqtt-service = {
+                  loadBalancer.servers = [
+                    {
+                      url = "http://host.containers.internal:8090";
+                    }
+                  ];
+                };
+              }
+              // peerServices
+            );
           };
 
           containers.traefik = {

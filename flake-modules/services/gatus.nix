@@ -182,6 +182,12 @@
               path = "/";
               conditions = [ "[STATUS] == 200" ];
             })
+            (https {
+              name = "Papra";
+              subDomain = "papra";
+              path = "/";
+              conditions = [ "[STATUS] == 200" ];
+            })
           ];
         };
       };

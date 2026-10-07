@@ -90,6 +90,7 @@ in
       imports = with homeManager; [
         backup-dumps
         it-tools
+        papra
         socket-proxy
         sops
         traefik
@@ -109,6 +110,7 @@ in
             dashboardAuth = false;
           };
           it-tools.enable = true;
+          papra.enable = true;
           backup-dumps.enable = true;
         };
       };

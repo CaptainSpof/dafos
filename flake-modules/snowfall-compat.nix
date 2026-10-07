@@ -46,6 +46,7 @@ let
         "services/dozzle" = dozzle;
         "services/health-push" = health-push;
         "services/it-tools" = it-tools;
+        "services/papra" = papra;
         "services/socket-proxy" = socket-proxy;
         "services/sops" = sops;
         "services/traefik" = traefik;

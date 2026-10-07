@@ -95,7 +95,7 @@ in
         # Points at dafoltop's local ollama (see dafos.services.ollama there).
         ai = enabled;
       };
-      papra = enabled;
+      # papra moved to dafpi (flake-modules/hosts/dafpi).
       reactive-resume = enabled;
       securo = {
         enable = true;
@@ -110,6 +110,9 @@ in
         # Immich, Home Assistant, the zone configurator and zigbee2mqtt run
         # natively on this host.
         nativeRouters.enable = true;
+        # Relay what dafpi's own Traefik serves (public: the Freebox forwards
+        # here; tailnet clients outside the LAN too).
+        peers.dafpi = "192.168.0.15";
       };
     };
 
