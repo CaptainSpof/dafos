@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   modulesPath,
   inputs,
@@ -132,6 +133,18 @@ in
   };
 
   swapDevices = [ ];
+
+  # Pairs with the lan profile's routing domain below. The resolved module
+  # validates DNSSEC strictly, daftdaf.dev is signed, and blocky's local answers
+  # for it are not: without this, resolved rejects them ("no-signature") and the
+  # host loses *.daftdaf.dev entirely (it did, briefly, on 2026-10-07). A
+  # negative trust anchor turns validation off for this one zone, our own,
+  # answered on the LAN by our own blocky; every other name stays validated.
+  # resolved only reads anchors at start, hence the restart trigger.
+  environment.etc."dnssec-trust-anchors.d/daftdaf.negative".text = "daftdaf.dev\n";
+  systemd.services.systemd-resolved.restartTriggers = [
+    config.environment.etc."dnssec-trust-anchors.d/daftdaf.negative".text
+  ];
 
   networking = {
     # Enable DHCP on the wireless link
