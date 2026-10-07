@@ -88,6 +88,7 @@ in
 
     home-manager.users.daf = {
       imports = with homeManager; [
+        backup-dumps
         it-tools
         socket-proxy
         sops
@@ -108,6 +109,7 @@ in
             dashboardAuth = false;
           };
           it-tools.enable = true;
+          backup-dumps.enable = true;
         };
       };
 
