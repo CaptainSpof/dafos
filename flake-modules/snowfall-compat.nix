@@ -25,6 +25,8 @@ let
         "security/sops" = sops;
         "services/avahi" = avahi;
         "services/blocky" = blocky;
+        # New aspect, no legacy module behind it: the key only places it.
+        "services/host-watch" = host-watch;
         "services/openssh" = openssh;
         "services/tailscale" = tailscale;
         "system/locale" = locale;

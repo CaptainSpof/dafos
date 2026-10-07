@@ -100,6 +100,15 @@ in
       home-assistant = enabled;
       # Disk and failed-unit alerts, relayed to the phones by home-assistant.
       alerting = enabled;
+      # dafpi runs gatus, which cannot report its own death: watch it from here
+      # (ping + its blocky answering), alert after 3 failed minutes.
+      host-watch = {
+        enable = true;
+        targets.dafpi = {
+          address = "192.168.0.15";
+          dnsName = "home.daftdaf.dev";
+        };
+      };
       # Nightly encrypted restic backup of the state that cannot be regenerated, to
       # the Samsung in the dock (see modules/nixos/services/backup/README.md).
       backup = enabled;
