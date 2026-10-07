@@ -40,6 +40,23 @@ in
       sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/cloudflare.yaml";
     };
 
+    # nps gives Traefik a network alias for every hostname its stacks route,
+    # so containers reach it over the podman network. The hand-written routers
+    # below (native services) get none, and containers then reached them via
+    # dafoltop's tailnet address: Home Assistant saw a CGNAT client in
+    # X-Forwarded-For and refused its local-only alert webhook (Dozzle's
+    # alerts, 2026-10-07). Same aliases for those hostnames.
+    services.podman.containers.traefik.extraConfig.Container.NetworkAlias =
+      map (sub: "${sub}.${cfg.base-url}")
+        [
+          "immich"
+          "photos"
+          "photo"
+          "home"
+          "zones"
+          "z2m"
+        ];
+
     nps.stacks.traefik = {
       enable = true;
       domain = cfg.base-url;
