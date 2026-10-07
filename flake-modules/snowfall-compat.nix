@@ -50,6 +50,7 @@ let
         "services/kaneo" = kaneo;
         "services/papra" = papra;
         "services/socket-proxy" = socket-proxy;
+        "services/sparky-fitness" = sparky-fitness;
         "services/sops" = sops;
         "services/traefik" = traefik;
         "user" = user;

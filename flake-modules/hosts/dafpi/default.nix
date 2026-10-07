@@ -95,6 +95,7 @@ in
         it-tools
         papra
         socket-proxy
+        sparky-fitness
         sops
         traefik
         user
@@ -117,6 +118,7 @@ in
           donetick.enable = true;
           glance-agent.enable = true;
           kaneo.enable = true;
+          sparky-fitness.enable = true;
           backup-dumps.enable = true;
         };
       };
