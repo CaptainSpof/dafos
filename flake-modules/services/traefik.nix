@@ -39,30 +39,26 @@
       # then failed with a 404.
       nonEmpty = attrs: mkIf (attrs != { }) attrs;
 
-      # Every hostname a peer's own Traefik routes, relayed there from this
-      # one with the same gate (public@file for exposed containers, else
-      # private@file): the Freebox forwards :443 to dafoltop only, and tailnet
-      # clients outside the LAN come through here too. On the LAN, blocky
-      # sends clients straight to the peer (blocky's `peers`).
-      peerPodmanContainers =
-        peer:
-        inputs.self.nixosConfigurations.${peer}.config.home-manager.users.daf.services.podman.containers;
-      peerContainers =
-        peer: lib.filter (c: c.traefik.name != null) (lib.attrValues (peerPodmanContainers peer));
+      # Every hostname a peer's own Traefik routes (its `routedHosts`),
+      # relayed there from this one with the same gate (public@file for
+      # exposed containers, else private@file): the Freebox forwards :443 to
+      # dafoltop only, and tailnet clients outside the LAN come through here
+      # too. On the LAN, blocky sends clients straight to the peer (blocky's
+      # `peers`).
+      peerHome = peer: inputs.self.nixosConfigurations.${peer}.config.home-manager.users.daf;
+      peerPodmanContainers = peer: (peerHome peer).services.podman.containers;
       peerRouters = lib.concatMapAttrs (
         peer: _:
-        lib.listToAttrs (
-          map (
-            c:
-            lib.nameValuePair "peer-${peer}-${c.traefik.name}" {
-              rule = "Host(`${c.traefik.serviceHost}`)";
-              service = "peer-${peer}";
-              inherit entryPoints;
-              middlewares = [ (if c.expose then "public@file" else "private@file") ];
-              tls.certResolver = "letsencrypt"; # NPS default resolver name
-            }
-          ) (peerContainers peer)
-        )
+        lib.mapAttrs' (
+          host: r:
+          lib.nameValuePair "peer-${peer}-${lib.replaceStrings [ "." ] [ "-" ] host}" {
+            rule = "Host(`${host}`)";
+            service = "peer-${peer}";
+            inherit entryPoints;
+            middlewares = [ (if r.expose then "public@file" else "private@file") ];
+            tls.certResolver = "letsencrypt"; # NPS default resolver name
+          }
+        ) (peerHome peer).dafos.services.traefik.routedHosts
       ) cfg.peers;
       # The peer's Traefik routes on the Host header. It is sniStrict (nps
       # default), so a connection to its bare address (no SNI) fails the
@@ -115,9 +111,46 @@
         peers =
           opt (types.attrsOf types.str) { }
             "Other hosts running their own rootless Traefik, by name -> LAN address: every hostname they route is relayed to them from here.";
+
+        routedHosts = mkOption {
+          type = types.attrsOf (types.submodule { options.expose = opt types.bool false "Public route."; });
+          internal = true;
+          default = { };
+          description = ''
+            Every hostname this Traefik routes to a container, read from each
+            container's router rule, so aliases added to a rule count too
+            (kaneo). What peers relay (traefik `peers`) and resolve to this
+            host (blocky `peers`).
+          '';
+        };
       };
 
       config = mkIf cfg.enable {
+        dafos.services.traefik.routedHosts =
+          let
+            routed = lib.filterAttrs (_: c: c.traefik.name != null) config.services.podman.containers;
+            # nps names the router after the container, not `traefik.name`.
+            rules =
+              c:
+              lib.attrValues (
+                lib.filterAttrs (k: _: builtins.match "traefik\\.http\\.routers\\.[^.]+\\.rule" k != null) c.labels
+              );
+            hostsOf =
+              c:
+              lib.unique (
+                lib.concatMap (
+                  r: lib.concatLists (lib.filter lib.isList (builtins.split "Host\\(`([^`]+)`\\)" r))
+                ) (rules c)
+              );
+          in
+          lib.foldl' (
+            acc: c:
+            acc
+            // lib.genAttrs (hostsOf c) (_: {
+              inherit (c) expose;
+            })
+          ) { } (lib.attrValues routed);
+
         sops.secrets."cloudflare-api-token" = {
           sopsFile = inputs.self + "/secrets/dafoltop/cloudflare.yaml";
         };

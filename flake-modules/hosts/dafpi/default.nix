@@ -91,6 +91,7 @@ in
         backup-dumps
         donetick
         glance-agent
+        kaneo
         it-tools
         papra
         socket-proxy
@@ -115,6 +116,7 @@ in
           papra.enable = true;
           donetick.enable = true;
           glance-agent.enable = true;
+          kaneo.enable = true;
           backup-dumps.enable = true;
         };
       };

@@ -47,6 +47,7 @@ let
         "services/glance-agent" = glance-agent;
         "services/health-push" = health-push;
         "services/it-tools" = it-tools;
+        "services/kaneo" = kaneo;
         "services/papra" = papra;
         "services/socket-proxy" = socket-proxy;
         "services/sops" = sops;

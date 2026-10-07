@@ -171,11 +171,10 @@
                 let
                   peerConfig = inputs.self.nixosConfigurations.${peer}.config;
                   address = peerConfig.dafos.services.blocky.hostAddress;
-                  containers = lib.attrValues peerConfig.home-manager.users.daf.services.podman.containers;
+                  # Every hostname the peer's Traefik routes, aliases included.
+                  hosts = lib.attrNames peerConfig.home-manager.users.daf.dafos.services.traefik.routedHosts;
                 in
-                map (c: lib.nameValuePair c.traefik.serviceHost address) (
-                  lib.filter (c: c.traefik.name != null) containers
-                )
+                map (host: lib.nameValuePair host address) hosts
               ) cfg.peers
             );
 
