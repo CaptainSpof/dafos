@@ -84,16 +84,30 @@ qemu-user on dafbox.
 ## Lessons from the first install (2026-10-06)
 
 - **Power**: the first USB-C supply left the board in a reset loop (red LED
-  only, no green heartbeat, never on the network). A phone charger rated
-  5 V / 3 A booted it. The board only takes 5 V; budget 4 A with the NVMe.
-- **SPI from maskrom**: an old bootloader in SPI would win over the SD (the
-  boot ROM tries SPI first). That was suspected but never confirmed — the
-  power supply alone explains the first failure. Writing ours from dafbox
-  in maskrom mode works without any SD and replaces README step 2: unplug,
-  data USB-C cable to dafbox, hold MaskROM while plugging
-  power, then `rkdeveloptool db <loader>` (rkbin's
-  `RKBOOT/RK3588MINIALL.ini` through `tools/boot_merger`), `cs 9`,
+  only, no green heartbeat, never on the network). A phone charger rated 5 V / 3
+  A booted it. The board only takes 5 V; budget 4 A with the NVMe.
+- **SPI from maskrom**: an old bootloader in SPI would win over the SD (the boot
+  ROM tries SPI first). That was suspected but never confirmed — the power
+  supply alone explains the first failure. Writing ours from dafbox in maskrom
+  mode works without any SD and replaces README step 2: unplug, data USB-C cable
+  to dafbox, hold MaskROM while plugging power, then `rkdeveloptool db <loader>`
+  (rkbin's `RKBOOT/RK3588MINIALL.ini` through `tools/boot_merger`), `cs 9`,
   `wl 0 u-boot-rockchip-spi.bin`.
-- **NVMe dropping out ~40 s after boot** (timeouts, failed reset): NVMe
-  APST / PCIe ASPM. The orangepi5 aspect disables both on the kernel
-  command line.
+- **NVMe dropping out ~40 s after boot** (timeouts, failed reset): NVMe APST /
+  PCIe ASPM. The orangepi5 aspect disables both on the kernel command line.
+
+## Lessons from the first rootless stacks (2026-10-07)
+
+- **Linger vs the port sysctl, first activation only**: turning linger on
+  started daf's user manager before `net.ipv4.ip_unprivileged_port_start=80` was
+  applied, so `podman-traefik-{80,443}.socket` failed with
+  `Permission
+  denied`. At boot the sysctl comes first. Fix once:
+  `systemctl --user reset-failed podman-traefik-80.socket podman-traefik-443.socket`,
+  then start both sockets and `podman-traefik.service`.
+- **An empty `routers:` breaks Traefik's whole dynamic file** ("routers cannot
+  be a standalone element"), `private@file` included: every route 404s. The
+  traefik aspect omits empty sections.
+- **Resolve through blocky only** (`nameservers` in `./default.nix`): with the
+  public resolvers next to it, resolved sometimes sent `*.daftdaf.dev` to the
+  Freebox, i.e. to dafoltop.
