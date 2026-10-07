@@ -1,13 +1,13 @@
 # Backups (restic)
 
-Nightly, encrypted, to the Samsung 1 TB in the dock's second bay (`/mnt/backup`).
-Two stages, because the databases live in rootless containers and the state
-directories are root-only:
+Nightly, encrypted, to the Samsung 1 TB in the dock's second bay
+(`/mnt/backup`). Two stages, because the databases live in rootless containers
+and the state directories are root-only:
 
-| When  | What | Owner |
-| ----- | ---- | ----- |
+| When  | What                                                                                                      | Owner                                      |
+| ----- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | 03:00 | `backup-dumps` (user timer): `pg_dump`, `mariadb-dump`, `sqlite3 .backup` into `~/backup-staging/current` | [backup-dumps aspect](../backup-dumps.nix) |
-| 03:30 | `restic-backups-local` (root): Immich `pg_dump`, then the paths in [backup.nix](backup.nix) | this module |
+| 03:30 | `restic-backups-local` (root): Immich `pg_dump`, then the paths in [backup.nix](backup.nix)               | this module                                |
 
 Retention 7 daily, 4 weekly, 6 monthly; every run also reads back 2 % of the
 repository (`restic check --read-data-subset=2%`). A failed run alerts through
@@ -16,21 +16,22 @@ Home Assistant (`alert-failure@`).
 ## What is deliberately not backed up
 
 The 600 GB of media on `/mnt/data` (re-acquirable), container images, ollama
-models, Immich `thumbs/` and `encoded-video/`, Home Assistant's recorder database
-(history only), caches.
+models, Immich `thumbs/` and `encoded-video/`, Home Assistant's recorder
+database (history only), caches.
 
 ## Rules that are easy to break
 
-- **A guard catches databases the dump step cannot see.** Dumps are found by image name,
-  so an all-in-one image with an embedded database (Dispatcharr was one, with its own
-  Postgres 17) would be missed. After the dumps, the script scans `~/stacks` for any
-  Postgres or MariaDB data directory (`PG_VERSION`, `ibdata1`) that is not under a dumped
-  container's mount and fails the job if it finds one. That guard was proven to fire by
-  planting a fake data directory (see the git history for the bug that first disabled it:
-  tmpfs mounts have an empty source, and `"" + /*` matches every path).
-- **A stale or failing dump never stops the file backup**, but it alerts. Postgres
-  and MariaDB data directories are excluded from restic; their dumps are the
-  backup of record. A new database container is picked up by image name.
+- **A guard catches databases the dump step cannot see.** Dumps are found by
+  image name, so an all-in-one image with an embedded database (Dispatcharr was
+  one, with its own Postgres 17) would be missed. After the dumps, the script
+  scans `~/stacks` for any Postgres or MariaDB data directory (`PG_VERSION`,
+  `ibdata1`) that is not under a dumped container's mount and fails the job if
+  it finds one. That guard was proven to fire by planting a fake data directory
+  (see the git history for the bug that first disabled it: tmpfs mounts have an
+  empty source, and `"" + /*` matches every path).
+- **A stale or failing dump never stops the file backup**, but it alerts.
+  Postgres and MariaDB data directories are excluded from restic; their dumps
+  are the backup of record. A new database container is picked up by image name.
 - **The job requires the mount** (`RequiresMountsFor`). Without it, restic would
   initialise a repository on the NVMe root under an empty `/mnt/backup`.
 - **Never hot-add or hot-remove a drive in the dock** while the other is in use;
@@ -67,3 +68,29 @@ On a rebuilt host, restore `/etc/ssh/ssh_host_*` and `~/.ssh/daf@dafoltop.pem`
 **first**, or the system secrets (including this repository's password, which
 dafbox can still decrypt) stop decrypting: see
 [secrets/AGENTS.md](../../../../secrets/AGENTS.md).
+
+## Other hosts: dafoltop's rest-server
+
+dafpi backs up the same way (`backup-dumps` at 03:00, restic at 03:30), but to a
+restic **rest-server on dafoltop** ([backup-server.nix](backup-server.nix)),
+repository `/mnt/backup/rest-server/dafpi`, reached over the tailnet only
+(`rest:http://100.70.68.47:8000/dafpi/`; port 8000 is not open on the LAN).
+
+- **Append-only, private repos**: a client can add snapshots to its own
+  repository, never delete or rewrite them. Retention can therefore not run on
+  the client (`prune = false`).
+- **dafoltop maintains it**: `backup-server-maintain-dafpi` (daily 06:00, as the
+  `restic` user) alerts when the newest snapshot is older than 26 h, then
+  applies the retention (7/4/6) and reads back 2 %.
+- Secrets: `secrets/dafpi/restic.yaml` (repository password, REST password, the
+  server's htpasswd line), readable by dafpi and dafoltop.
+
+```bash
+# on dafpi
+systemctl --user start backup-dumps
+sudo systemctl start restic-backups-local
+sudo restic-local snapshots
+# on dafoltop
+sudo systemctl start backup-server-maintain-dafpi
+journalctl -u backup-server-maintain-dafpi -n 20
+```
