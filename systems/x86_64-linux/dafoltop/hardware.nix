@@ -160,6 +160,12 @@ in
         type = "ethernet";
         interface-name = "enp0s20f0u1u2";
         autoconnect-priority = 10;
+        # The resolved module forces DNS-over-TLS (strict) globally, and blocky
+        # speaks plain DNS: without this the link's servers are silently never
+        # used, and the routing domain below would leave *.daftdaf.dev with no
+        # server at all. Plain DNS on the LAN only; the global resolvers keep
+        # DoT. (DNSSEC can stay on: daftdaf.dev is not signed.)
+        dns-over-tls = 0;
       };
       ethernet = { };
       ipv4 = {
