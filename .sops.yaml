@@ -18,9 +18,11 @@ creation_rules:
       - age:
           - *admin_daf
           - *user_daf_daftop
-  # The Cloudflare DNS token both server Traefiks need for their wildcard
-  # certificate (DNS-01). Servers only: the laptops stay out.
-  - path_regex: secrets/dafoltop/cloudflare\.yaml$
+  # Secrets both servers need. The Cloudflare DNS token: both Traefiks'
+  # wildcard certificate (DNS-01). The apps moving to dafpi: the app reads them
+  # there, dafoltop's Authelia hashes their OIDC client secret (authelia-peers).
+  # Servers only: the laptops stay out.
+  - path_regex: secrets/dafoltop/(cloudflare|papra|donetick|kaneo|sparkyfitness)\.yaml$
     key_groups:
       - age:
           - *admin_daf
