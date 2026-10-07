@@ -158,26 +158,12 @@ in
     # device NetworkManager brings up. Wi-Fi has its own setting, unaffected.
     networkmanager.ethernet.macAddress = "00:e0:4c:36:02:d2";
 
-    # The LAN link as a declared profile (it used to be NetworkManager's
-    # automatic "Wired connection 1"), for one addition: `~daftdaf.dev` as a
-    # routing domain, so resolved asks only the link's blocky servers for
-    # *.daftdaf.dev instead of racing them against the public resolvers in the
-    # global list (services moved to dafpi then resolved to the Freebox, i.e.
-    # back to this host). Every other name still goes out as before, and the
-    # rootless containers' DNS (aardvark -> the host's upstream list) is
-    # untouched. NetworkManager does not move a connected device to a new
-    # profile, so this takes over at the next reconnect or reboot.
     networkmanager.ensureProfiles.profiles.lan = {
       connection = {
         id = "lan";
         type = "ethernet";
         interface-name = "enp0s20f0u1u2";
         autoconnect-priority = 10;
-        # The resolved module forces DNS-over-TLS (strict) globally, and blocky
-        # speaks plain DNS: without this the link's servers are silently never
-        # used, and the routing domain below would leave *.daftdaf.dev with no
-        # server at all. Plain DNS on the LAN only; the global resolvers keep
-        # DoT. (DNSSEC can stay on: daftdaf.dev is not signed.)
         dns-over-tls = 0;
       };
       ethernet = { };
@@ -185,16 +171,23 @@ in
         method = "auto";
         dns-search = "~daftdaf.dev";
       };
-      # IPv6 stays off on this host (qbittorrent must only ever leave through
-      # gluetun's VPN). `enableIPv6 = false` alone is not enough: it sets
-      # disable_ipv6 globally, NetworkManager re-enabled it on the link
-      # (method auto), and since that option also drops every ip6tables rule
-      # from the firewall, the link had a global address with nothing
-      # filtered (ollama, zigbee2mqtt, the zone configurator, ... reachable
-      # over IPv6, found 2026-10-07). Disabled per profile instead; any other
-      # profile on this host needs the same.
       ipv6.method = "disabled";
     };
+
+    firewall.extraCommands = ''
+      ip6tables -w -N dafos-ipv6-guard 2>/dev/null || ip6tables -w -F dafos-ipv6-guard
+      ip6tables -w -A dafos-ipv6-guard -i lo -j ACCEPT
+      ip6tables -w -A dafos-ipv6-guard -i tailscale0 -j ACCEPT
+      ip6tables -w -A dafos-ipv6-guard -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      ip6tables -w -A dafos-ipv6-guard -j DROP
+      ip6tables -w -D INPUT -j dafos-ipv6-guard 2>/dev/null || true
+      ip6tables -w -I INPUT -j dafos-ipv6-guard
+    '';
+    firewall.extraStopCommands = ''
+      ip6tables -w -D INPUT -j dafos-ipv6-guard 2>/dev/null || true
+      ip6tables -w -F dafos-ipv6-guard 2>/dev/null || true
+      ip6tables -w -X dafos-ipv6-guard 2>/dev/null || true
+    '';
   };
 
   hardware = {
