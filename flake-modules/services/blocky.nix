@@ -156,6 +156,12 @@
             # Resolve the public domain to the Traefik host so LAN clients reach
             # it directly instead of hairpinning out through the Freebox.
             # Subdomains are covered by the zone entry.
+            #
+            # Short TTL (blocky's default is 1 h): when a service moves to a
+            # peer, clients keep the old address that long, and from dafoltop
+            # itself the old address is its own, which rootless containers
+            # cannot reach (pasta): Dynacat showed donetick down after its move.
+            customDNS.customTTL = "5m";
             customDNS.mapping = {
               ${cfg.domain} = cfg.domainAddress;
             }

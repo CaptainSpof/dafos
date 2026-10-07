@@ -121,6 +121,10 @@ in
 
       # traefik.daftdaf.dev is dafoltop's dashboard.
       services.podman.containers.traefik.traefik.subDomain = "traefik-dafpi";
+
+      # The agent does not recognise the RK3588 sensor names and reports 0 °C
+      # (`agent sensors:print` lists them).
+      services.podman.containers.glance-agent.environment.TEMP_SENSOR = "package_thermal";
     };
 
     # This value determines the NixOS release from which the default
