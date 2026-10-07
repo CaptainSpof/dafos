@@ -19,10 +19,11 @@ creation_rules:
           - *admin_daf
           - *user_daf_daftop
   # Secrets both servers need. The Cloudflare DNS token: both Traefiks'
-  # wildcard certificate (DNS-01). The apps moving to dafpi: the app reads them
-  # there, dafoltop's Authelia hashes their OIDC client secret (authelia-peers).
-  # Servers only: the laptops stay out.
-  - path_regex: secrets/dafoltop/(cloudflare|papra|donetick|kaneo|sparkyfitness)\.yaml$
+  # wildcard certificate (DNS-01). The Glance agent token: dafpi serves its
+  # stats with it, dafoltop's dashboard reads them. The apps moving to dafpi:
+  # the app reads them there, dafoltop's Authelia hashes their OIDC client
+  # secret (authelia-peers). Servers only: the laptops stay out.
+  - path_regex: secrets/dafoltop/(cloudflare|glance-agent|papra|donetick|kaneo|sparkyfitness)\.yaml$
     key_groups:
       - age:
           - *admin_daf

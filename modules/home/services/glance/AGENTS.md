@@ -3,6 +3,14 @@
 - **Categories live in the `categories` table here**, not in
   `dashboard.category` (that one also feeds Homepage). An unlisted container
   lands in « Autres »; give it a real category instead of leaving it there.
+- **Apps on peer hosts** (traefik `peers`, i.e. dafpi) are generated monitor
+  entries, not docker-containers: a peer's socket is never exposed over the
+  network (an inspect returns container environments, secrets included). List
+  them in `categories` by container name like local ones; « Services en panne »
+  probes them too. Their stats come from the peer's Glance agent
+  (`flake-modules/services/glance-agent.nix`, `type: remote`); its token reaches
+  Dynacat as `GLANCE_AGENT_TOKEN`, which must exist in the container or the
+  whole config is refused.
 - **A docker-containers widget needs `category`.** Glance lists every container
   on the socket and filters on it; without it each widget shows the whole host,
   databases included. The per-container overrides must carry the same category.

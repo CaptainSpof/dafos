@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  inputs,
   namespace,
   ...
 }:
@@ -187,8 +188,8 @@ let
       title = "Outils";
       icon = "mdi:tools";
       page = "services";
-      # it-tools moved to dafpi (2026-10-07); glance only sees this host.
       containers = [
+        "it-tools"
         "kaneo-web"
       ];
     }
@@ -274,13 +275,48 @@ let
     lib.filterAttrs (_: c: c.glance.id != null) shown
   );
 
+  categoryOfTop =
+    top: (lib.findFirst (cat: lib.elem top cat.containers) fallbackCategory categories).title;
+
   categoryOf =
     name:
     let
       parent = shown.${name}.glance.parent or null;
-      top = if parent != null then containerOfId.${parent} or parent else name;
     in
-    (lib.findFirst (cat: lib.elem top cat.containers) fallbackCategory categories).title;
+    categoryOfTop (if parent != null then containerOfId.${parent} or parent else name);
+
+  # Apps on the hosts this one's Traefik relays to (traefik `peers`, dafpi).
+  # The docker-containers widgets only see this host's socket, and a peer's
+  # is not exposed over the network (an inspect returns the containers'
+  # environment, secrets included), so each routed app becomes a monitor
+  # entry instead, filed by container name like the local ones. A name that
+  # also runs here (traefik) gets the host as a suffix.
+  peerHosts = lib.attrNames config.${namespace}.services.traefik.peers;
+  peerContainers =
+    peer:
+    inputs.self.nixosConfigurations.${peer}.config.home-manager.users.daf.services.podman.containers;
+  peerApps = lib.concatMap (
+    peer:
+    lib.mapAttrsToList
+      (name: c: {
+        category = categoryOfTop name;
+        site = {
+          title =
+            if config.services.podman.containers ? ${name} then "${c.glance.name} · ${peer}" else c.glance.name;
+          inherit (c.glance) icon url;
+          check-url = c.glance.url;
+        };
+      })
+      (
+        lib.filterAttrs (
+          _: c: c.traefik.name != null && c.glance.category != null && c.glance.parent == null
+        ) (peerContainers peer)
+      )
+  ) peerHosts;
+  peerSitesIn = cat: map (a: a.site) (lib.filter (a: a.category == cat.title) peerApps);
+
+  # The peers running a Glance agent (flake-modules/services/glance-agent.nix).
+  agentPeers = lib.filter (peer: (peerContainers peer) ? glance-agent) peerHosts;
 
   # One widget per category, in the shape nps's extension.nix generates.
   # Glance asks the socket for every container and keeps those whose
@@ -312,11 +348,11 @@ let
         sock-path = config.nps.stacks.socket-proxy.address;
       }
     )
-    ++ lib.optional (cat.sites or [ ] != [ ]) {
+    ++ lib.optional (cat.sites or [ ] != [ ] || peerSitesIn cat != [ ]) {
       type = "monitor";
       hide-header = true;
       cache = "1m";
-      sites = map mkSite cat.sites;
+      sites = map mkSite (cat.sites or [ ]) ++ peerSitesIn cat;
     };
 
   widgetsFor =
@@ -356,6 +392,10 @@ in
       # PRIM (Île-de-France Mobilités) token for the RER widget, generated
       # under "Mon jeton d'API" on prim.iledefrance-mobilites.fr.
       { "prim/api-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance.yaml"; }
+      # Shared with the agents' hosts (flake-modules/services/glance-agent.nix).
+      (lib.mkIf (agentPeers != [ ]) {
+        "glance-agent/token".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance-agent.yaml";
+      })
     ];
 
     services.podman.containers.glance.extraEnv = lib.mkMerge [
@@ -365,6 +405,9 @@ in
         )
       ))
       { PRIM_API_KEY.fromFile = config.sops.secrets."prim/api-key".path; }
+      (lib.mkIf (agentPeers != [ ]) {
+        GLANCE_AGENT_TOKEN.fromFile = config.sops.secrets."glance-agent/token".path;
+      })
     ];
 
     nps.stacks = {
@@ -587,7 +630,7 @@ in
                   sites = map (s: {
                     inherit (s) title;
                     url = s.check-url;
-                  }) (map mkSite (lib.concatMap (cat: cat.sites or [ ]) categories));
+                  }) (map mkSite (lib.concatMap (cat: cat.sites or [ ]) categories) ++ map (a: a.site) peerApps);
                 }
               ))
               {
@@ -840,7 +883,15 @@ in
                       };
                     };
                   }
-                ];
+                ]
+                # Through the peer's Traefik (private gate). The agent picks
+                # which mountpoints it reports.
+                ++ map (peer: {
+                  type = "remote";
+                  name = peer;
+                  url = (peerContainers peer).glance-agent.traefik.serviceUrl;
+                  token = "\${GLANCE_AGENT_TOKEN}";
+                }) agentPeers;
               }
             ];
           };

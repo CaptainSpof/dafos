@@ -89,6 +89,8 @@ in
     home-manager.users.daf = {
       imports = with homeManager; [
         backup-dumps
+        donetick
+        glance-agent
         it-tools
         papra
         socket-proxy
@@ -111,6 +113,8 @@ in
           };
           it-tools.enable = true;
           papra.enable = true;
+          donetick.enable = true;
+          glance-agent.enable = true;
           backup-dumps.enable = true;
         };
       };

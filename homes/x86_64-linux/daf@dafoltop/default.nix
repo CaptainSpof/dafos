@@ -77,7 +77,7 @@ in
           "/mnt/backup"
         ];
       };
-      donetick = enabled;
+      # donetick moved to dafpi (flake-modules/hosts/dafpi).
       espanso = mkForce disabled;
       # gatus moved to dafpi (flake-modules/services/gatus.nix): it watches
       # this box from outside now.
