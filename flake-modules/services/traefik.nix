@@ -32,6 +32,12 @@
         "websecure"
         "websecure-internal"
       ];
+
+      # An empty `routers:` or `services:` makes Traefik reject the whole
+      # dynamic file ("routers cannot be a standalone element"), private@file
+      # included: on dafpi, with no native routers or redirects, every route
+      # then failed with a 404.
+      nonEmpty = attrs: mkIf (attrs != { }) attrs;
     in
     {
 
@@ -89,7 +95,7 @@
           geoblock.allowedCountries = [ "FR" ];
 
           dynamicConfig.http = {
-            routers =
+            routers = nonEmpty (
               lib.optionalAttrs cfg.nativeRouters.enable {
                 immich-nix = {
                   # Every hostname here needs its redirect_uris in the authelia
@@ -143,7 +149,8 @@
                   ];
                   tls.certResolver = "letsencrypt"; # NPS default resolver name
                 }
-              ) cfg.redirects;
+              ) cfg.redirects
+            );
 
             middlewares = {
               # nps ships `private` as an RFC1918-only ipAllowList; the tailnet lives in
@@ -184,7 +191,7 @@
               }
             ) cfg.redirects;
 
-            services = lib.optionalAttrs cfg.nativeRouters.enable {
+            services = mkIf cfg.nativeRouters.enable {
               immich-service = {
                 loadBalancer.servers = [
                   {
