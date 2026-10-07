@@ -21,10 +21,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    sops.secrets."cloudflare-api-token" = {
-      sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/cloudflare.yaml";
-    };
-
     nps = {
       externalStorageBaseDir = "/mnt/nps";
       hostIP4Address = "192.168.0.10";

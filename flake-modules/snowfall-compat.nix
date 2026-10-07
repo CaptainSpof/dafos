@@ -40,6 +40,7 @@ let
         "services/dozzle" = dozzle;
         "services/health-push" = health-push;
         "services/sops" = sops;
+        "services/traefik" = traefik;
         "user" = user;
       };
     };

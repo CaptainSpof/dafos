@@ -22,9 +22,6 @@ in
   config = mkIf cfg.enable {
     sops = {
       secrets = {
-        "cloudflare-api-token" = {
-          sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/cloudflare.yaml";
-        };
         "donetick/jwt-secret" = {
           sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/donetick.yaml";
         };

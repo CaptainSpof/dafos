@@ -102,7 +102,12 @@ in
       sparky-fitness = enabled;
       spliit = enabled;
       streaming = enabled;
-      traefik = enabled;
+      traefik = {
+        enable = true;
+        # Immich, Home Assistant, the zone configurator and zigbee2mqtt run
+        # natively on this host.
+        nativeRouters.enable = true;
+      };
     };
 
     suites = {
