@@ -8,7 +8,7 @@
 { inputs, ... }:
 {
   flake.modules.nixos.gatus =
-    { config, ... }:
+    { config, lib, ... }:
     let
       dafoltop = inputs.self.nixosConfigurations.dafoltop.config;
       dafoltopAddress = dafoltop.dafos.services.blocky.hostAddress;
@@ -50,8 +50,13 @@
     in
     {
       sops.secrets."ntfy-topic".sopsFile = inputs.self + "/secrets/dafpi/gatus.yaml";
+      # Shared with the hosts that push their health (health-push aspect).
+      sops.secrets."health-token".sopsFile = inputs.self + "/secrets/daf/health.yaml";
       sops.templates."gatus.env" = {
-        content = "NTFY_TOPIC=${config.sops.placeholder."ntfy-topic"}\n";
+        content =
+          ""
+          + "NTFY_TOPIC=${config.sops.placeholder."ntfy-topic"}\n"
+          + "HEALTH_TOKEN=${config.sops.placeholder."health-token"}\n";
         restartUnits = [ "gatus.service" ];
       };
 
@@ -89,6 +94,29 @@
               default-alert = defaultAlert "injoignable depuis dafpi (Home Assistant ne peut pas relayer)";
             };
           };
+
+          # Pushed by dafoltop every 5 minutes (health-push aspect): states it
+          # still answers through, but nothing else alerts on. The heartbeat
+          # turns a silence of 15 minutes into a failure too.
+          external-endpoints =
+            lib.mapAttrsToList
+              (name: description: {
+                inherit name;
+                group = "dafoltop";
+                token = "\${HEALTH_TOKEN}";
+                heartbeat.interval = "15m";
+                alerts = [
+                  {
+                    type = "custom";
+                    description = "${description} (détail : http://dafpi:8080)";
+                  }
+                ];
+              })
+              {
+                conteneurs = "un conteneur attendu ne tourne pas";
+                stockage = "disque plein ou dock USB non monté";
+                services = "un service systemd est en échec";
+              };
 
           endpoints = [
             # dafoltop itself: if it is down, so is Home Assistant.

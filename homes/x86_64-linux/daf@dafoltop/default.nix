@@ -59,6 +59,21 @@ in
       socket-proxy = enabled;
       # Live container logs + crash alerts, admins only (flake-modules/services/dozzle.nix).
       dozzle = enabled;
+      # Push containers / storage / failed-unit state to gatus on dafpi every
+      # 5 min (flake-modules/services/health-push.nix).
+      health-push = {
+        enable = true;
+        mounts = [
+          "/mnt/data"
+          "/mnt/backup"
+        ];
+        disks = [
+          "/"
+          "/home"
+          "/mnt/data"
+          "/mnt/backup"
+        ];
+      };
       donetick = enabled;
       espanso = mkForce disabled;
       # gatus moved to dafpi (flake-modules/services/gatus.nix): it watches
