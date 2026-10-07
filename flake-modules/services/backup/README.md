@@ -6,8 +6,8 @@ directories are root-only:
 
 | When  | What | Owner |
 | ----- | ---- | ----- |
-| 03:00 | `backup-dumps` (user timer): `pg_dump`, `mariadb-dump`, `sqlite3 .backup` into `~/backup-staging/current` | [home module](../../../home/services/backup-dumps/default.nix) |
-| 03:30 | `restic-backups-local` (root): Immich `pg_dump`, then the paths in [default.nix](default.nix) | this module |
+| 03:00 | `backup-dumps` (user timer): `pg_dump`, `mariadb-dump`, `sqlite3 .backup` into `~/backup-staging/current` | [backup-dumps aspect](../backup-dumps.nix) |
+| 03:30 | `restic-backups-local` (root): Immich `pg_dump`, then the paths in [backup.nix](backup.nix) | this module |
 
 Retention 7 daily, 4 weekly, 6 monthly; every run also reads back 2 % of the
 repository (`restic check --read-data-subset=2%`). A failed run alerts through

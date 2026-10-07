@@ -80,4 +80,4 @@ Use the `dafos-add-service` skill (`.claude/skills/dafos-add-service`).
   MariaDB container is picked up automatically; an all-in-one image with an
   embedded database is not, and the dump job fails loudly until it is handled.
   See
-  [../../nixos/services/backup/README.md](../../nixos/services/backup/README.md).
+  [../../../flake-modules/services/backup/README.md](../../../flake-modules/services/backup/README.md).

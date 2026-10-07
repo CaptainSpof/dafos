@@ -79,7 +79,7 @@ FIDECO dual-bay dock:
   repair it, so the backups are the recovery path.
 - Nothing is backed up from `/mnt/data` (re-acquirable media). State is backed
   up nightly to `/mnt/backup`: see
-  [../../../modules/nixos/services/backup/README.md](../../../modules/nixos/services/backup/README.md).
+  [../../../flake-modules/services/backup/README.md](../../../flake-modules/services/backup/README.md).
 - `/mnt/data` is exported read-only over NFSv4 to dafbox
   ([media-export](../../../modules/nixos/services/media-export/default.nix)):
   TCP 2049 is open only to the listed LAN addresses (dafbox's depends on a DHCP

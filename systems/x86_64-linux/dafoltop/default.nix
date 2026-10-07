@@ -112,8 +112,16 @@ in
         };
       };
       # Nightly encrypted restic backup of the state that cannot be regenerated, to
-      # the Samsung in the dock (see modules/nixos/services/backup/README.md).
-      backup = enabled;
+      # the Samsung in the dock (see flake-modules/services/backup/README.md).
+      backup = {
+        enable = true;
+        # Undeclared-by-design local libraries (grimmory, bookorbit, calibre).
+        extraPaths = [
+          "/mnt/calibre"
+          "/mnt/grimmory"
+          "/mnt/bookorbit"
+        ];
+      };
       # Read-only NFS export of the media pool for dafbox. LAN first (works without
       # tailscale), tailnet as a second path. See modules/nixos/services/media-export.
       media-export = {
