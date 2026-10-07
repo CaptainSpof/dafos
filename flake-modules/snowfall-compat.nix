@@ -36,6 +36,8 @@ let
         "virtualisation/podman" = podman;
       };
       home = with config.flake.modules.homeManager; {
+        # New aspect, no legacy module behind it: the key only places it.
+        "services/dozzle" = dozzle;
         "user" = user;
       };
     };

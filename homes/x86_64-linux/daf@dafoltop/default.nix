@@ -57,6 +57,8 @@ in
       calibre = enabled;
       crowdsec = enabled;
       socket-proxy = enabled;
+      # Live container logs + crash alerts, admins only (flake-modules/services/dozzle.nix).
+      dozzle = enabled;
       donetick = enabled;
       espanso = mkForce disabled;
       # gatus moved to dafpi (flake-modules/services/gatus.nix): it watches
