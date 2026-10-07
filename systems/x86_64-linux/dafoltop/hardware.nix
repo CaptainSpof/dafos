@@ -185,10 +185,15 @@ in
         method = "auto";
         dns-search = "~daftdaf.dev";
       };
-      ipv6 = {
-        method = "auto";
-        dns-search = "~daftdaf.dev";
-      };
+      # IPv6 stays off on this host (qbittorrent must only ever leave through
+      # gluetun's VPN). `enableIPv6 = false` alone is not enough: it sets
+      # disable_ipv6 globally, NetworkManager re-enabled it on the link
+      # (method auto), and since that option also drops every ip6tables rule
+      # from the firewall, the link had a global address with nothing
+      # filtered (ollama, zigbee2mqtt, the zone configurator, ... reachable
+      # over IPv6, found 2026-10-07). Disabled per profile instead; any other
+      # profile on this host needs the same.
+      ipv6.method = "disabled";
     };
   };
 

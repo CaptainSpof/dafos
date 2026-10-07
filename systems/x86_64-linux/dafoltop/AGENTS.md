@@ -102,6 +102,14 @@ FIDECO dual-bay dock:
   replace the global public resolvers with blocky here: the rootless containers'
   DNS forwards to the host's upstream list, and from inside them `192.168.0.10`
   is their own address, so they would depend on dafpi alone.
+- **No IPv6 on this host** (qbittorrent must only leave through gluetun's VPN),
+  and `enableIPv6 = false` does not enforce it: NetworkManager re-enables it per
+  link, and that option also leaves the firewall without any ip6tables rule, so
+  a link with IPv6 is **unfiltered**. Every NetworkManager profile here sets
+  `ipv6.method = disabled` (the `lan` profile does; the auto-generated
+  `Wired connection 1` still in use until the next reboot was changed by hand).
+  Check with `ip -6 addr | grep global` (must be empty). blocky's IPv6 listener
+  is dafpi's alone.
 - **blocky waits for the address in its own oneshot**
   (`blocky-wait-for-address`), not in `ExecStartPre`: blocky's sandbox has no
   netlink, so `ip` inside the unit fails forever. This once took DNS down for 19
