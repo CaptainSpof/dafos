@@ -28,12 +28,12 @@ to the module or host it describes. Longer rationale goes in that directory's
 
 ## The fleet
 
-| Host       | System       | Role                                                                 | Desktop                           |
-| ---------- | ------------ | -------------------------------------------------------------------- | --------------------------------- |
-| `dafbox`   | x86_64-linux | Desktop/workstation                                                  | Niri (autologin) + DMS greeter    |
-| `dafoltop` | x86_64-linux | Laptop repurposed as homelab server — runs most self-hosted services | Plasma (autologin), Niri disabled |
-| `daftop`   | x86_64-linux | Laptop                                                               | Niri                              |
-| `dafpi`    | aarch64-linux | Orange Pi 5, small always-on server taking load off dafoltop        | none                              |
+| Host       | System        | Role                                                                 | Desktop                           |
+| ---------- | ------------- | -------------------------------------------------------------------- | --------------------------------- |
+| `dafbox`   | x86_64-linux  | Desktop/workstation                                                  | Niri (autologin) + DMS greeter    |
+| `dafoltop` | x86_64-linux  | Laptop repurposed as homelab server — runs most self-hosted services | Plasma (autologin), Niri disabled |
+| `daftop`   | x86_64-linux  | Laptop                                                               | Niri                              |
+| `dafpi`    | aarch64-linux | Orange Pi 5, small always-on server taking load off dafoltop         | none                              |
 
 `dafoltop` is the de facto home server and the live house — see
 [systems/x86_64-linux/dafoltop/AGENTS.md](systems/x86_64-linux/dafoltop/AGENTS.md)
@@ -41,10 +41,10 @@ before touching anything that runs on it.
 
 ## Layout and composition
 
-`flake-modules/` holds the dendritic aspects and hosts (dafpi is built only
-from it). The rest is the legacy Snowfall layout: `systems/`, `homes/`, `modules/{nixos,home}/`,
-`packages/`, `overlays/`, `lib/`, `secrets/`, `shells/`, `checks/`. Read the
-tree rather than a description of it.
+`flake-modules/` holds the dendritic aspects and hosts (dafpi is built only from
+it). The rest is the legacy Snowfall layout: `systems/`, `homes/`,
+`modules/{nixos,home}/`, `packages/`, `overlays/`, `lib/`, `secrets/`,
+`shells/`, `checks/`. Read the tree rather than a description of it.
 
 Configuration composes in one direction:
 
@@ -64,6 +64,10 @@ sudo nixos-rebuild switch --flake .#<host>         # local
 deploy -s .#<host>                                 # remote (deploy-rs CLI; -s: checks.pre-commit-hooks is broken)
 ```
 
+**Never push without the user's explicit go for that push.** Committing locally
+is fine; `git push` (any branch, any remote) waits until the user says to push
+those commits. An earlier "push" does not cover later commits.
+
 `direnv`/`use flake` is set up, so `nix develop` auto-activates here. Pre-commit
 hooks (git-hooks.nix) run treefmt (non-blocking), clang-tidy, luacheck and a
 sops-encryption check inside that shell.
@@ -74,8 +78,8 @@ Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkOpt'`,
 
 ## Scoped guidance
 
-- [flake-modules/AGENTS.md](flake-modules/AGENTS.md) — dendritic aspects,
-  hosts and the Snowfall compat layer
+- [flake-modules/AGENTS.md](flake-modules/AGENTS.md) — dendritic aspects, hosts
+  and the Snowfall compat layer
 - [modules/AGENTS.md](modules/AGENTS.md) — module conventions, option ownership
 - [systems/AGENTS.md](systems/AGENTS.md) — host configuration and validation
 - [lib/AGENTS.md](lib/AGENTS.md) — custom library namespaces

@@ -29,6 +29,7 @@
 			"WebFetch(domain:wiki.nixos.org)",
 			"WebFetch(domain:home-manager-options.extranix.com)"
 		],
+		"ask": ["Bash(git push:*)"],
 		"deny": ["Write(./secrets/**)", "Edit(./secrets/**)"]
 	},
 	"hooks": {
