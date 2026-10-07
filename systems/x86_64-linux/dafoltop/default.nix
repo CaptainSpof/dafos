@@ -96,6 +96,8 @@ in
       blocky = {
         enable = true;
         hostAddress = "192.168.0.10";
+        # Services hosted on dafpi resolve there (derived from its config).
+        peers = [ "dafpi" ];
       };
       home-assistant = enabled;
       # Disk and failed-unit alerts, relayed to the phones by home-assistant.

@@ -46,6 +46,7 @@ in
           # its own IPv6 resolver, which bypasses blocky). Fixed suffix ::15 on
           # the Free /64: see the networkd token in ./hardware.nix.
           hostAddress6 = "2a01:e0a:b6c:4b90::15";
+          peers = [ "dafpi" ];
         };
         openssh.enable = true;
         tailscale.enable = true;
@@ -65,10 +66,44 @@ in
       user.extraGroups = [ "wheel" ];
     };
 
-    home-manager.users.daf = {
-      imports = [ homeManager.user ];
+    # Rootless podman stacks (nps) live in daf's home-manager config. With no
+    # login session on this box, lingering is what keeps them running.
+    users.users.daf.linger = true;
 
-      dafos.user.enable = true;
+    # Rootless Traefik owns :80 and :443, as on dafoltop.
+    boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 80;
+    networking.firewall.allowedTCPPorts = [
+      80
+      443
+    ];
+
+    home-manager.users.daf = {
+      imports = with homeManager; [
+        it-tools
+        socket-proxy
+        sops
+        traefik
+        user
+      ];
+
+      dafos = {
+        user.enable = true;
+
+        services = {
+          sops.sshKeyPaths = [ "/home/daf/.ssh/daf@dafpi.pem" ];
+          socket-proxy.enable = true;
+          traefik = {
+            enable = true;
+            # No authelia stack here; the dashboard stays on the private
+            # (LAN/tailnet) gate only.
+            dashboardAuth = false;
+          };
+          it-tools.enable = true;
+        };
+      };
+
+      # traefik.daftdaf.dev is dafoltop's dashboard.
+      services.podman.containers.traefik.traefik.subDomain = "traefik-dafpi";
     };
 
     # This value determines the NixOS release from which the default

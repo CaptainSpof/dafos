@@ -4,6 +4,7 @@
 # Freebox DHCP hands out both as the LAN's only DNS servers (2026-10-06).
 # Rollback: set the Freebox DHCP DNS back to the Freebox itself,
 # 192.168.0.254 (also the default gateway: `ip route | grep default`).
+{ inputs, ... }:
 {
   flake.modules.nixos.blocky =
     {
@@ -107,6 +108,18 @@
           description = "Blocklist sources.";
         };
 
+        peers = mkOption {
+          type = types.listOf types.str;
+          default = [ ];
+          example = [ "dafpi" ];
+          description = ''
+            Other hosts serving part of `domain`: every hostname their rootless
+            Traefik routes (nps containers with a router) resolves to that
+            host's own blocky address instead of domainAddress. Read from the
+            peer's configuration, so moving a service needs no DNS edit.
+          '';
+        };
+
         openFirewall = mkOption {
           type = types.bool;
           default = true;
@@ -143,7 +156,22 @@
             # Resolve the public domain to the Traefik host so LAN clients reach
             # it directly instead of hairpinning out through the Freebox.
             # Subdomains are covered by the zone entry.
-            customDNS.mapping.${cfg.domain} = cfg.domainAddress;
+            customDNS.mapping = {
+              ${cfg.domain} = cfg.domainAddress;
+            }
+            // lib.listToAttrs (
+              lib.concatMap (
+                peer:
+                let
+                  peerConfig = inputs.self.nixosConfigurations.${peer}.config;
+                  address = peerConfig.dafos.services.blocky.hostAddress;
+                  containers = lib.attrValues peerConfig.home-manager.users.daf.services.podman.containers;
+                in
+                map (c: lib.nameValuePair c.traefik.serviceHost address) (
+                  lib.filter (c: c.traefik.name != null) containers
+                )
+              ) cfg.peers
+            );
 
             # Subdomains hosted off-box would otherwise be swallowed by the mapping
             # above. blocky checks the exact name before its parents, so a CNAME

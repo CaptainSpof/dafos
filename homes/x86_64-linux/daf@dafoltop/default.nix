@@ -83,7 +83,7 @@ in
         engine = "dynacat";
       };
       immich-kiosk = enabled;
-      it-tools = enabled;
+      # it-tools moved to dafpi (flake-modules/hosts/dafpi).
       kaneo = enabled;
       kitchenowl = enabled;
       lldap = enabled;

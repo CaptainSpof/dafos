@@ -187,8 +187,8 @@ let
       title = "Outils";
       icon = "mdi:tools";
       page = "services";
+      # it-tools moved to dafpi (2026-10-07); glance only sees this host.
       containers = [
-        "it-tools"
         "kaneo-web"
       ];
     }
@@ -241,7 +241,6 @@ let
     gluetun = "Client VPN";
     grimmory = "Collection de livres";
     immich-kiosk = "Cadre photo Immich";
-    it-tools = "Outils pour développeurs";
     jellyfin = "Serveur multimédia";
     kaneo-web = "Gestion de projets";
     kitchenowl-backend = "Courses et recettes";

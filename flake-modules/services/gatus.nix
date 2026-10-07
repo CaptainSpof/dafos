@@ -175,6 +175,13 @@
                 "[BODY] == Healthy"
               ];
             })
+            # Served by dafpi itself (its Traefik, through its own blocky).
+            (https {
+              name = "IT-Tools";
+              subDomain = "it-tools";
+              path = "/";
+              conditions = [ "[STATUS] == 200" ];
+            })
           ];
         };
       };
