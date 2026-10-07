@@ -37,6 +37,7 @@ let
       };
       home = with config.flake.modules.homeManager; {
         # New aspect, no legacy module behind it: the key only places it.
+        "services/backup-dumps" = backup-dumps;
         "services/dozzle" = dozzle;
         "services/health-push" = health-push;
         "services/it-tools" = it-tools;
