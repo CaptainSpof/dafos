@@ -11,8 +11,8 @@ dark room.
 
 - Changes to service readiness, ordering or `Type=` get **tested**, not reasoned
   about. A `Type=notify` guess once crash-looped zigbee2mqtt here.
-- Deploys need an interactive sudo prompt; a fully unattended `deploy`
-  will stall.
+- Deploys need an interactive sudo prompt; a fully unattended `deploy` will
+  stall.
 - Prefer switching during a window where a rollback is practical.
 
 ## Services
@@ -81,8 +81,8 @@ FIDECO dual-bay dock:
   up nightly to `/mnt/backup`: see
   [../../../modules/nixos/services/backup/README.md](../../../modules/nixos/services/backup/README.md).
 - `/mnt/data` is exported read-only over NFSv4 to dafbox
-  ([media-export](../../../modules/nixos/services/media-export/default.nix)): TCP
-  2049 is open only to the listed LAN addresses (dafbox's depends on a DHCP
+  ([media-export](../../../modules/nixos/services/media-export/default.nix)):
+  TCP 2049 is open only to the listed LAN addresses (dafbox's depends on a DHCP
   lease, so pin it in Freebox OS), plus the tailnet. The server is tied to the
   `/mnt/data` mount, so it stops when the dock drops and starts when the mount
   returns.
@@ -96,6 +96,12 @@ FIDECO dual-bay dock:
   ethernet adapter's MAC. blocky binds it and dafbox uses it as its DNS server.
   `hardware.nix` clones that MAC onto whichever ethernet device NetworkManager
   brings up, so replacing the adapter keeps the address.
+- The LAN link is the declared NetworkManager profile `lan` (interface
+  `enp0s20f0u1u2`), whose only addition is the `~daftdaf.dev` routing domain:
+  resolved sends `*.daftdaf.dev` to the link's blocky servers only. Do not
+  replace the global public resolvers with blocky here: the rootless containers'
+  DNS forwards to the host's upstream list, and from inside them `192.168.0.10`
+  is their own address, so they would depend on dafpi alone.
 - **blocky waits for the address in its own oneshot**
   (`blocky-wait-for-address`), not in `ExecStartPre`: blocky's sandbox has no
   netlink, so `ip` inside the unit fails forever. This once took DNS down for 19

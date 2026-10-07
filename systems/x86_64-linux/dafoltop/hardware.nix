@@ -144,6 +144,33 @@ in
     # a new address and take DNS down. Clone the old MAC onto whichever ethernet
     # device NetworkManager brings up. Wi-Fi has its own setting, unaffected.
     networkmanager.ethernet.macAddress = "00:e0:4c:36:02:d2";
+
+    # The LAN link as a declared profile (it used to be NetworkManager's
+    # automatic "Wired connection 1"), for one addition: `~daftdaf.dev` as a
+    # routing domain, so resolved asks only the link's blocky servers for
+    # *.daftdaf.dev instead of racing them against the public resolvers in the
+    # global list (services moved to dafpi then resolved to the Freebox, i.e.
+    # back to this host). Every other name still goes out as before, and the
+    # rootless containers' DNS (aardvark -> the host's upstream list) is
+    # untouched. NetworkManager does not move a connected device to a new
+    # profile, so this takes over at the next reconnect or reboot.
+    networkmanager.ensureProfiles.profiles.lan = {
+      connection = {
+        id = "lan";
+        type = "ethernet";
+        interface-name = "enp0s20f0u1u2";
+        autoconnect-priority = 10;
+      };
+      ethernet = { };
+      ipv4 = {
+        method = "auto";
+        dns-search = "~daftdaf.dev";
+      };
+      ipv6 = {
+        method = "auto";
+        dns-search = "~daftdaf.dev";
+      };
+    };
   };
 
   hardware = {
