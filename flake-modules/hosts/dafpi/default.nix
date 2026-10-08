@@ -94,6 +94,8 @@ in
         kaneo
         it-tools
         papra
+        securo
+        securo-stack
         socket-proxy
         sparky-fitness
         sops
@@ -115,6 +117,10 @@ in
           };
           it-tools.enable = true;
           papra.enable = true;
+          securo = {
+            enable = true;
+            enableBankingAppId = "2d512d1c-a7f8-45d3-9a17-7b2c5e1f97ae";
+          };
           donetick.enable = true;
           glance-agent.enable = true;
           kaneo.enable = true;

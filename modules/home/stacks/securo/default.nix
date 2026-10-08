@@ -32,6 +32,14 @@ let
   serviceUrl = config.services.podman.containers.${name}.traefik.serviceUrl;
   dbEnv = config.services.podman.containers.${dbName}.extraEnv;
 
+  # The local authelia container unless told otherwise: read only when no
+  # issuer is given, so a host whose Authelia runs elsewhere evaluates.
+  issuerUrl =
+    if cfg.oidc.issuerUrl != null then
+      cfg.oidc.issuerUrl
+    else
+      config.nps.containers.authelia.traefik.serviceUrl;
+
   secretFileOpt =
     what:
     lib.mkOption {
@@ -65,7 +73,7 @@ let
   // lib.optionalAttrs cfg.oidc.enable {
     OIDC_ENABLED = "true";
     OIDC_PROVIDER_NAME = "Authelia";
-    OIDC_DISCOVERY_URL = "${config.nps.containers.authelia.traefik.serviceUrl}/.well-known/openid-configuration";
+    OIDC_DISCOVERY_URL = "${issuerUrl}/.well-known/openid-configuration";
     OIDC_CLIENT_ID = name;
     OIDC_CLIENT_SECRET.fromFile = cfg.oidc.clientSecretFile;
     OIDC_SCOPES = "openid email profile";
@@ -141,6 +149,15 @@ in
           OIDC client in Authelia, creates its LLDAP group and turns on
           auto-registration, so a user of {option}`userGroup` gets an account on
           first login.
+        '';
+      };
+      issuerUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "https://auth.example.com";
+        description = ''
+          Authelia's URL. Null means the authelia container of this
+          configuration; set it when Authelia runs on another host.
         '';
       };
       inherit ((import "${inputs.nix-podman-stacks}/modules/authelia/options.nix" lib)) clientSecretFile;

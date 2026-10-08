@@ -97,10 +97,7 @@ in
       };
       # papra moved to dafpi (flake-modules/hosts/dafpi).
       reactive-resume = enabled;
-      securo = {
-        enable = true;
-        enableBankingAppId = "2d512d1c-a7f8-45d3-9a17-7b2c5e1f97ae";
-      };
+      # securo moved to dafpi (flake-modules/hosts/dafpi).
       shelfmark = enabled;
       # sparky-fitness moved to dafpi (flake-modules/hosts/dafpi).
       spliit = enabled;

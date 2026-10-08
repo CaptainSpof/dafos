@@ -49,6 +49,7 @@ let
         "services/it-tools" = it-tools;
         "services/kaneo" = kaneo;
         "services/papra" = papra;
+        "services/securo" = securo;
         "services/socket-proxy" = socket-proxy;
         "services/sparky-fitness" = sparky-fitness;
         "services/sops" = sops;
