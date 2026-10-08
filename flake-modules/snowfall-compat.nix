@@ -48,6 +48,7 @@ let
         "services/health-push" = health-push;
         "services/it-tools" = it-tools;
         "services/kaneo" = kaneo;
+        "services/kitchenowl" = kitchenowl;
         "services/papra" = papra;
         "services/securo" = securo;
         "services/socket-proxy" = socket-proxy;

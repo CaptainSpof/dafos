@@ -92,6 +92,7 @@ in
         donetick
         glance-agent
         kaneo
+        kitchenowl
         it-tools
         papra
         securo
@@ -124,6 +125,7 @@ in
           donetick.enable = true;
           glance-agent.enable = true;
           kaneo.enable = true;
+          kitchenowl.enable = true;
           sparky-fitness.enable = true;
           backup-dumps.enable = true;
         };

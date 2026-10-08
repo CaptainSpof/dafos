@@ -88,7 +88,7 @@ in
       immich-kiosk = enabled;
       # it-tools moved to dafpi (flake-modules/hosts/dafpi).
       # kaneo moved to dafpi (flake-modules/hosts/dafpi).
-      kitchenowl = enabled;
+      # kitchenowl moved to dafpi (flake-modules/hosts/dafpi).
       lldap = enabled;
       norish = {
         enable = true;

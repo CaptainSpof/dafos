@@ -309,7 +309,9 @@ let
       })
       (
         lib.filterAttrs (
-          _: c: c.traefik.name != null && c.glance.category != null && c.glance.parent == null
+          # Top-level entries with a link, routed or not: kitchenowl's entry is
+          # its backend, the routed frontend being its child.
+          _: c: (c.glance.url or "") != "" && c.glance.category != null && c.glance.parent == null
         ) (peerContainers peer)
       )
   ) peerHosts;
