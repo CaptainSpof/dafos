@@ -61,11 +61,14 @@
   `secrets/dafoltop/glance.yaml`. SIRI's `DirectionRef` is "Retour" for every
   RER A train, so direction is chosen by excluding the other side's
   destinations. Stop ids are IDFM "zones d'arrêt" (`zones-d-arrets` dataset).
-- **A brand-new secret can land empty on its first deploy.** sops-nix ran twice
-  during activation and glance built its env file in between, so `PRIM_API_KEY`
-  was blank and PRIM answered 401. After adding a secret, check
+- **A brand-new secret used to land empty on its first deploy** (`PRIM_API_KEY`,
+  then `GLANCE_AGENT_TOKEN`): sd-switch started glance before sops-nix had
+  written the new file. Every container that reads a sops path now waits for it
+  in `wait-for-sops-secrets` (see `flake-modules/security/sops.nix`). If a value
+  still comes out empty, check
   `/run/user/1000/glance/extra_env/from_file_content` (lengths, not values) and
-  `systemctl --user restart podman-glance` if one is empty.
+  the unit's journal for that script's lines, then
+  `systemctl --user restart podman-glance`.
 - `health.nix` (Accueil) lists only broken containers and host services and
   calls `hide` otherwise. Dynacat's `getResponse` rejects a 2xx non-JSON body as
   status 0 / "invalid response JSON", so that error counts as "up". Test both

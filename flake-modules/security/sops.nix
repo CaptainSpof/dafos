@@ -77,12 +77,76 @@
       # snowfall's extended lib does not carry home-manager's `lib.hm`; the DAG
       # helpers are exposed on `config.lib` instead.
       inherit (config.lib) dag;
+
+      # Every file sops-install-secrets writes, as the paths containers reference.
+      sopsPaths = lib.unique (
+        lib.mapAttrsToList (_: s: toString s.path) config.sops.secrets
+        ++ lib.mapAttrsToList (_: t: toString t.path) config.sops.templates
+      );
+
+      # Blocks until each path exists and is non-empty. A missing or empty file is
+      # read as an empty value: nps's create-extra-files runs `echo "VAR=$(<path)"`,
+      # whose failed substitution does not trip errexit.
+      waitForSecrets = pkgs.writeShellApplication {
+        name = "wait-for-sops-secrets";
+        runtimeInputs = [ pkgs.coreutils ];
+        text = ''
+          timeout=60
+          for p in "$@"; do
+            [ -s "$p" ] && continue
+            echo "waiting for sops-nix to write $p"
+            until [ -s "$p" ]; do
+              if [ "$SECONDS" -ge "$timeout" ]; then
+                echo "$p still missing or empty after ''${timeout}s; is sops-nix.service failing?" >&2
+                exit 1
+              fi
+              sleep 1
+            done
+          done
+        '';
+      };
     in
     {
       options.dafos.services.sops = with types; {
         enable = opt bool true "Whether to enable sops.";
         defaultSopsFile = opt path null "Default sops file.";
         sshKeyPaths = opt (listOf path) [ ] "SSH Key paths to use.";
+      };
+
+      # The `After=sops-nix.service` drop-in below only orders jobs that are queued
+      # together, which holds at boot but not on a switch. There, home-manager's
+      # sd-switch starts each container in its own D-Bus call, the podman-* ones
+      # before sops-nix.service (alphabetical), so a container whose secret is new
+      # finds no sops-nix job to wait for, starts at once and gets an empty value;
+      # the `sops-nix` activation step that restarts sops-nix runs after sd-switch.
+      # Hit 2026-10-07/08 by glance (dafoltop), glance-agent and kitchenowl (dafpi).
+      #
+      # So every container that reads a sops path (extraEnv.fromFile, a volume
+      # source) first waits for those files. It waits rather than fails: a start
+      # job still activating holds its `Requires=` dependents back, a failed one
+      # fails them for good. nps's own ExecStartPre (create-extra-files) comes
+      # after, hence `mkBefore`.
+      options.services.podman.containers = lib.mkOption {
+        type = types.attrsOf (
+          types.submodule (
+            { config, ... }:
+            let
+              referenced =
+                lib.mapAttrsToList (_: v: toString v.fromFile) (
+                  lib.filterAttrs (_: v: lib.isAttrs v && (v.fromFile or null) != null) (config.extraEnv or { })
+                )
+                ++ map (v: lib.head (lib.splitString ":" v)) config.volumes;
+              secrets = lib.unique (lib.filter (p: lib.elem p sopsPaths) referenced);
+            in
+            {
+              config = mkIf (cfg.enable && secrets != [ ]) {
+                extraConfig.Service.ExecStartPre = lib.mkBefore [
+                  "${lib.getExe waitForSecrets} ${lib.escapeShellArgs secrets}"
+                ];
+              };
+            }
+          )
+        );
       };
 
       config = mkIf cfg.enable {
@@ -184,7 +248,8 @@
         # `After=` only, not `Wants=`: a oneshot that has finished is inactive, and
         # `Wants=` would re-run the decryption on every later container restart.
         # sd-switch only reads each unit's own `.service.d`, so adding this restarts
-        # nothing on a switch; it takes effect from the next boot.
+        # nothing on a switch; it takes effect from the next boot. It does not cover
+        # switches at all: see the wait-for-sops-secrets ExecStartPre above.
         xdg.configFile."systemd/user/podman-.service.d/10-after-sops-nix.conf".text = ''
           [Unit]
           After=sops-nix.service

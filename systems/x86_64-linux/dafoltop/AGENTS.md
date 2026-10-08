@@ -121,6 +121,9 @@ FIDECO dual-bay dock:
   minutes. Test readiness changes under the unit's own restrictions
   (`systemd-run -p RestrictAddressFamilies=…`).
 - Every `podman-*` user unit is ordered after `sops-nix.service` by a prefix
-  drop-in (`podman-.service.d`, in the home sops module), because containers
-  reading secrets raced it at boot. sd-switch does not see prefix drop-ins, so a
-  switch never restarts containers because of it.
+  drop-in (`podman-.service.d`, in `flake-modules/security/sops.nix`), because
+  containers reading secrets raced it at boot. sd-switch does not see prefix
+  drop-ins, so a switch never restarts containers because of it. That ordering
+  does nothing on a switch (sd-switch queues each unit separately), so each
+  container that reads a sops path also waits for its files in a first
+  `ExecStartPre` (`wait-for-sops-secrets`, 60 s, then fails).

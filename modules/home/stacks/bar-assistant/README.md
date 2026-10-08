@@ -212,4 +212,7 @@ systemctl --user start podman-bar-assistant podman-bar-assistant-salt-rim
 ```
 
 This is a first-activation race only — the secret exists from then on, and no
-other sops-consuming stack on dafoltop has hit it across a month of boots.
+other sops-consuming stack on dafoltop has hit it across a month of boots. Since
+2026-10-08 containers wait for their sops files before `create-extra-files` runs
+(`wait-for-sops-secrets` in `flake-modules/security/sops.nix`), so this should
+no longer happen.
