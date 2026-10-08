@@ -2,6 +2,7 @@
   lib,
   config,
   inputs,
+  osConfig,
   namespace,
   ...
 }:
@@ -73,23 +74,32 @@ let
   # the same status checkmark. The check goes to the port Traefik proxies to
   # (see the `*-nix` routers in ../traefik) rather than the public hostname,
   # so a green tick means the service is up, not merely that Traefik is.
+  # A service on another host gives its `url` (and `checkUrl`) instead.
   mkSite =
     {
       title,
-      port,
       icon,
+      port ? null,
       subDomain ? null,
+      url ? null,
+      checkUrl ? url,
     }:
     let
       internal = "http://host.containers.internal:${toString port}";
     in
-    {
-      inherit title icon;
-      # Status-only services have no public route. Their link only resolves
-      # from inside the glance container.
-      url = if subDomain != null then "https://${subDomain}.${domain}" else internal;
-      check-url = internal;
-    };
+    if url != null then
+      {
+        inherit title icon url;
+        check-url = checkUrl;
+      }
+    else
+      {
+        inherit title icon;
+        # Status-only services have no public route. Their link only resolves
+        # from inside the glance container.
+        url = if subDomain != null then "https://${subDomain}.${domain}" else internal;
+        check-url = internal;
+      };
 
   # Glance's own categories, not `dashboard.category`: that one also feeds
   # Homepage, and nps's generic buckets ("General" holds ten unrelated apps)
@@ -193,9 +203,24 @@ let
       ];
     }
     {
+      title = "Supervision";
+      icon = "mdi:monitor-eye";
+      page = "monitoring";
+      containers = [ "dozzle" ];
+      sites = [
+        {
+          # Native on dafpi, behind its Traefik (traefik hostRoutes).
+          title = "Gatus";
+          url = "https://gatus.${domain}";
+          checkUrl = "https://gatus.${domain}/health";
+          icon = "di:gatus";
+        }
+      ];
+    }
+    {
       title = "Infra & sécurité";
       icon = "mdi:shield-lock";
-      page = "serveur";
+      page = "monitoring";
       containers = [
         "traefik"
         "authelia"
@@ -348,12 +373,24 @@ let
         sock-path = config.nps.stacks.socket-proxy.address;
       }
     )
-    ++ lib.optional (cat.sites or [ ] != [ ] || peerSitesIn cat != [ ]) {
-      type = "monitor";
-      hide-header = true;
-      cache = "1m";
-      sites = map mkSite (cat.sites or [ ]) ++ peerSitesIn cat;
-    };
+    ++ lib.optional (cat.sites or [ ] != [ ] || peerSitesIn cat != [ ]) (
+      {
+        type = "monitor";
+        cache = "1m";
+        sites = map mkSite (cat.sites or [ ]) ++ peerSitesIn cat;
+      }
+      # The category's header, when no local container widget carries it (all
+      # of "Outils" moved to dafpi).
+      // (
+        if members != { } then
+          { hide-header = true; }
+        else
+          {
+            inherit (cat) title;
+            title-icon = cat.icon;
+          }
+      )
+    );
 
   widgetsFor =
     page:
@@ -394,7 +431,8 @@ in
       { "prim/api-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance.yaml"; }
       # Shared with the agents' hosts (flake-modules/services/glance-agent.nix).
       (lib.mkIf (agentPeers != [ ]) {
-        "glance-agent/token".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance-agent.yaml";
+        # Same path value as the agent aspect declares it with (one definition).
+        "glance-agent/token".sopsFile = inputs.self + "/secrets/dafoltop/glance-agent.yaml";
       })
     ];
 
@@ -500,6 +538,11 @@ in
           .rer-hurry .rer-status { color: hsl(38, 85%, 60%); }
           .rer-missed { border-left-color: var(--color-negative); opacity: 0.45; }
           .rer-missed .rer-status { color: var(--color-negative); }
+
+          /* Host temperatures (temperatures.nix), same palette as the RER rows. */
+          .temp-ok { color: hsl(135, 45%, 50%); }
+          .temp-warm { color: hsl(38, 85%, 60%); }
+          .temp-hot { color: var(--color-negative); }
           .rer-cancelled { opacity: 0.45; }
           /* Spare rows wait hidden until rer-ticker.js promotes them; the
              list's flex rows would otherwise override [hidden]. */
@@ -846,16 +889,16 @@ in
           };
         };
 
-        settings.pages.p4-serveur = {
-          name = "Serveur";
-          slug = "serveur";
+        settings.pages.p4-monitoring = {
+          name = "Monitoring";
+          slug = "monitoring";
           columns.left = {
             rank = 500;
             size = "small";
             widgets = [
               {
                 type = "server-stats";
-                title = "Serveur";
+                title = "Hôtes";
                 servers = [
                   {
                     type = "local";
@@ -893,12 +936,29 @@ in
                   token = "\${GLANCE_AGENT_TOKEN}";
                 }) agentPeers;
               }
+              (liveWidget (
+                import ./temperatures.nix {
+                  inherit lib;
+                  hosts =
+                    lib.optional (config.services.podman.containers ? glance-agent) {
+                      name = osConfig.networking.hostName;
+                      url = config.services.podman.containers.glance-agent.traefik.serviceUrl;
+                    }
+                    ++ map (peer: {
+                      name = peer;
+                      url = (peerContainers peer).glance-agent.traefik.serviceUrl;
+                    }) agentPeers;
+                }
+              ))
             ];
           };
           columns.main = {
             rank = 1000;
             size = "full";
-            widgets = widgetsFor "serveur";
+            widgets = [
+              (liveWidget (import ./gatus.nix { url = "https://gatus.${domain}"; }))
+            ]
+            ++ widgetsFor "monitoring";
           };
         };
       };

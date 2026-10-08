@@ -11,6 +11,12 @@
   (`flake-modules/services/glance-agent.nix`, `type: remote`); its token reaches
   Dynacat as `GLANCE_AGENT_TOKEN`, which must exist in the container or the
   whole config is refused.
+- **Monitoring page** (`p4-monitoring`): server-stats and `temperatures.nix`
+  read the Glance agents (dafoltop's own too), `gatus.nix` sums up gatus on
+  dafpi (`pageSize=1` keeps the latest result per endpoint), then the
+  Supervision and Infra categories. In a custom-api widget with subrequests, a
+  failing main request errors the whole widget. A category whose containers all
+  moved away keeps its title on its monitor widget.
 - **A docker-containers widget needs `category`.** Glance lists every container
   on the socket and filters on it; without it each widget shows the whole host,
   databases included. The per-container overrides must carry the same category.

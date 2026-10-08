@@ -85,6 +85,8 @@ in
         enable = true;
         engine = "dynacat";
       };
+      # This host's temperature for the dashboard's Températures widget.
+      glance-agent = enabled;
       immich-kiosk = enabled;
       # it-tools moved to dafpi (flake-modules/hosts/dafpi).
       # kaneo moved to dafpi (flake-modules/hosts/dafpi).
