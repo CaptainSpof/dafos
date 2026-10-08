@@ -112,12 +112,20 @@
             };
             # What the hub itself gets (nps's dozzle module): read-only, and
             # no exec, so the agent cannot run commands whatever it is asked.
-            socketProxyPermissions.GET = with config.nps.stacks.socket-proxy.sections; [
-              containers
-              images
-              info
-              events
-            ];
+            # Plus the API handshake its Docker client does first (HEAD then
+            # GET /_ping, /version), which the hub's remote-host mode skips: the
+            # proxy refused it and the agent exited "Forbidden".
+            socketProxyPermissions = with config.nps.stacks.socket-proxy.sections; {
+              GET = [
+                containers
+                images
+                info
+                events
+                ping
+                version
+              ];
+              HEAD = [ ping ];
+            };
           };
         })
       ];
