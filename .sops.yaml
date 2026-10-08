@@ -23,7 +23,7 @@ creation_rules:
   # stats with it, dafoltop's dashboard reads them. The apps moving to dafpi:
   # the app reads them there, dafoltop's Authelia hashes their OIDC client
   # secret (authelia-peers). Servers only: the laptops stay out.
-  - path_regex: secrets/dafoltop/(cloudflare|glance-agent|papra|donetick|kaneo|kitchenowl|norish|securo|sparkyfitness)\.yaml$
+  - path_regex: secrets/dafoltop/(bar-assistant|cloudflare|glance-agent|papra|donetick|kaneo|kitchenowl|norish|securo|sparkyfitness)\.yaml$
     key_groups:
       - age:
           - *admin_daf

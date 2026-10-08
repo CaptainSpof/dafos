@@ -89,6 +89,8 @@ in
     home-manager.users.daf = {
       imports = with homeManager; [
         backup-dumps
+        bar-assistant
+        bar-assistant-stack
         donetick
         glance-agent
         kaneo
@@ -127,6 +129,7 @@ in
           glance-agent.enable = true;
           kaneo.enable = true;
           kitchenowl.enable = true;
+          bar-assistant.enable = true;
           norish = {
             enable = true;
             # dafoltop's Ollama, over the LAN (its firewall lets dafpi alone

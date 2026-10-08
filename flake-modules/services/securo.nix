@@ -1,24 +1,10 @@
 # Securo (local nps stack, modules/home/stacks/securo): personal finances,
 # OIDC through Authelia, private (bank data). Runs on dafpi: its OIDC client
 # and lldap group are served by dafoltop's Authelia/lldap through
-# authelia-peers.
-{ inputs, lib, ... }:
-let
-  stackFile = inputs.self + "/modules/home/stacks/securo/default.nix";
-in
+# authelia-peers. A pure dendritic host also imports `securo-stack`
+# (./local-stacks.nix).
+{ inputs, ... }:
 {
-  # The stack itself stays under modules/home/stacks, where Snowfall loads it
-  # on the legacy hosts and the integration tests find it. A pure dendritic
-  # host imports it through this aspect; legacy hosts must not (it would be
-  # declared twice).
-  #
-  # The stack builds options from `inputs`, which Snowfall passes as a
-  # special arg; here it would come from `_module.args`, which depends on the
-  # config those options belong to (infinite recursion). Hand it the flake's.
-  flake.modules.homeManager.securo-stack = lib.setDefaultModuleLocation stackFile (
-    args: import stackFile (args // { inherit inputs; })
-  );
-
   flake.modules.homeManager.securo =
     { config, lib, ... }:
     let

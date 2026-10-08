@@ -85,6 +85,15 @@ in
         '';
       };
 
+      issuerUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "https://auth.example.com";
+        description = ''
+          Authelia's URL. Null means the authelia container of this
+          configuration; set it when Authelia runs on another host.
+        '';
+      };
       inherit ((import "${inputs.nix-podman-stacks}/modules/authelia/options.nix" lib)) clientSecretFile;
       clientSecretHash = (import "${inputs.nix-podman-stacks}/modules/authelia/options.nix" lib).derivableClientSecretHash cfg.oidc.clientSecretFile;
 
@@ -173,7 +182,11 @@ in
         // lib.optionalAttrs cfg.oidc.enable {
           # The API does the token exchange and the userinfo call server-side,
           # so it reaches Authelia the same way a browser would.
-          AUTHELIA_BASE_URL = config.nps.containers.authelia.traefik.serviceUrl;
+          AUTHELIA_BASE_URL =
+            if cfg.oidc.issuerUrl != null then
+              cfg.oidc.issuerUrl
+            else
+              config.nps.containers.authelia.traefik.serviceUrl;
           AUTHELIA_CLIENT_ID = name;
           AUTHELIA_CLIENT_SECRET.fromFile = cfg.oidc.clientSecretFile;
           AUTHELIA_REDIRECT_URI = "${cfg.containers.${saltRimName}.traefik.serviceUrl}/oauth/callback";

@@ -54,7 +54,7 @@ in
       # (flake-modules/services/authelia-peers.nix).
       authelia-peers.peers = [ "dafpi" ];
       backup-dumps = enabled;
-      bar-assistant = enabled;
+      # bar-assistant moved to dafpi (flake-modules/hosts/dafpi).
       bookorbit = enabled;
       grimmory = enabled;
       calibre = enabled;

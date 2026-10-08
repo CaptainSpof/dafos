@@ -18,13 +18,12 @@ dark room.
 ## Services
 
 home-assistant, ollama (local LLM, also serving norish on dafpi), immich +
-immich-kiosk, authelia, bar-assistant, bookorbit, traefik, lldap, glance,
-calibre, grimmory, shelfmark, spliit, streaming,
-everything-presence-zone-configurator.
+immich-kiosk, authelia, bookorbit, traefik, lldap, glance, calibre, grimmory,
+shelfmark, spliit, streaming, everything-presence-zone-configurator.
 
 Moved to dafpi (2026-10-07/08), relayed by this host's Traefik and served by its
 Authelia/lldap: it-tools, papra, donetick, kaneo, sparky-fitness, securo,
-kitchenowl, norish. reactive-resume was removed (unused).
+kitchenowl, norish, bar-assistant. reactive-resume was removed (unused).
 
 Most are home-manager nps stacks rather than NixOS services — see
 [../../../modules/home/services/AGENTS.md](../../../modules/home/services/AGENTS.md)

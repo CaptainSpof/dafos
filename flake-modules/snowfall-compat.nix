@@ -43,6 +43,7 @@ let
         # New aspect, no legacy module behind it: the key only places it.
         "services/authelia-peers" = authelia-peers;
         "services/backup-dumps" = backup-dumps;
+        "services/bar-assistant" = bar-assistant;
         "services/donetick" = donetick;
         "services/dozzle" = dozzle;
         "services/glance-agent" = glance-agent;
