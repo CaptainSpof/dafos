@@ -90,7 +90,7 @@ nix develop
 Secrets live under `secrets/` as SOPS-encrypted YAML, with rules in `.sops.yaml`. With your age / GPG key set up:
 
 ```bash
-sops secrets/daf/default.yaml
+sops secrets/daf/github.yaml
 ```
 
 ## Formatting

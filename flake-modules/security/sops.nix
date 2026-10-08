@@ -51,7 +51,7 @@
         };
 
         # Declare secrets where this module is enabled, e.g.:
-        #   sops.secrets."my_secret".sopsFile = inputs.self + "/secrets/daf/default.yaml";
+        #   sops.secrets."my_secret".sopsFile = inputs.self + "/secrets/daf/<name>.yaml";
       };
     };
 
