@@ -27,6 +27,13 @@ in
     443
   ];
 
+  # norish (on dafpi) uses this host's Ollama for its 7B model, which dafpi
+  # cannot load without resetting. Ollama has no authentication: let dafpi's
+  # LAN address alone in.
+  networking.firewall.extraCommands = ''
+    iptables -w -A nixos-fw -p tcp -s 192.168.0.15 --dport 11434 -j nixos-fw-accept
+  '';
+
   # we don't need no education
   documentation.enable = false;
   documentation.man.cache.enable = false;
@@ -148,12 +155,13 @@ in
       ollama = {
         enable = true;
         # Bound wide (not 127.0.0.1) so rootless containers (Dynacat's health
-        # check) reach it via host.containers.internal; the firewall keeps it to
-        # podman+ only. norish and its 7B model moved to dafpi.
+        # check) reach it via host.containers.internal, and dafpi's norish over
+        # the LAN; the firewall keeps it to podman+ and dafpi only.
         host = "0.0.0.0";
         openFirewallForPodman = true;
         models = [
           "qwen2.5:3b" # Home Assistant notification blurbs
+          "qwen2.5:7b" # norish AI on dafpi (needs stricter JSON-schema adherence)
         ];
       };
       immich = enabled;

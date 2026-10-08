@@ -111,3 +111,12 @@ qemu-user on dafbox.
 - **Resolve through blocky only** (`nameservers` in `./default.nix`): with the
   public resolvers next to it, resolved sometimes sent `*.daftdaf.dev` to the
   Freebox, i.e. to dafoltop.
+
+## Hard resets under a large model load (2026-10-08)
+
+Loading `qwen2.5:7b` in Ollama (4 GB rearranged in RAM at once, read off the
+NVMe) reset the board twice, with nothing in the journal: once on the old
+5 V/2 A charger, once on the 5 V/4 A supply that replaced it. Full-CPU
+inference that did not load a model (212 s on 8 threads) held. Not resolved:
+no LLM runs here, norish uses dafoltop's Ollama over the LAN. On this SoC an
+LLM needs 4 threads (the A76 cores): 0.4 tokens/s with 8, 3.4 with 4.

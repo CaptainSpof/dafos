@@ -15,7 +15,6 @@ in
       locale
       networking
       nix
-      ollama
       openssh
       podman
       sops
@@ -48,15 +47,6 @@ in
           # the Free /64: see the networkd token in ./hardware.nix.
           hostAddress6 = "2a01:e0a:b6c:4b90::15";
           peers = [ "dafpi" ];
-        };
-        # norish's AI (recipe enrichment): the 7B model lives here so dafoltop
-        # never loads it. Bound wide for the rootless norish container
-        # (host.containers.internal), firewalled to podman+ only.
-        ollama = {
-          enable = true;
-          host = "0.0.0.0";
-          openFirewallForPodman = true;
-          models = [ "qwen2.5:7b" ];
         };
         openssh.enable = true;
         tailscale.enable = true;
@@ -139,7 +129,14 @@ in
           kitchenowl.enable = true;
           norish = {
             enable = true;
-            ai.enable = true;
+            # dafoltop's Ollama, over the LAN (its firewall lets dafpi alone
+            # in): loading the 7B here hard-reset the board twice on
+            # 2026-10-08 (see ./README.md). A seed only: the live value is
+            # norish's server_config row.
+            ai = {
+              enable = true;
+              endpoint = "http://192.168.0.10:11434";
+            };
           };
           sparky-fitness.enable = true;
           backup-dumps.enable = true;
