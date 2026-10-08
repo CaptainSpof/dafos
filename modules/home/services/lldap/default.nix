@@ -84,7 +84,6 @@ let
         kitchenowl.oidc.userGroup
         norish.oidc.userGroup
         papra.oidc.userGroup
-        reactive-resume.oidc.userGroup
         qbittorrent.qui.oidc.userGroup
         securo.oidc.userGroup
         sparky-fitness.oidc.userGroup

@@ -181,7 +181,6 @@ let
         "securo"
         "spliit"
         "papra"
-        "reactive-resume"
       ];
     }
     {
@@ -253,7 +252,6 @@ let
     qbittorrent = "Client BitTorrent";
     qui = "Interface qBittorrent";
     radarr = "Films";
-    reactive-resume = "CV";
     securo = "Finances personnelles";
     seerr = "Demandes de films et séries";
     shelfmark = "Téléchargement de livres";

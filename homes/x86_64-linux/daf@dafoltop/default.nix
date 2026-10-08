@@ -92,7 +92,6 @@ in
       lldap = enabled;
       # norish moved to dafpi (flake-modules/hosts/dafpi), with its AI model.
       # papra moved to dafpi (flake-modules/hosts/dafpi).
-      reactive-resume = enabled;
       # securo moved to dafpi (flake-modules/hosts/dafpi).
       shelfmark = enabled;
       # sparky-fitness moved to dafpi (flake-modules/hosts/dafpi).
