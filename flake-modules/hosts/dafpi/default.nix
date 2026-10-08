@@ -85,6 +85,11 @@ in
       80
       443
     ];
+    # The Dozzle agent (dozzle aspect): whoever reaches it reads every log,
+    # so dafoltop's hub alone gets in.
+    networking.firewall.extraCommands = ''
+      iptables -w -A nixos-fw -p tcp -s 192.168.0.10 --dport 7007 -j nixos-fw-accept
+    '';
 
     home-manager.users.daf = {
       imports = with homeManager; [
@@ -92,6 +97,7 @@ in
         bar-assistant
         bar-assistant-stack
         donetick
+        dozzle
         glance-agent
         health-push
         kaneo
@@ -125,6 +131,8 @@ in
           # This host's containers, units and disk, as gatus external
           # endpoints (group dafpi), like dafoltop's.
           health-push.enable = true;
+          # Logs for dafoltop's Dozzle (its firewall rule is above).
+          dozzle.agent.enable = true;
           it-tools.enable = true;
           papra.enable = true;
           securo = {

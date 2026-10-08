@@ -61,7 +61,11 @@ in
       crowdsec = enabled;
       socket-proxy = enabled;
       # Live container logs + crash alerts, admins only (flake-modules/services/dozzle.nix).
-      dozzle = enabled;
+      dozzle = {
+        enable = true;
+        # dafpi's containers, through its Dozzle agent.
+        remoteAgents = [ "192.168.0.15:7007" ];
+      };
       # Push containers / storage / failed-unit state to gatus on dafpi every
       # 5 min (flake-modules/services/health-push.nix).
       health-push = {
