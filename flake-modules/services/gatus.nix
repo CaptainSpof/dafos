@@ -16,6 +16,19 @@
       haWebhook = "http://${dafoltopAddress}:8123/api/webhook/${dafoltop.dafos.services.alerting.webhookId}";
 
       alertHA = [ { type = "custom"; } ];
+
+      # Hosts pushing their health (health-push aspect).
+      healthHosts = [
+        "dafoltop"
+        "dafpi"
+      ];
+
+      # The apps this host serves itself, picked like the dashboard picks a
+      # peer's apps (modules/home/services/glance): top-level entries with a
+      # link. An app moved here is probed without listing it.
+      localApps = lib.filterAttrs (
+        _: c: (c.glance.url or "") != "" && c.glance.category != null && c.glance.parent == null
+      ) (config.home-manager.users.daf.services.podman.containers or { });
       alertNtfy = [ { type = "ntfy"; } ];
 
       https =
@@ -95,20 +108,22 @@
             };
           };
 
-          # Pushed by dafoltop every 5 minutes (health-push aspect): states it
+          # Pushed by each host every 5 minutes (health-push aspect): states it
           # still answers through, but nothing else alerts on. The heartbeat
-          # turns a silence of 15 minutes into a failure too.
-          external-endpoints =
+          # turns a silence of 15 minutes into a failure too (meaningless for
+          # dafpi itself, whose silence means gatus is down too).
+          external-endpoints = lib.concatMap (
+            host:
             lib.mapAttrsToList
               (name: description: {
                 inherit name;
-                group = "dafoltop";
+                group = host;
                 token = "\${HEALTH_TOKEN}";
                 heartbeat.interval = "15m";
                 alerts = [
                   {
                     type = "custom";
-                    description = "${description} (détail : http://dafpi:8080)";
+                    description = "${description} (détail : https://gatus.${domain})";
                   }
                 ];
               })
@@ -116,7 +131,8 @@
                 conteneurs = "un conteneur attendu ne tourne pas";
                 stockage = "disque plein ou dock USB non monté";
                 services = "un service systemd est en échec";
-              };
+              }
+          ) healthHosts;
 
           endpoints = [
             # dafoltop itself: if it is down, so is Home Assistant.
@@ -175,20 +191,19 @@
                 "[BODY] == Healthy"
               ];
             })
-            # Served by dafpi itself (its Traefik, through its own blocky).
-            (https {
-              name = "IT-Tools";
-              subDomain = "it-tools";
+          ]
+          # Served by this host itself (its Traefik, through its own blocky);
+          # redirects (a login page) are followed.
+          ++ lib.mapAttrsToList (
+            _: c:
+            https {
+              inherit (c.glance) name;
+              subDomain = lib.removeSuffix ".${domain}" (lib.removePrefix "https://" c.glance.url);
               path = "/";
               conditions = [ "[STATUS] == 200" ];
-            })
-            (https {
-              name = "Papra";
-              subDomain = "papra";
-              path = "/";
-              conditions = [ "[STATUS] == 200" ];
-            })
-          ];
+              group = config.networking.hostName;
+            }
+          ) localApps;
         };
       };
     };

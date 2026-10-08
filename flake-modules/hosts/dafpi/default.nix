@@ -93,6 +93,7 @@ in
         bar-assistant-stack
         donetick
         glance-agent
+        health-push
         kaneo
         kitchenowl
         it-tools
@@ -118,7 +119,12 @@ in
             # No authelia stack here; the dashboard stays on the private
             # (LAN/tailnet) gate only.
             dashboardAuth = false;
+            # gatus (native, :8080, firewall open) behind the private gate.
+            hostRoutes.gatus.port = 8080;
           };
+          # This host's containers, units and disk, as gatus external
+          # endpoints (group dafpi), like dafoltop's.
+          health-push.enable = true;
           it-tools.enable = true;
           papra.enable = true;
           securo = {

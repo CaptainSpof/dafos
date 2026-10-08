@@ -112,6 +112,21 @@
           opt (types.attrsOf types.str) { }
             "Other hosts running their own rootless Traefik, by name -> LAN address: every hostname they route is relayed to them from here.";
 
+        hostRoutes =
+          opt
+            (types.attrsOf (
+              types.submodule {
+                options = {
+                  port =
+                    opt types.port null
+                      "Port the host service listens on (reached as host.containers.internal).";
+                  expose = opt types.bool false "Whether the route is reachable from outside the LAN/tailnet.";
+                };
+              }
+            ))
+            { }
+            "Native services of this host (not containers) to route, keyed by subdomain. The port must be open to the podman networks.";
+
         routedHosts = mkOption {
           type = types.attrsOf (types.submodule { options.expose = opt types.bool false "Public route."; });
           internal = true;
@@ -150,10 +165,10 @@
               inherit (c) expose;
             })
           ) { } (lib.attrValues routed)
-          # Redirect aliases are file routers, not container labels.
-          // lib.mapAttrs' (
-            alias: r: lib.nameValuePair "${alias}.${cfg.base-url}" { inherit (r) expose; }
-          ) cfg.redirects;
+          # Redirect aliases and host routes are file routers, not container labels.
+          // lib.mapAttrs' (alias: r: lib.nameValuePair "${alias}.${cfg.base-url}" { inherit (r) expose; }) (
+            cfg.redirects // cfg.hostRoutes
+          );
 
         sops.secrets."cloudflare-api-token" = {
           sopsFile = inputs.self + "/secrets/dafoltop/cloudflare.yaml";
@@ -237,6 +252,16 @@
                   tls.certResolver = "letsencrypt"; # NPS default resolver name
                 }
               ) cfg.redirects
+              // lib.mapAttrs' (
+                sub: r:
+                lib.nameValuePair "host-${sub}" {
+                  rule = "Host(`${sub}.${cfg.base-url}`)";
+                  service = "host-${sub}";
+                  inherit entryPoints;
+                  middlewares = [ (if r.expose then "public@file" else "private@file") ];
+                  tls.certResolver = "letsencrypt"; # NPS default resolver name
+                }
+              ) cfg.hostRoutes
               // peerRouters
             );
 
@@ -310,6 +335,12 @@
                   ];
                 };
               }
+              // lib.mapAttrs' (
+                sub: r:
+                lib.nameValuePair "host-${sub}" {
+                  loadBalancer.servers = [ { url = "http://host.containers.internal:${toString r.port}"; } ];
+                }
+              ) cfg.hostRoutes
               // peerServices
             );
 
