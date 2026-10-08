@@ -73,6 +73,17 @@ down.
   sharing one tree has them undoing each other's work. The two copies drift.
   Audiobooks are shared (`/mnt/data/Audio/Audiobooks`), since nothing here
   writes to them.
+- Both libraries are `book_per_folder`: all files in one folder form a single
+  book, whatever their names (the upstream docs claim otherwise; the scanner
+  does not). The mode cannot be changed after creation. The Grimmory copy had
+  flat series folders, which merged 27 books into 11 until they were split on
+  2026-10-08.
+- **Never `mv` a file out of a multi-file book folder.** The watcher matches the
+  inode and moves the _whole book_ to the new folder, then drops the files left
+  behind, along with their per-file reading progress. To split a book, copy the
+  file to a staging directory outside the library folders, `mv` the copy into
+  its own folder (a new inode becomes a new book), then delete the original
+  (only its file row goes).
 - Both containers carry `wants = [ "sops-nix.service" ]`. On a _first_ start,
   `create-extra-files` can otherwise read the secrets before sops-nix has
   written them; postgres then aborts initdb with "superuser password is not
