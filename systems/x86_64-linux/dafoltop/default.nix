@@ -147,13 +147,13 @@ in
       };
       ollama = {
         enable = true;
-        # Bound wide (not 127.0.0.1) so the rootless norish container can reach it
-        # via host.containers.internal; the firewall keeps it to podman+ only.
+        # Bound wide (not 127.0.0.1) so rootless containers (Dynacat's health
+        # check) reach it via host.containers.internal; the firewall keeps it to
+        # podman+ only. norish and its 7B model moved to dafpi.
         host = "0.0.0.0";
         openFirewallForPodman = true;
         models = [
           "qwen2.5:3b" # Home Assistant notification blurbs
-          "qwen2.5:7b" # norish AI (needs stricter JSON-schema adherence)
         ];
       };
       immich = enabled;

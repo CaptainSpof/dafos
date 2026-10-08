@@ -149,7 +149,11 @@
             // lib.genAttrs (hostsOf c) (_: {
               inherit (c) expose;
             })
-          ) { } (lib.attrValues routed);
+          ) { } (lib.attrValues routed)
+          # Redirect aliases are file routers, not container labels.
+          // lib.mapAttrs' (
+            alias: r: lib.nameValuePair "${alias}.${cfg.base-url}" { inherit (r) expose; }
+          ) cfg.redirects;
 
         sops.secrets."cloudflare-api-token" = {
           sopsFile = inputs.self + "/secrets/dafoltop/cloudflare.yaml";

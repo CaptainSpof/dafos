@@ -90,11 +90,7 @@ in
       # kaneo moved to dafpi (flake-modules/hosts/dafpi).
       # kitchenowl moved to dafpi (flake-modules/hosts/dafpi).
       lldap = enabled;
-      norish = {
-        enable = true;
-        # Points at dafoltop's local ollama (see dafos.services.ollama there).
-        ai = enabled;
-      };
+      # norish moved to dafpi (flake-modules/hosts/dafpi), with its AI model.
       # papra moved to dafpi (flake-modules/hosts/dafpi).
       reactive-resume = enabled;
       # securo moved to dafpi (flake-modules/hosts/dafpi).

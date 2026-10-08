@@ -50,6 +50,7 @@ let
         "services/it-tools" = it-tools;
         "services/kaneo" = kaneo;
         "services/kitchenowl" = kitchenowl;
+        "services/norish" = norish;
         "services/papra" = papra;
         "services/securo" = securo;
         "services/socket-proxy" = socket-proxy;
