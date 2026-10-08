@@ -94,6 +94,12 @@
             }
             // lib.optionalAttrs (cfg.remoteAgents != [ ]) {
               DOZZLE_REMOTE_AGENT = lib.concatStringsSep "," cfg.remoteAgents;
+            }
+            # nps reaches this host's podman as a "remote host" (the
+            # socket-proxy), which Dozzle names after the address: label it
+            # with the host name instead (`url|label`).
+            // lib.optionalAttrs config.nps.stacks.dozzle.useSocketProxy {
+              DOZZLE_REMOTE_HOST = lib.mkForce "${config.nps.stacks.socket-proxy.address}|${osConfig.networking.hostName}";
             };
             volumes = mkIf (cfg.remoteAgents != [ ]) certs;
           };
