@@ -63,8 +63,8 @@
   destinations. Stop ids are IDFM "zones d'arrêt" (`zones-d-arrets` dataset).
 - **A brand-new secret used to land empty on its first deploy** (`PRIM_API_KEY`,
   then `GLANCE_AGENT_TOKEN`): sd-switch started glance before sops-nix had
-  written the new file. Every container that reads a sops path now waits for it
-  in `wait-for-sops-secrets` (see `flake-modules/security/sops.nix`). If a value
+  written the new file. Starting a container now runs sops-nix first, and the
+  container checks its files (see `flake-modules/security/sops.nix`). If a value
   still comes out empty, check
   `/run/user/1000/glance/extra_env/from_file_content` (lengths, not values) and
   the unit's journal for that script's lines, then

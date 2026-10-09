@@ -123,7 +123,9 @@ FIDECO dual-bay dock:
 - Every `podman-*` user unit is ordered after `sops-nix.service` by a prefix
   drop-in (`podman-.service.d`, in `flake-modules/security/sops.nix`), because
   containers reading secrets raced it at boot. sd-switch does not see prefix
-  drop-ins, so a switch never restarts containers because of it. That ordering
-  does nothing on a switch (sd-switch queues each unit separately), so each
-  container that reads a sops path also waits for its files in a first
-  `ExecStartPre` (`wait-for-sops-secrets`, 60 s, then fails).
+  drop-ins, so a switch never restarts containers because of it. It is
+  `Wants=` + `After=`: on a switch, sd-switch starts new containers before the
+  `sops-nix` activation step, so `After=` alone ordered against nothing and a
+  new secret came out empty; `Wants=` runs the decryption first. Behind it, each
+  container that reads a sops path checks its files in a first `ExecStartPre`
+  (`wait-for-sops-secrets`, 60 s, then fails) rather than start with empty ones.

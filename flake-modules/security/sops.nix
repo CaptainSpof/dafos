@@ -113,19 +113,20 @@
         sshKeyPaths = opt (listOf path) [ ] "SSH Key paths to use.";
       };
 
-      # The `After=sops-nix.service` drop-in below only orders jobs that are queued
-      # together, which holds at boot but not on a switch. There, home-manager's
-      # sd-switch starts each container in its own D-Bus call, the podman-* ones
-      # before sops-nix.service (alphabetical), so a container whose secret is new
-      # finds no sops-nix job to wait for, starts at once and gets an empty value;
-      # the `sops-nix` activation step that restarts sops-nix runs after sd-switch.
-      # Hit 2026-10-07/08 by glance (dafoltop), glance-agent and kitchenowl (dafpi).
+      # On a switch, home-manager's sd-switch starts each new container in its own
+      # D-Bus call, before the `sops-nix` activation step writes the new secrets,
+      # so a container whose secret was new found no file and nps's
+      # create-extra-files turned it into an empty value. Hit 2026-10-07/08 by
+      # glance (dafoltop), glance-agent and kitchenowl (dafpi). The podman drop-in
+      # below (`Wants=` + `After=sops-nix.service`) runs the decryption first.
       #
-      # So every container that reads a sops path (extraEnv.fromFile, a volume
-      # source) first waits for those files. It waits rather than fails: a start
-      # job still activating holds its `Requires=` dependents back, a failed one
-      # fails them for good. nps's own ExecStartPre (create-extra-files) comes
-      # after, hence `mkBefore`.
+      # This wait is the safety net behind it: every container that reads a sops
+      # path (extraEnv.fromFile, a volume source) checks those files exist and are
+      # non-empty before starting, so a failing sops-nix fails the container
+      # instead of handing it empty secrets. It waits (60 s) rather than fails at
+      # once: a start job still activating holds its `Requires=` dependents back,
+      # a failed one fails them for good. nps's own ExecStartPre
+      # (create-extra-files) comes after, hence `mkBefore`.
       options.services.podman.containers = lib.mkOption {
         type = types.attrsOf (
           types.submodule (
@@ -244,14 +245,21 @@
         # down. authelia, lldap and immich-kiosk read secrets too.
         #
         # A dash-truncated drop-in applies to every `podman-*.service` unit, present
-        # and future, so no list of container names has to be kept in step. It is
-        # `After=` only, not `Wants=`: a oneshot that has finished is inactive, and
-        # `Wants=` would re-run the decryption on every later container restart.
-        # sd-switch only reads each unit's own `.service.d`, so adding this restarts
-        # nothing on a switch; it takes effect from the next boot. It does not cover
-        # switches at all: see the wait-for-sops-secrets ExecStartPre above.
+        # and future, so no list of container names has to be kept in step.
+        #
+        # `Wants=` too, not only `After=`: on a switch, sd-switch starts the new
+        # containers (and waits for them, 2 min by default) before home-manager's
+        # `sops-nix` activation step writes the new secrets, so `After=` alone
+        # orders against nothing and the wait-for-sops-secrets ExecStartPre above
+        # would sit out its 60 s and fail. With `Wants=`, starting a container
+        # starts the decryption first, in the same transaction, from the unit
+        # files sd-switch has just loaded. The cost: sops-nix (a oneshot, inactive
+        # once done) re-runs on every container start, which only rewrites the
+        # same files. sd-switch only reads each unit's own `.service.d`, so
+        # changing this restarts nothing on a switch.
         xdg.configFile."systemd/user/podman-.service.d/10-after-sops-nix.conf".text = ''
           [Unit]
+          Wants=sops-nix.service
           After=sops-nix.service
         '';
       };
