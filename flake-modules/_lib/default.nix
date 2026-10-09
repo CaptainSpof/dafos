@@ -78,6 +78,9 @@ let
       # "dotnet-sdk-6.0.428"
       # "qtwebengine-5.15.19"
       # "olm-3.2.16"
+      # discontinued upstream in favour of Vortex (Windows-only); still
+      # installs Cyberpunk collections natively
+      "nexusmods-app-unfree-0.21.1"
     ];
   };
 

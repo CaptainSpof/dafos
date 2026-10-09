@@ -21,6 +21,9 @@ in
       Whether or not to enable Irony Mod Manager, a mod manager for Paradox
     '';
     lutris.enable = mkBoolOpt false "Whether or not to enable lutris.";
+    nexusmods.enable = mkBoolOpt true ''
+      Whether or not to enable the Nexus Mods App, a mod manager handling Nexus collections
+    '';
     ryubing.enable = mkBoolOpt false "Whether or not to enable ryubing.";
     remote-play.enable = mkBoolOpt true "Whether or not to enable remote-play.";
   };
@@ -40,6 +43,8 @@ in
       ++ lib.optionals cfg.ftl.enable [ slipstream ]
       ++ lib.optionals cfg.irony.enable [ pkgs.${namespace}.irony-mod-manager ]
       ++ lib.optionals cfg.lutris.enable [ lutris ]
+      # unfree variant bundles 7-Zip with RAR support; many mods ship as .rar
+      ++ lib.optionals cfg.nexusmods.enable [ nexusmods-app-unfree ]
       ++ lib.optionals cfg.ryubing.enable [ ryubing ]
       ++ lib.optionals cfg.remote-play.enable [
         sunshine
