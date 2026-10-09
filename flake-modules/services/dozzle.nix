@@ -70,26 +70,71 @@
         (mkIf cfg.enable {
           nps.stacks.dozzle.enable = true;
 
+          # Logs carry secrets (tokens in env dumps, URLs with keys), so only the
+          # lldap admins get in, through Dozzle's own OIDC login against Authelia.
+          # It used to trust the Remote-User header of Authelia's forwardAuth,
+          # but any container on the Traefik network reaches Dozzle directly and
+          # can send that header itself (checked: 401 without it, 200 with it).
+          sops.secrets."dozzle/authelia/client-secret".sopsFile =
+            inputs.self + "/secrets/dafoltop/dozzle.yaml";
+
+          nps.stacks.authelia = {
+            oidc.clients.dozzle = {
+              client_name = "Dozzle";
+              client_secret.toHash = config.sops.secrets."dozzle/authelia/client-secret".path;
+              public = false;
+              authorization_policy = "dozzle";
+              pre_configured_consent_duration = config.nps.stacks.authelia.oidc.defaultConsentDuration;
+              redirect_uris = [
+                "${config.services.podman.containers.dozzle.traefik.serviceUrl}/api/auth/callback"
+              ];
+              scopes = [
+                "openid"
+                "profile"
+                "email"
+                "groups"
+              ];
+            };
+            settings.identity_providers.oidc.authorization_policies.dozzle = {
+              default_policy = "deny";
+              rules = [
+                {
+                  policy = config.nps.stacks.authelia.defaultAllowPolicy;
+                  subject = "group:lldap_admin";
+                }
+              ];
+            };
+          };
+
+          # Dozzle reads roles from the `groups` claim: these two names map to its
+          # `notifications` (alert rules) and `download` roles, the rest of the
+          # groups mean nothing to it. Its docs warn against `groups` because there
+          # every user gets in; here the authorization policy above lets admins
+          # only. No `shell`/`actions`: the socket-proxy refuses them anyway.
+          nps.stacks.lldap.bootstrap = {
+            groups = {
+              dozzle_notifications = { };
+              dozzle_download = { };
+            };
+            users.daf.groups = [
+              "dozzle_notifications"
+              "dozzle_download"
+            ];
+          };
+
           services.podman.containers.dozzle = {
             # Alert rules and destinations live here (UI-only configuration).
             volumeMap.data = "${config.nps.storageBaseDir}/dozzle/data:/data";
 
-            # Logs carry secrets (tokens in env dumps, URLs with keys), so only the
-            # lldap admins get in. Authelia authenticates; Dozzle trusts the
-            # Remote-User/-Email/-Name headers it forwards, which is safe because
-            # the container is reachable only through Traefik.
-            forwardAuth = {
-              enable = true;
-              rules = [
-                {
-                  policy = "one_factor";
-                  subject = [ "group:lldap_admin" ];
-                }
-                { policy = "deny"; }
-              ];
-            };
+            extraEnv.DOZZLE_AUTH_OIDC_CLIENT_SECRET.fromFile =
+              config.sops.secrets."dozzle/authelia/client-secret".path;
             environment = {
-              DOZZLE_AUTH_PROVIDER = "forward-proxy";
+              DOZZLE_AUTH_PROVIDER = "oidc";
+              DOZZLE_AUTH_OIDC_ISSUER = config.nps.containers.authelia.traefik.serviceUrl;
+              DOZZLE_AUTH_OIDC_CLIENT_ID = "dozzle";
+              DOZZLE_AUTH_OIDC_NAME = "Authelia";
+              DOZZLE_AUTH_OIDC_ROLES_CLAIM = "groups";
+              DOZZLE_AUTH_OIDC_SCOPES = "groups";
               DOZZLE_HOSTNAME = osConfig.networking.hostName;
             }
             // lib.optionalAttrs (cfg.remoteAgents != [ ]) {
