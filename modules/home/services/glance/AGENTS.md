@@ -11,15 +11,21 @@
   (`flake-modules/services/glance-agent.nix`, `type: remote`); its token reaches
   Dynacat as `GLANCE_AGENT_TOKEN`, which must exist in the container or the
   whole config is refused.
-- **Monitoring page** (`p4-monitoring`): server-stats and `temperatures.nix`
-  read the Glance agents (dafoltop's own too), `gatus.nix` sums up gatus on
-  dafpi (`pageSize=1` keeps the latest result per endpoint), then the
-  Supervision and Infra categories. In a custom-api widget with subrequests, a
-  failing main request errors the whole widget. A category whose containers all
-  moved away keeps its title on its monitor widget.
+- **Monitoring page** (`p4-monitoring`): server-stats and `temperatures.nix` («
+  État des hôtes »: temperatures plus nearly full disks) read the Glance agents
+  (dafoltop's own too, fed the same `hostDisks` as server-stats), `gatus.nix`
+  sums up gatus on dafpi (`pageSize=1` keeps the latest result per endpoint),
+  then the Supervision and Infra categories. In a custom-api widget with
+  subrequests, a failing main request errors the whole widget. A category whose
+  containers all moved away keeps its title on its monitor widget.
 - **A docker-containers widget needs `category`.** Glance lists every container
   on the socket and filters on it; without it each widget shows the whole host,
   databases included. The per-container overrides must carry the same category.
+- **`oneList` categories** (Photos, Papiers & finances) list their linked local
+  containers in the monitor widget beside the host services and peer apps, in
+  table order, so the category reads as one grid. Their probe goes to
+  `http://<container>:<port>` over traefik-proxy (public routes may want a
+  login); add a path to `checkPaths` when the root needs auth.
 - **Link-less containers stay visible** (flaresolverr, gluetun, ...): their
   status tick is the point. Don't nest them under a parent to save space; a
   child's status only shows in the parent's hover popover.
@@ -47,8 +53,12 @@
 - **Test custom-api templates locally** before deploying: build Dynacat
   (`go build`), run it on the generated config with a local `assets-path` and a
   spare port, and fetch `/api/pages/<slug>/content/`.
-- `football.nix`: ESPN rejects `dates=` ranges with 400 but accepts a month
-  (`YYYYMM`), so the widget fetches the months within three weeks of today.
+- `scoreboard.nix` (football and NBA, `league = "<sport>/<league>"`): ESPN
+  rejects `dates=` ranges with 400 but accepts a month (`YYYYMM`), so the widget
+  fetches the months within three weeks of today.
+- `standings.nix`: ESPN standings live under `apis/v2`, not `apis/site/v2`. NBA
+  entries arrive unordered (sorted on `playoffSeed`); football zones come from
+  `note.description`, NBA ones from the seed.
 - `national-teams.nix`: per-team schedule under ESPN's `all` league, two calls
   (`fixture=true`, `season=<year>`). Team ids come from any international
   league's `/teams` list (France 478, Portugal 482).
@@ -98,6 +108,10 @@
   the only raw HTML Dynacat renders into the page. Widget templates arrive via
   innerHTML, so their `<script>` never runs, though inline `onclick` does (CSP
   allows it). `window.dynacatRefreshWidget(id)` forces a widget refresh.
+- **Monitoring tab alert** (`monitoring-alert.js`): any element with the
+  `dafos-alert` class on the Monitoring page turns its tab red. Widgets add that
+  class to the alerts they render; the script reads the live DOM there and
+  fetches `/api/pages/monitoring/content/` every 2 min elsewhere.
 - **No dollar-brace anywhere in the config**, JS and comments included: Dynacat
   expands each one as an environment variable and refuses the whole config if it
   is unset.

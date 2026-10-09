@@ -1,5 +1,5 @@
-# A Dynacat custom-api widget for one ESPN soccer league: live matches, the
-# five latest results and the five next fixtures.
+# A Dynacat custom-api widget for one ESPN league: live games, the five
+# latest results and the five next fixtures.
 #
 # ESPN's scoreboard returns only the next matchday by default and answers 400
 # to a `dates=YYYYMMDD-YYYYMMDD` range, but accepts a whole month
@@ -9,6 +9,7 @@
 # one and walking them forwards or backwards orders the whole set.
 {
   title,
+  # ESPN's path: "soccer/fra.1", "basketball/nba".
   league,
   # HTML put before the matches; the "open in FotMob" button.
   button ? "",
@@ -16,6 +17,13 @@
 let
   layout = "2006-01-02T15:04Z07:00";
   limit = "5";
+  # A football clock reads "67'"; a basketball one needs its quarter
+  # ("5:32 - 3rd"), which `shortDetail` carries.
+  clock =
+    if builtins.substring 0 7 league == "soccer/" then
+      "status.displayClock"
+    else
+      "status.type.shortDetail";
 in
 {
   type = "custom-api";
@@ -39,7 +47,7 @@ in
           {{ else }}
             <div class="color-highlight size-h3">{{ .String (concat $home ".score") }} – {{ .String (concat $away ".score") }}</div>
             <div class="size-h6 {{ if eq $state "in" }}color-positive{{ end }}">
-              {{ if eq $state "in" }}{{ .String "status.displayClock" }}{{ else }}{{ $local.Format "02/01" }}{{ end }}
+              {{ if eq $state "in" }}{{ .String "${clock}" }}{{ else }}{{ $local.Format "02/01" }}{{ end }}
             </div>
           {{ end }}
         </div>
@@ -52,8 +60,8 @@ in
     {{ $batches := list }}
     {{ $failed := "" }}
     {{ range $months }}
-      {{ $r := newRequest "https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard"
-        | withParameter "limit" "200"
+      {{ $r := newRequest "https://site.api.espn.com/apis/site/v2/sports/${league}/scoreboard"
+        | withParameter "limit" "500"
         | withParameter "dates" .
         | getResponse }}
       {{ if eq $r.Response.StatusCode 200 }}

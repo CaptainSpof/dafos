@@ -49,6 +49,13 @@ let
   fotmobButton = fotmob false;
   fotmobLink = fotmob true;
 
+  # FotMob has no basketball.
+  nbaStandings = linkButton {
+    title = "Ouvrir sur NBA.com";
+    url = "https://www.nba.com/standings";
+    icon = "https://cdn.nba.com/logos/leagues/logo-nba.svg";
+  };
+
   # Dynacat's calendar can show Sonarr/Radarr releases. It reaches them over
   # the shared traefik-proxy network, not their public routes, which sit
   # behind Authelia; `public-url` is only for the links it renders.
@@ -65,9 +72,40 @@ let
 
   # Where host filesystems appear inside the container, for server-stats.
   hostfs = "/hostfs";
-  # An empty directory on /home, the one filesystem with no such directory
-  # already (`/var/empty` covers the root disk).
-  homeStatfsDir = "${config.xdg.stateHome}/glance-statfs";
+
+  # The filesystems server-stats reports, also handed to this host's Glance
+  # agent so the « État des hôtes » widget can warn about a full one. Keys
+  # name the path under `hostfs`. Each source is a directory that holds
+  # nothing worth reading: a bind of `/` would hand the container everything
+  # daf can read, sops age key included.
+  hostDisks = {
+    root = {
+      source = "/var/empty";
+      name = "Système";
+    };
+    # An empty directory on /home, the one filesystem with no such directory
+    # already.
+    home = {
+      source = "${config.xdg.stateHome}/glance-statfs";
+      name = "Home";
+    };
+    # Media library only, and read-only.
+    data = {
+      source = "/mnt/data";
+      name = "Médias";
+    };
+    # Holds only the root-owned 0700 restic repo, unreadable here.
+    backup = {
+      source = "/mnt/backup";
+      name = "Sauvegardes";
+    };
+  };
+
+  # The filesystems server-stats reports, also handed to this host's Glance
+  # agent so the « État des hôtes » widget can warn about a full one. Keys
+  # name the path under `hostfs`. Each source is a directory that holds
+  # nothing worth reading: a bind of `/` would hand the container everything
+  # daf can read, sops age key included.
 
   # Services that run as NixOS services on dafoltop, not as nps containers, so
   # the docker-containers widgets never see them. A monitor widget gives them
@@ -114,8 +152,14 @@ let
       containers = [
         "jellyfin"
         "seerr"
-        "immich-kiosk"
       ];
+    }
+    {
+      title = "Photos";
+      icon = "mdi:image-multiple";
+      page = "medias";
+      containers = [ "immich-kiosk" ];
+      oneList = true;
       sites = [
         {
           title = "Immich";
@@ -137,8 +181,8 @@ let
       ];
     }
     {
-      title = "Téléchargements";
-      icon = "mdi:download";
+      title = "Yahrr";
+      icon = "mdi:pirate";
       page = "medias";
       containers = [
         "sonarr"
@@ -152,16 +196,10 @@ let
       ];
     }
     {
-      title = "Maison & quotidien";
-      icon = "mdi:home";
+      title = "Domotique";
+      icon = "mdi:home-automation";
       page = "services";
-      containers = [
-        "kitchenowl-backend"
-        "norish"
-        "donetick"
-        "bar-assistant-salt-rim"
-        "sparky-fitness-frontend"
-      ];
+      containers = [ ];
       sites = [
         {
           title = "Home Assistant";
@@ -184,6 +222,26 @@ let
       ];
     }
     {
+      title = "Maison & quotidien";
+      icon = "mdi:home";
+      page = "services";
+      containers = [
+        "kitchenowl-backend"
+        "norish"
+        "bar-assistant-salt-rim"
+        "sparky-fitness-frontend"
+      ];
+    }
+    {
+      title = "Organisation";
+      icon = "mdi:checkbox-marked-circle-outline";
+      page = "services";
+      containers = [
+        "donetick"
+        "kaneo-web"
+      ];
+    }
+    {
       title = "Papiers & finances";
       icon = "mdi:wallet";
       page = "services";
@@ -192,15 +250,13 @@ let
         "spliit"
         "papra"
       ];
+      oneList = true;
     }
     {
       title = "Outils";
       icon = "mdi:tools";
       page = "services";
-      containers = [
-        "it-tools"
-        "kaneo-web"
-      ];
+      containers = [ "it-tools" ];
     }
     {
       title = "Supervision";
@@ -322,6 +378,7 @@ let
     peer:
     lib.mapAttrsToList
       (name: c: {
+        inherit name;
         category = categoryOfTop name;
         site = {
           title =
@@ -338,7 +395,10 @@ let
         ) (peerContainers peer)
       )
   ) peerHosts;
-  peerSitesIn = cat: map (a: a.site) (lib.filter (a: a.category == cat.title) peerApps);
+  # Unauthenticated status pages, for apps whose root wants a login.
+  checkPaths.immich-kiosk = "/health";
+
+  peerAppsIn = cat: lib.filter (a: a.category == cat.title) peerApps;
 
   # The peers running a Glance agent (flake-modules/services/glance-agent.nix).
   agentPeers = lib.filter (peer: (peerContainers peer) ? glance-agent) peerHosts;
@@ -347,10 +407,39 @@ let
   # Glance asks the socket for every container and keeps those whose
   # `category` matches the widget's, so both must carry our title; without
   # it each widget lists every container on the host, children included.
+  #
+  # Host services and peer apps go in a monitor widget below it, a separate
+  # grid. A `oneList` category puts its linked local containers in that
+  # monitor too, so the whole category reads as one list in table order
+  # (Immich beside its kiosk, Spliit between the dafpi apps). Their children
+  # leave the page with them; « Services en panne » still watches those.
   categoryWidgets =
     cat:
     let
-      members = lib.filterAttrs (name: _: categoryOf name == cat.title) shown;
+      inCategory = lib.filterAttrs (name: _: categoryOf name == cat.title) shown;
+      linked = lib.filterAttrs (
+        _: c: (cat.oneList or false) && c.glance.parent == null && (c.glance.url or "") != ""
+      ) inCategory;
+      linkedIds = lib.catAttrs "id" (map (c: c.glance) (lib.attrValues linked));
+      members = lib.filterAttrs (
+        name: c: !(linked ? ${name}) && !(lib.elem (c.glance.parent or null) linkedIds)
+      ) inCategory;
+
+      rank = name: lib.lists.findFirstIndex (n: n == name) 1000 cat.containers;
+      apps = lib.sort (a: b: rank a.name < rank b.name) (
+        peerAppsIn cat
+        ++ lib.mapAttrsToList (name: c: {
+          inherit name;
+          site = {
+            inherit (c.glance) icon url;
+            title = c.glance.name;
+            # Over the shared traefik-proxy network: the public route can
+            # sit behind a login (the kiosk's answers 401).
+            check-url = "http://${name}:${toString c.port}${checkPaths.${name} or ""}";
+          };
+        }) linked
+      );
+      sites = map mkSite (cat.sites or [ ]) ++ map (a: a.site) apps;
     in
     lib.optional (members != { }) (
       {
@@ -373,11 +462,11 @@ let
         sock-path = config.nps.stacks.socket-proxy.address;
       }
     )
-    ++ lib.optional (cat.sites or [ ] != [ ] || peerSitesIn cat != [ ]) (
+    ++ lib.optional (sites != [ ]) (
       {
         type = "monitor";
         cache = "1m";
-        sites = map mkSite (cat.sites or [ ]) ++ peerSitesIn cat;
+        inherit sites;
       }
       # The category's header, when no local container widget carries it (all
       # of "Outils" moved to dafpi).
@@ -417,6 +506,9 @@ in
     # Created at activation, before the container restarts; a missing bind
     # source would keep glance from starting.
     xdg.stateFile."glance-statfs/.keep".text = "";
+    ${namespace}.services.glance-agent.mountpoints =
+      lib.mkIf config.${namespace}.services.glance-agent.enable
+        hostDisks;
 
     # Copied from each app's config.xml, where Sonarr/Radarr generate them.
     # Regenerating a key in the app means updating it here too.
@@ -472,10 +564,7 @@ in
 
             # server-stats statfs()es each mountpoint path, and any directory
             # on a filesystem reports that filesystem's usage. Without these the
-            # container only sees its own overlay. Mount a directory that holds
-            # nothing worth reading rather than the filesystem root: a bind of
-            # `/` would hand the container everything daf can read, sops age
-            # key included.
+            # container only sees its own overlay (see `hostDisks`).
           }
           // lib.optionalAttrs (cfg.engine == "dynacat") {
             # Dynacat reads the same config format, and the `glance.*`
@@ -486,28 +575,36 @@ in
             volumeMap.settings = lib.mkForce "${config.nps.stacks.glance.settings}:/app/config/dynacat.yml";
           }
           // {
-            volumes = [
-              "/var/empty:${hostfs}/root:ro"
-              "${homeStatfsDir}:${hostfs}/home:ro"
-              # Media library only, and read-only.
-              "/mnt/data:${hostfs}/data:ro"
-              # Holds only the root-owned 0700 restic repo, unreadable here.
-              "/mnt/backup:${hostfs}/backup:ro"
-            ];
+            volumes = lib.mapAttrsToList (key: d: "${d.source}:${hostfs}/${key}:ro") hostDisks;
           };
         };
 
         settings.branding = {
           logo-text = "dafos";
           # The footer is the only place Dynacat renders raw HTML straight
-          # into the page, so it carries the RER countdown script (widget
-          # templates arrive via innerHTML, where a <script> never runs).
-          # `.footer` itself is hidden in userCss.
-          custom-footer = "<script>${builtins.readFile ./rer-ticker.js}</script>";
+          # into the page, so it carries the page scripts: the RER countdown
+          # and the Monitoring tab alert (widget templates arrive via
+          # innerHTML, where a <script> never runs). `.footer` itself is
+          # hidden in userCss.
+          custom-footer = lib.concatMapStrings (f: "<script>${builtins.readFile f}</script>") [
+            ./rer-ticker.js
+            ./monitoring-alert.js
+          ];
         }
         // lib.optionalAttrs (cfg.engine == "dynacat") {
           # Home-screen name when installed as an app; defaults to "Dynacat".
           app-name = "dafos";
+        };
+
+        # HSL triplets ("hue saturation lightness"): a near-black background
+        # and orange accents. The "negative" colour marks every failure, ours
+        # (RER misses, alerts, the Monitoring tab) and Dynacat's (monitor
+        # errors, stopped containers), so it stays red: the theme's blue
+        # (209 88 54) did not read as an error.
+        settings.theme = {
+          background-color = "50 1 6";
+          primary-color = "24 97 58";
+          negative-color = "4 80 58";
         };
 
         # Bookmark icons sit at 0.7 (container) × 0.8 (icon) opacity, which
@@ -539,6 +636,15 @@ in
           .rer-missed { border-left-color: var(--color-negative); opacity: 0.45; }
           .rer-missed .rer-status { color: var(--color-negative); }
 
+          /* Standings (standings.nix): a stripe per zone, same palette. */
+          .standings-row {
+            border-left: 0.3rem solid transparent;
+            padding-left: 0.6rem;
+          }
+          .standings-top { border-left-color: hsl(135, 45%, 50%); }
+          .standings-mid { border-left-color: hsl(38, 85%, 60%); }
+          .standings-down { border-left-color: var(--color-negative); }
+
           /* Host temperatures (temperatures.nix), same palette as the RER rows. */
           .temp-ok { color: hsl(135, 45%, 50%); }
           .temp-warm { color: hsl(38, 85%, 60%); }
@@ -551,7 +657,23 @@ in
           .rer-refresh.is-loading img { animation: rer-spin 0.8s linear infinite; }
           @keyframes rer-spin { to { rotate: 360deg; } }
 
-          /* Footer holds only the RER ticker script (branding.custom-footer). */
+          /* Monitoring tab while an alert shows (monitoring-alert.js). */
+          .nav-item.nav-item-alert {
+            color: var(--color-negative);
+            animation: nav-alert 2s ease-in-out infinite;
+          }
+          .nav-item.nav-item-alert::before {
+            content: "";
+            display: inline-block;
+            width: 0.7rem;
+            height: 0.7rem;
+            margin-right: 0.6rem;
+            border-radius: 50%;
+            background: var(--color-negative);
+          }
+          @keyframes nav-alert { 50% { opacity: 0.6; } }
+
+          /* Footer holds only page scripts (branding.custom-footer). */
           .footer { display: none; }
 
           /* Site-logo buttons (linkButton). The absolute one is centred on
@@ -833,15 +955,15 @@ in
               {
                 type = "group";
                 widgets =
-                  map (w: liveWidget (import ./football.nix w)) [
+                  map (w: liveWidget (import ./scoreboard.nix w)) [
                     {
                       title = "Ligue des champions";
-                      league = "uefa.champions";
+                      league = "soccer/uefa.champions";
                       button = fotmobButton "leagues/42/overview/champions-league";
                     }
                     {
                       title = "Ligue 1";
-                      league = "fra.1";
+                      league = "soccer/fra.1";
                       button = fotmobButton "leagues/53/overview/ligue-1";
                     }
                   ]
@@ -866,7 +988,48 @@ in
                         ];
                       }
                     ))
+                    # FotMob has no basketball, hence NBA.com.
+                    (liveWidget (
+                      import ./scoreboard.nix {
+                        title = "NBA";
+                        league = "basketball/nba";
+                        button = linkButton {
+                          title = "Ouvrir sur NBA.com";
+                          url = "https://www.nba.com/games";
+                          icon = "https://cdn.nba.com/logos/leagues/logo-nba.svg";
+                        };
+                      }
+                    ))
                   ];
+              }
+              {
+                type = "group";
+                widgets = map (w: liveWidget (import ./standings.nix w)) [
+                  {
+                    title = "Classement Ligue 1";
+                    league = "soccer/fra.1";
+                    button = fotmobButton "leagues/53/table/ligue-1";
+                  }
+                  {
+                    title = "Classement LDC";
+                    league = "soccer/uefa.champions";
+                    # 36 clubs in the league phase.
+                    collapseAfter = 24;
+                    button = fotmobButton "leagues/42/table/champions-league";
+                  }
+                  {
+                    title = "NBA Est";
+                    league = "basketball/nba";
+                    table = 0;
+                    button = nbaStandings;
+                  }
+                  {
+                    title = "NBA Ouest";
+                    league = "basketball/nba";
+                    table = 1;
+                    button = nbaStandings;
+                  }
+                ];
               }
             ];
           };
@@ -907,24 +1070,13 @@ in
                     # config file, user.css, ...). It then hides listed mountpoints too,
                     # unless they say `hide = false`.
                     hide-mountpoints-by-default = true;
-                    mountpoints = {
-                      "${hostfs}/root" = {
-                        name = "Système";
+                    mountpoints = lib.mapAttrs' (
+                      key: d:
+                      lib.nameValuePair "${hostfs}/${key}" {
+                        inherit (d) name;
                         hide = false;
-                      };
-                      "${hostfs}/home" = {
-                        name = "Home";
-                        hide = false;
-                      };
-                      "${hostfs}/data" = {
-                        name = "Médias";
-                        hide = false;
-                      };
-                      "${hostfs}/backup" = {
-                        name = "Sauvegardes";
-                        hide = false;
-                      };
-                    };
+                      }
+                    ) hostDisks;
                   }
                 ]
                 # Through the peer's Traefik (private gate). The agent picks
