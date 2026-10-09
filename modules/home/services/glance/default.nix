@@ -239,6 +239,7 @@ let
       containers = [
         "donetick"
         "kaneo-web"
+        "karakeep"
       ];
     }
     {
@@ -324,6 +325,7 @@ let
     immich-kiosk = "Cadre photo Immich";
     jellyfin = "Serveur multimédia";
     kaneo-web = "Gestion de projets";
+    karakeep = "Marque-pages et archives web";
     kitchenowl-backend = "Courses et recettes";
     lldap = "Annuaire des utilisateurs";
     norish = "Recettes";

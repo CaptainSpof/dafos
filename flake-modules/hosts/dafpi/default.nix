@@ -103,6 +103,7 @@ in
         kaneo
         kitchenowl
         it-tools
+        karakeep
         norish
         papra
         securo
@@ -142,6 +143,7 @@ in
           donetick.enable = true;
           glance-agent.enable = true;
           kaneo.enable = true;
+          karakeep.enable = true;
           kitchenowl.enable = true;
           bar-assistant.enable = true;
           norish = {
