@@ -343,6 +343,8 @@ in
           ];
 
           input_boolean = import ./sensors/input_booleans.nix;
+          input_datetime = import ./sensors/input_datetimes.nix;
+          input_number = import ./sensors/input_numbers.nix;
           input_text = import ./sensors/input_texts.nix;
           sensor = [
             {

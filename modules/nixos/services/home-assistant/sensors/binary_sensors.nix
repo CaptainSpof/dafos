@@ -51,3 +51,47 @@
     state = "{{ not(states('sensor.desk_plug_power') | float(0) < 30 and states('device_tracker.dafbox') == 'not_home') }}";
   }
 ]
+# Appliance cycle detectors, consumed by the "Household · Appliances"
+# automation. delay_off has to outlast the longest low-power pause inside a
+# cycle (measured over two weeks of history: washer 8 min above 5 W, dryer 2 min
+# above 25 W, dishwasher 10 min above 2 W during its drying phase), otherwise a
+# pause reads as the end of the cycle.
+#
+# Being entities rather than `wait_for_trigger` steps, they survive HA restarts
+# and automation reloads, which used to silently swallow end-of-cycle
+# notifications. `availability` keeps a Zigbee dropout from reading as 0 W.
+++ (map
+  (a: {
+    inherit (a) name;
+    unique_id = "dafos.binary_sensor.${a.id}_active";
+    default_entity_id = "binary_sensor.${a.id}_active";
+    device_class = "running";
+    state = "{{ states('${a.power}') | float(0) > ${toString a.threshold} }}";
+    availability = "{{ has_value('${a.power}') }}";
+    delay_on.minutes = 1;
+    delay_off.minutes = a.delayOff;
+  })
+  [
+    {
+      id = "laundry_washing_machine";
+      name = "Laundry · Washing Machine is active";
+      power = "sensor.laundry_washing_machine_power";
+      threshold = 5;
+      delayOff = 10;
+    }
+    {
+      id = "laundry_dryer";
+      name = "Laundry · Dryer is active";
+      power = "sensor.laundry_dryer_power";
+      threshold = 25;
+      delayOff = 5;
+    }
+    {
+      id = "kitchen_dishwasher";
+      name = "Kitchen · Dishwasher is active";
+      power = "sensor.kitchen_dishwasher_plug_power";
+      threshold = 2;
+      delayOff = 15;
+    }
+  ]
+)
