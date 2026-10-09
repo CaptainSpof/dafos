@@ -239,17 +239,24 @@ let
       containers = [
         "donetick"
         "kaneo-web"
+      ];
+    }
+    {
+      title = "Documents & liens";
+      icon = "mdi:archive";
+      page = "services";
+      containers = [
+        "papra"
         "karakeep"
       ];
     }
     {
-      title = "Papiers & finances";
+      title = "Finances";
       icon = "mdi:wallet";
       page = "services";
       containers = [
         "securo"
         "spliit"
-        "papra"
       ];
       oneList = true;
     }

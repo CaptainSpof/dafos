@@ -44,7 +44,21 @@
                 # Authelia's karakeep_user group is the gate, so OIDC signups
                 # stay open (the first account becomes admin). The mobile app
                 # logs in with an API key from the web settings.
-                environment.DISABLE_PASSWORD_AUTH = "true";
+                environment = {
+                  DISABLE_PASSWORD_AUTH = "true";
+
+                  # Auto-tagging through dafoltop's Ollama, over the LAN (its
+                  # firewall lets dafpi alone in), with the model norish
+                  # already uses. No vision model is pulled there, so image
+                  # and PDF bookmarks stay untagged. Embeddings stay off:
+                  # karakeep only enables them by default with OpenAI.
+                  OLLAMA_BASE_URL = "http://192.168.0.10:11434";
+                  INFERENCE_TEXT_MODEL = "qwen2.5:7b";
+                  INFERENCE_LANG = "french";
+                  # A 7B on the i7-8550U's CPU, plus the model load after
+                  # Ollama's 5 min keep-alive: well past the 30 s default.
+                  INFERENCE_JOB_TIMEOUT_SEC = "600";
+                };
               };
             };
           }

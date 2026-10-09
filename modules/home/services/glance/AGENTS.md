@@ -21,7 +21,7 @@
 - **A docker-containers widget needs `category`.** Glance lists every container
   on the socket and filters on it; without it each widget shows the whole host,
   databases included. The per-container overrides must carry the same category.
-- **`oneList` categories** (Photos, Papiers & finances) list their linked local
+- **`oneList` categories** (Photos, Finances) list their linked local
   containers in the monitor widget beside the host services and peer apps, in
   table order, so the category reads as one grid. Their probe goes to
   `http://<container>:<port>` over traefik-proxy (public routes may want a
