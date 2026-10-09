@@ -36,7 +36,10 @@
               # no compress=: restic already compresses and encrypts its data
               "noatime"
               "nofail" # a missing dock must never block boot
-              "x-systemd.device-timeout=10s"
+              # The Samsung spins up slowly behind the dock: at 10 s the boot-time
+              # mount gave up before the disk appeared (2026-10-02), leaving
+              # /mnt/backup unmounted. nofail keeps a longer wait off the boot path.
+              "x-systemd.device-timeout=60s"
             ];
           };
         };
