@@ -72,6 +72,12 @@
           description = "Where the client repositories live (one subdirectory per client).";
         };
 
+        mountUnit = mkOption {
+          type = types.str;
+          default = "mnt-backup.mount";
+          description = "The mount unit of the disk holding dataDir; starting it starts the REST server.";
+        };
+
         maxAgeHours = mkOption {
           type = types.ints.positive;
           default = 26;
@@ -126,7 +132,15 @@
         systemd.services = {
           # The repositories sit on the dock's backup disk: never serve (or
           # create) them on the NVMe root under an empty mount point.
-          restic-rest-server.unitConfig.RequiresMountsFor = [ cfg.dataDir ];
+          restic-rest-server = {
+            unitConfig.RequiresMountsFor = [ cfg.dataDir ];
+            # Requires= (from RequiresMountsFor) propagates a stop, never a start:
+            # after a dock drop, or a boot where the disk came up late, the server
+            # would stay down although the disk is back. Tie its start to the mount
+            # instead, and not to multi-user.target (which would fail the boot
+            # when the disk is absent).
+            wantedBy = lib.mkForce [ cfg.mountUnit ];
+          };
         }
         // mapAttrs' (
           name: _:
