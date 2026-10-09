@@ -17,9 +17,9 @@ dark room.
 
 ## Services
 
-home-assistant, ollama (local LLM, also serving norish on dafpi), immich +
-immich-kiosk, authelia, bookorbit, traefik, lldap, glance, calibre, grimmory,
-shelfmark, spliit, streaming, everything-presence-zone-configurator.
+home-assistant, ollama (local LLM, also serving norish and karakeep on dafpi),
+immich + immich-kiosk, authelia, bookorbit, traefik, lldap, glance, calibre,
+grimmory, shelfmark, spliit, streaming, everything-presence-zone-configurator.
 
 Moved to dafpi (2026-10-07/08), relayed by this host's Traefik and served by its
 Authelia/lldap: it-tools, papra, donetick, kaneo, sparky-fitness, securo,

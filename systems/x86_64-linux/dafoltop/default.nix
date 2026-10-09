@@ -162,6 +162,7 @@ in
         models = [
           "qwen2.5:3b" # Home Assistant notification blurbs
           "qwen2.5:7b" # norish AI on dafpi (needs stricter JSON-schema adherence)
+          "qwen2.5vl:3b" # karakeep image tagging on dafpi
         ];
       };
       immich = enabled;
