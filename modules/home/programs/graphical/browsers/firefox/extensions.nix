@@ -33,7 +33,7 @@ in
         frankerfacez
         # french-language-pack
         # fx_cast
-        # karakeep
+        karakeep
         # languagetool
         org-capture # TODO: setup
         plasma-integration
