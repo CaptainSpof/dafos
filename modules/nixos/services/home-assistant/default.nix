@@ -392,6 +392,17 @@ in
     # Root without capabilities: the journal files are root-owned, and a
     # DynamicUser would put the log under /var/log/private (0700), out of the
     # container's reach.
+    #
+    # The directory comes from an activation script, not LogsDirectory or
+    # tmpfiles: systemd opens `append:` before it creates LogsDirectory (the
+    # unit died with 209/STDOUT), and the crowdsec quadlet, restarted by
+    # home-manager earlier in the same switch, mkdirs any missing volume
+    # source as daf and failed on /var/log. Activation runs before either.
+    system.activationScripts.hass-auth-log = ''
+      install -d -m 0755 /var/log/hass-auth
+      touch /var/log/hass-auth/hass.log
+      chmod 0644 /var/log/hass-auth/hass.log
+    '';
     systemd.services.hass-auth-log = {
       description = "Copy Home Assistant failed logins to a file for CrowdSec";
       wantedBy = [ "multi-user.target" ];
@@ -405,8 +416,6 @@ in
           "--grep=Login attempt or request with invalid authentication"
         ];
         StandardOutput = "append:/var/log/hass-auth/hass.log";
-        LogsDirectory = "hass-auth";
-        LogsDirectoryMode = "0755";
         UMask = "0022";
         Restart = "always";
         RestartSec = 5;
