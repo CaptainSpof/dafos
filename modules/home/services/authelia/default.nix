@@ -156,6 +156,12 @@ in
 
         # Home Assistant OIDC client: expose groups in the id_token and gate
         # access on the `home-assistant_user` group (deny-by-default).
+        #
+        # home.daftdaf.dev resolves publicly since 2026-10-09 (the companion
+        # app has to reach it off-tailnet for notification actions), so a
+        # login from the internet needs a second factor. Rules match in order:
+        # the LAN (blocky answers with the LAN address at home, so no hairpin)
+        # and the tailnet (our own devices) keep one factor.
         identity_providers.oidc = {
           claims_policies.home-assistant.id_token = [
             "email"
@@ -168,7 +174,15 @@ in
             default_policy = "deny";
             rules = [
               {
-                policy = config.nps.stacks.authelia.defaultAllowPolicy;
+                policy = "one_factor";
+                subject = [ "group:home-assistant_user" ];
+                networks = [
+                  "192.168.0.0/24"
+                  "100.64.0.0/10"
+                ];
+              }
+              {
+                policy = "two_factor";
                 subject = [ "group:home-assistant_user" ];
               }
             ];

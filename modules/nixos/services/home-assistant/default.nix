@@ -382,6 +382,56 @@ in
       ];
     };
 
+    # HA's failed logins, copied to a plain file for CrowdSec (the
+    # crowdsecurity/home-assistant collection, wired in the crowdsec HM
+    # module). HA logs only to the journal, and the rootless crowdsec
+    # container can neither read the system journal nor ship journalctl.
+    # Behind Traefik, HA logs the real client address (use_x_forwarded_for),
+    # so CrowdSec bans the attacker, not the proxy.
+    #
+    # Root without capabilities: the journal files are root-owned, and a
+    # DynamicUser would put the log under /var/log/private (0700), out of the
+    # container's reach.
+    systemd.services.hass-auth-log = {
+      description = "Copy Home Assistant failed logins to a file for CrowdSec";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        ExecStart = lib.escapeShellArgs [
+          "${config.systemd.package}/bin/journalctl"
+          "--follow"
+          "--lines=0"
+          "--output=cat"
+          "--unit=home-assistant.service"
+          "--grep=Login attempt or request with invalid authentication"
+        ];
+        StandardOutput = "append:/var/log/hass-auth/hass.log";
+        LogsDirectory = "hass-auth";
+        LogsDirectoryMode = "0755";
+        UMask = "0022";
+        Restart = "always";
+        RestartSec = 5;
+        CapabilityBoundingSet = "";
+        NoNewPrivileges = true;
+        PrivateNetwork = true;
+        PrivateTmp = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectControlGroups = true;
+        RestrictAddressFamilies = [ "AF_UNIX" ];
+        SystemCallFilter = [ "@system-service" ];
+      };
+    };
+    services.logrotate.settings."/var/log/hass-auth/hass.log" = {
+      frequency = "weekly";
+      rotate = 4;
+      # journalctl keeps the file open; CrowdSec's file source follows truncation.
+      copytruncate = true;
+      missingok = true;
+      notifempty = true;
+    };
+
     # NOTE: the mode on /var/lib/hass itself is not actually 0775 — it is the
     # hass user's home and `createHome` re-chmods it to 0700 on every
     # activation, after tmpfiles has run. Combined with the unit's UMask=0077
