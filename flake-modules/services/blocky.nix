@@ -182,11 +182,22 @@
             # above. blocky checks the exact name before its parents, so a CNAME
             # here wins and its target is resolved upstream as usual. `mapping`
             # only takes IPs; CNAMEs need a zone.
-            customDNS.zone = concatStrings (
-              mapAttrsToList (
-                name: target: "${name}.${cfg.domain}. 3600 CNAME ${target}.\n"
-              ) cfg.externalSubdomains
-            );
+            #
+            # Firefox's own DoH (Default protection, desktop and Android)
+            # bypasses blocky: no ad blocking, and the domain resolves to the
+            # public address instead of Traefik's LAN one. Firefox turns that
+            # DoH off when its canary has no address; a TXT-only entry answers
+            # A/AAAA with NODATA (filterUnmappedTypes). "Increased"/"Max"
+            # protection ignore it, and some Android builds never query it.
+            customDNS.zone =
+              concatStrings (
+                mapAttrsToList (
+                  name: target: "${name}.${cfg.domain}. 3600 CNAME ${target}.\n"
+                ) cfg.externalSubdomains
+              )
+              + ''
+                use-application-dns.net. 3600 TXT "DoH disabled on this network"
+              '';
 
             blocking = {
               denylists.ads = cfg.denylists;
