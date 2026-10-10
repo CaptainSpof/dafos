@@ -116,13 +116,9 @@ let
       password_file = config.sops.secrets."lldap/users/joaquim-password".path;
       email = "joaquim@${cfg.domain}";
       groups = [
-        lldap.adminGroup
-
         # No group-based admin access supported yet, just user-roles
         streaming.jellyfin.oidc.userGroup
-        qbittorrent.qui.oidc.userGroup
         grimmory.oidc.userGroup
-        kitchenowl.oidc.userGroup
         norish.oidc.userGroup
         bookorbit.oidc.userGroup
       ];
@@ -132,15 +128,7 @@ let
       displayName = "test";
       password_file = config.sops.secrets."lldap/users/test-password".path;
       email = "test@${cfg.domain}";
-      groups = [
-        # No group-based admin access supported yet, just user-roles
-        streaming.jellyfin.oidc.userGroup
-        qbittorrent.qui.oidc.userGroup
-        grimmory.oidc.userGroup
-        papra.oidc.userGroup
-        donetick.oidc.userGroup
-        bookorbit.oidc.userGroup
-      ];
+      groups = [ ];
     };
   };
 

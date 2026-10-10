@@ -63,26 +63,38 @@ FIDECO dual-bay dock:
 - **Never hot-add, hot-remove or GUI-eject a drive while the other is in use.**
   The dock drops both. `/mnt/data` unmounts and the nine media containers keep
   running on stale mounts: `systemctl start mnt-data.mount`, then
-  `systemctl --user restart` them.
+  `systemctl --user restart` them. `/mnt/backup` needs
+  `systemctl start mnt-backup.mount` too; the NFS and REST servers follow their
+  mount by themselves.
 - **Identify disks by `by-id`, never `sdX`** (the names swap when the dock
   re-enumerates). The bridge reports an all-zero serial, so `usb-ASMT…-0:0` and
   `-0:1` name the bays, not the drives; the Samsung uses its `ata-` id.
-- **Both mounts are `nofail` with a 10 s device timeout**, and booting without
-  the dock is tested: the nine media containers (jellyfin, sonarr, radarr,
-  qbittorrent, bazarr, qui, prowlarr, bookorbit, grimmory) fail closed with
-  `start-limit-hit` and everything else comes up. After the dock returns:
+- **Both mounts are `nofail`**, with a 10 s device timeout on `/mnt/data` and 60
+  s on `/mnt/backup` (the Samsung spins up slowly: at 10 s the boot-time mount
+  gave up before the disk appeared, 2026-10-02). Booting without the dock is
+  tested: the nine media containers (jellyfin, sonarr, radarr, qbittorrent,
+  bazarr, qui, prowlarr, bookorbit, grimmory) fail closed with `start-limit-hit`
+  and everything else comes up. After the dock returns:
   `systemctl start mnt-data.mount`, `systemctl --user reset-failed` the nine (a
   plain start is refused), then start them.
 - **One btrfs subvolume holds all media.** `link()` returns EXDEV across
   subvolumes and across bind mounts, so Sonarr/Radarr cannot hardlink between
   `/mnt/data/yahrr` and `/mnt/data/Shows` as mounted today; the plan relies on
-  reflinks (same filesystem, shared extents). That has not yet been confirmed
-  with a real import — check `filefrag -v` for `shared` before trusting it.
+  reflinks (same filesystem, shared extents). The one import since the move
+  (Radarr, 2026-10-03) left no duplicate: the download was gone and the library
+  file was fully exclusive. Reflink sharing itself has never been observed.
 - **No redundancy.** A scrub on a single device detects bad data but cannot
   repair it, so the backups are the recovery path.
 - Nothing is backed up from `/mnt/data` (re-acquirable media). State is backed
   up nightly to `/mnt/backup`: see
   [../../../flake-modules/services/backup/README.md](../../../flake-modules/services/backup/README.md).
+- `/mnt/backup` is also **dafpi's backup target**: its restic REST server
+  (`/mnt/backup/rest-server`, append-only, tailnet only, see
+  [backup-server.nix](../../../flake-modules/services/backup/backup-server.nix))
+  lives on the Samsung, so that one 15-year-old disk now carries two hosts'
+  backups and there is no second copy yet. The server is `WantedBy` the mount
+  (not `multi-user.target`): it stops when the disk drops and starts when the
+  mount returns, tested 2026-10-09.
 - `/mnt/data` is exported read-only over NFSv4 to dafbox
   ([media-export](../../../modules/nixos/services/media-export/default.nix)):
   TCP 2049 is open only to the listed LAN addresses (dafbox's depends on a DHCP
