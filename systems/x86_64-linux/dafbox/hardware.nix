@@ -49,6 +49,10 @@ in
       # "skipped_no_modprobe". asus-ec-sensors only *reads* CPU_Opt RPM.
       "nct6775"
     ];
+    # dafbox is wired (eno1). The onboard MT7922 Wi-Fi wedges and the driver
+    # then retries "driver own" against the dead PCIe device about once a
+    # second for hours. Its Bluetooth half is on USB (btusb) and unaffected.
+    blacklistedKernelModules = [ "mt7921e" ];
   };
 
   # `/`, `/home`, `/boot`, `/nix`, `/var/log` and swap are now declared in
