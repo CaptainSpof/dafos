@@ -153,7 +153,7 @@
         (mkIf cfg.agent.enable {
           services.podman.containers.dozzle-agent = {
             # The hub's version: nps's dozzle stack pins it.
-            image = "docker.io/amir20/dozzle:v11.3.0";
+            image = "docker.io/amir20/dozzle:v11.3.1";
             exec = "agent";
             ports = [ "${toString cfg.agent.port}:7007" ];
             volumes = certs;
