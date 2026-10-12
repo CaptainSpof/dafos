@@ -115,6 +115,12 @@ in
     "d /mnt/calibre 0755 daf users - -"
     "d /mnt/grimmory 0755 daf root - -"
     "d /mnt/bookorbit 0755 daf root - -"
+    # Immich's regenerable data (immich.derivedPath). /home is on the NVMe and
+    # always mounted, so unlike the originals on /mnt/data these are safe to create.
+    "d /home/immich-data 0755 root root - -"
+    "d /home/immich-data/thumbs 0700 immich immich - -"
+    "d /home/immich-data/encoded-video 0700 immich immich - -"
+    "d /home/immich-data/backups 0700 immich immich - -"
   ];
 
   systemd.services.wait-freebox-available = {

@@ -15,6 +15,43 @@ let
   inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.immich;
+
+  mediaRoot = "/var/lib/immich";
+
+  # IMMICH_MEDIA_LOCATION stays , so no path stored in the database
+  # changes: the data directories are bind-mounted back onto it. `nofail` keeps a
+  # missing disk from stopping the boot; immich-server requires the mounts (below)
+  # and fails, and alerts, instead of writing under an empty mount point.
+  bindDirs =
+    base: dirs:
+    lib.listToAttrs (
+      map (
+        d:
+        lib.nameValuePair "${mediaRoot}/${d}" {
+          device = "${base}/${d}";
+          fsType = "none";
+          options = [
+            "bind"
+            "nofail"
+          ];
+        }
+      ) dirs
+    );
+
+  boundDirs =
+    optionalAttrs (cfg.originalsPath != null) (
+      bindDirs cfg.originalsPath [
+        "upload"
+        "library"
+      ]
+    )
+    // optionalAttrs (cfg.derivedPath != null) (
+      bindDirs cfg.derivedPath [
+        "thumbs"
+        "encoded-video"
+        "backups"
+      ]
+    );
 in
 {
 
@@ -22,6 +59,30 @@ in
     enable = mkEnableOption "Whether or not to configure immich.";
     base-url = mkOpt types.str "immich.daftdaf.dev" "The base url";
     port = mkOpt types.int 2283 "The port";
+
+    originalsPath = mkOpt (types.nullOr types.str) null ''
+      Where the original photos live (`upload/` and `library/`), bind-mounted over
+      `/var/lib/immich`. Must be on a disk that is not the root: Immich is tied to
+      the mounts, so it refuses to start when the disk is missing instead of
+      writing into an empty directory on the root. The directories must already
+      exist there (create them by hand while migrating, never with tmpfiles: on a
+      missing disk that would recreate them on the root).
+    '';
+
+    derivedPath = mkOpt (types.nullOr types.str) null ''
+      Where the regenerable data lives (`thumbs/`, `encoded-video/`, `backups/`),
+      bind-mounted over `/var/lib/immich`. Thumbnails grow with the library
+      (~0.7 MB per photo), so a large library needs a bigger, but still fast, disk
+      than the root. immich-server runs with ProtectHome=yes, which hides /home
+      from the service but not a bind mount of a directory under it (checked on
+      dafoltop with systemd-run before the first use).
+    '';
+
+    originalsMountUnit = mkOpt types.str "mnt-data.mount" ''
+      The mount unit of the disk behind originalsPath. immich-server is wanted by
+      it, so it starts again by itself when the disk comes back after a drop
+      (Requires= propagates a stop, never a start).
+    '';
 
     oidc = {
       # Immich runs as a native NixOS service here, but the identity provider
@@ -37,6 +98,13 @@ in
   config = mkIf cfg.enable {
 
     users.groups.yahrr.members = [ "immich" ];
+
+    fileSystems = boundDirs;
+
+    systemd.services.immich-server = mkIf (boundDirs != { }) {
+      unitConfig.RequiresMountsFor = lib.attrNames boundDirs;
+      wantedBy = lib.optional (cfg.originalsPath != null) cfg.originalsMountUnit;
+    };
 
     sops.secrets = mkIf cfg.oidc.enable {
       "immich/authelia/client-secret" = {

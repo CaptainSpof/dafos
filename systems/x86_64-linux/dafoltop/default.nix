@@ -165,7 +165,14 @@ in
           "qwen2.5vl:3b" # karakeep image tagging on dafpi
         ];
       };
-      immich = enabled;
+      immich = {
+        enable = true;
+        # Originals on the 4 TB media disk, regenerable data on the NVMe /home
+        # (~0.7 MB of thumbnails per photo outgrows the root). Both are bind
+        # mounts over /var/lib/immich, and Immich fails closed when one is missing.
+        originalsPath = "/mnt/data/immich";
+        derivedPath = "/home/immich-data";
+      };
       # immich-kiosk: migrated to the rootless nps stack (home-manager module)
       printing = disabled;
       # syncthing = enabled;
