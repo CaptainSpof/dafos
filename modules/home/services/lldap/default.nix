@@ -117,6 +117,7 @@ let
       email = "joaquim@${cfg.domain}";
       groups = [
         # No group-based admin access supported yet, just user-roles
+        "immich_user"
         streaming.jellyfin.oidc.userGroup
         grimmory.oidc.userGroup
         norish.oidc.userGroup
