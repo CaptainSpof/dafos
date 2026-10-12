@@ -88,6 +88,13 @@ in
     ) "System units that raise an alert when they end up failed.";
 
     smartd.enable = mkBoolOpt true "Whether to watch every disk with smartd and alert on SMART problems.";
+
+    smartd.satDevices = mkOpt (types.listOf types.str) [ ] ''
+      Disks behind a USB-SATA bridge, listed by their stable /dev/disk/by-id path.
+      DEVICESCAN registered only the NVMe on dafoltop (smartd reported "1 device"),
+      so the dock disks were not watched at all. They are listed explicitly and
+      queried with `-d sat`.
+    '';
   };
 
   config = mkIf cfg.enable {
@@ -146,6 +153,12 @@ in
       # poll. The notify options go here rather than through
       # services.smartd.notifications, which only knows mail/wall/x11.
       defaults.autodetected = "-a -n standby,q -m <nomailer> -M exec ${smartdAlert}";
+      # Explicitly listed devices take their own defaults, not the autodetected ones.
+      defaults.monitored = "-a -n standby,q -m <nomailer> -M exec ${smartdAlert}";
+      devices = map (device: {
+        inherit device;
+        options = "-d sat";
+      }) cfg.smartd.satDevices;
     };
   };
 }

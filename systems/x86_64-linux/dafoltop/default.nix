@@ -108,7 +108,14 @@ in
       };
       home-assistant = enabled;
       # Disk and failed-unit alerts, relayed to the phones by home-assistant.
-      alerting = enabled;
+      alerting = {
+        enable = true;
+        # The dock disks sit behind a USB bridge that smartd's device scan skips.
+        smartd.satDevices = [
+          "/dev/disk/by-id/ata-ST4000VN000-2AH166_WDH0Y1ZZ"
+          "/dev/disk/by-id/ata-SAMSUNG_HD103SI_S1XGJ9BS808765"
+        ];
+      };
       # dafpi runs gatus, which cannot report its own death: watch it from here
       # (ping + its blocky answering), alert after 3 failed minutes.
       host-watch = {
