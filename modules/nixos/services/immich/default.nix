@@ -136,7 +136,9 @@ in
           # Read at unit start through systemd LoadCredential, so the secret
           # never lands in the nix store.
           clientSecret._secret = config.sops.secrets."immich/authelia/client-secret".path;
-          defaultStorageQuota = 0;
+          # null = unlimited. 0 means 0 GiB: every upload then fails with "Quota
+          # has been exceeded!" for a new user whose lldap entry has no immich-quota.
+          defaultStorageQuota = null;
           issuerUrl = cfg.oidc.issuer-url;
           mobileOverrideEnabled = false;
           mobileRedirectUri = "";
