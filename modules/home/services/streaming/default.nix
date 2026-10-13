@@ -81,25 +81,12 @@ let
   # - HardwareAccelerationType / QsvDevice: the 12.x migration reset these to
   #   `none` and blank. The box has two render nodes, renderD128 (i915) and
   #   renderD129 (nouveau), so QSV must name the Intel one explicitly.
-  # - EnableThrottling: without it ffmpeg reads the source as fast as the link
-  #   allows. A 4K remux over the Freebox SMB share saturated dafoltop's 100
-  #   Mbit NIC on 2026-09-27, and DNS (blocky), ping and SSH all timed out
-  #   behind it.
-
-  # Updates only elements whose value differs, so an already-correct file is
-  # left byte-for-byte alone. xmlstarlet refuses malformed input, and that is
-  # deliberate: a broken file makes Jellyfin reset the whole thing, so better
-  # to fail the start loudly than to patch around it. A missing file (first
-  # start) is skipped; Jellyfin writes its defaults and the next start pins.
-
-  # Transcoding settings pinned over the stateful encoding.xml. The rest of the
-  # file stays Jellyfin's to manage from the dashboard; only these elements are
-  # forced back, on every container start, so a dashboard edit or a major
-  # upgrade's silent reset-to-defaults cannot quietly undo them.
-  #
-  # - HardwareAccelerationType / QsvDevice: the 12.x migration reset these to
-  #   `none` and blank. The box has two render nodes, renderD128 (i915) and
-  #   renderD129 (nouveau), so QSV must name the Intel one explicitly.
+  # - HardwareDecodingCodecs: the same reset left only h264 and vc1, so HEVC
+  #   was decoded on the i7-8550U's four cores and films stuttered
+  #   (2026-10-13). The list is what its UHD 620 (Gen 9.5) decodes in
+  #   hardware: no AV1, HEVC and VP9 up to 10-bit (the ColorDepth10 flags).
+  # - EnableIntelLowPower*: Gen 9.5 low-power encoding needs GuC/HuC firmware
+  #   loading, which this host does not enable; with it on, QSV encodes fail.
   # - EnableThrottling: without it ffmpeg reads the source as fast as the link
   #   allows. A 4K remux over the Freebox SMB share saturated dafoltop's 100
   #   Mbit NIC on 2026-09-27, and DNS (blocky), ping and SSH all timed out
@@ -110,6 +97,18 @@ let
   jellyfinEncoding = {
     HardwareAccelerationType = "qsv";
     QsvDevice = "/dev/dri/renderD128";
+    HardwareDecodingCodecs = [
+      "h264"
+      "hevc"
+      "mpeg2video"
+      "vc1"
+      "vp8"
+      "vp9"
+    ];
+    EnableDecodingColorDepth10Hevc = "true";
+    EnableDecodingColorDepth10Vp9 = "true";
+    EnableIntelLowPowerH264HwEncoder = "false";
+    EnableIntelLowPowerHevcHwEncoder = "false";
     EnableThrottling = "true";
     ThrottleDelaySeconds = "300";
   };
@@ -117,9 +116,11 @@ let
   jellyfinEncodingXml = "${config.nps.storageBaseDir}/streaming/jellyfin/encoding.xml";
 
   # Updates only elements whose value differs, so an already-correct file is
-  # left byte-for-byte alone. xmlstarlet refuses malformed input, and that is
-  # deliberate: a broken file makes Jellyfin reset the whole thing, so better
-  # to fail the start loudly than to patch around it. A missing file (first
+  # left byte-for-byte alone. A list is one `<string>` per item, and its
+  # children are rewritten as a whole when they differ. xmlstarlet refuses
+  # malformed input, and that is deliberate: a broken file makes Jellyfin
+  # reset the whole thing, so better to fail the start loudly than to patch
+  # around it. A missing file (first
   # start) is skipped; Jellyfin writes its defaults and the next start pins.
   pinJellyfinEncoding = pkgs.writeShellApplication {
     name = "pin-jellyfin-encoding";
@@ -129,14 +130,30 @@ let
       [ -e "$f" ] || exit 0
     ''
     + lib.concatStrings (
-      lib.mapAttrsToList (name: value: ''
-        xpath=/EncodingOptions/${name}
-        if [ "$(xmlstarlet sel -t -v "count($xpath)" "$f")" = 0 ]; then
-          xmlstarlet ed -L -s /EncodingOptions -t elem -n ${name} -v ${lib.escapeShellArg value} "$f"
-        elif [ "$(xmlstarlet sel -t -v "$xpath" "$f")" != ${lib.escapeShellArg value} ]; then
-          xmlstarlet ed -L -u "$xpath" -v ${lib.escapeShellArg value} "$f"
-        fi
-      '') jellyfinEncoding
+      lib.mapAttrsToList (
+        name: value:
+        if lib.isList value then
+          ''
+            xpath=/EncodingOptions/${name}
+            if [ "$(xmlstarlet sel -t -v "count($xpath)" "$f")" = 0 ]; then
+              xmlstarlet ed -L -s /EncodingOptions -t elem -n ${name} "$f"
+            fi
+            if [ "$(xmlstarlet sel -t -m "$xpath/string" -v . -n "$f" || true)" != ${lib.escapeShellArg (lib.concatStringsSep "\n" value)} ]; then
+              xmlstarlet ed -L -d "$xpath/*" ${
+                lib.concatMapStringsSep " " (v: ''-s "$xpath" -t elem -n string -v ${lib.escapeShellArg v}'') value
+              } "$f"
+            fi
+          ''
+        else
+          ''
+            xpath=/EncodingOptions/${name}
+            if [ "$(xmlstarlet sel -t -v "count($xpath)" "$f")" = 0 ]; then
+              xmlstarlet ed -L -s /EncodingOptions -t elem -n ${name} -v ${lib.escapeShellArg value} "$f"
+            elif [ "$(xmlstarlet sel -t -v "$xpath" "$f")" != ${lib.escapeShellArg value} ]; then
+              xmlstarlet ed -L -u "$xpath" -v ${lib.escapeShellArg value} "$f"
+            fi
+          ''
+      ) jellyfinEncoding
     );
   };
 
