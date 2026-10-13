@@ -56,9 +56,11 @@
 - `scoreboard.nix` (football and NBA, `league = "<sport>/<league>"`): ESPN
   rejects `dates=` ranges with 400 but accepts a month (`YYYYMM`), so the widget
   fetches the months within three weeks of today.
-- `standings.nix`: ESPN standings live under `apis/v2`, not `apis/site/v2`. NBA
-  entries arrive unordered (sorted on `playoffSeed`); football zones come from
-  `note.description`, NBA ones from the seed.
+- `standings.nix` is a template fragment, not a widget: `scoreboard.nix` puts a
+  competition's table beside its results (`standings = [ ... ]`), so one tab
+  holds both and they cannot drift apart. ESPN standings live under `apis/v2`,
+  not `apis/site/v2`. NBA entries arrive unordered (sorted on `playoffSeed`);
+  football zones come from `note.description`, NBA ones from the seed.
 - `national-teams.nix`: per-team schedule under ESPN's `all` league, two calls
   (`fixture=true`, `season=<year>`). Team ids come from any international
   league's `/teams` list (France 478, Portugal 482).

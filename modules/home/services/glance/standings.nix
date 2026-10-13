@@ -1,5 +1,7 @@
-# A Dynacat custom-api widget with one ESPN standings table: a football
-# league, or one NBA conference.
+# The standings part of scoreboard.nix: one ESPN standings table as a
+# template fragment, a football league or one NBA conference. It reads the
+# standings response the scoreboard template fetched into `$standings`, so a
+# failing standings call leaves the matches alone.
 #
 # Standings live under ESPN's `apis/v2`, not the `apis/site/v2` the
 # scoreboards use. Each `children` entry is a table: the season for a
@@ -11,21 +13,19 @@
 # templated colour into "ZgotmplZ"). Football takes the zone from ESPN's
 # `note.description`; the NBA from the seed (1-6 playoffs, 7-10 play-in).
 {
-  title,
-  # ESPN's path: "soccer/fra.1", "basketball/nba".
   league,
   # Which table of `children`: 0 is the East for the NBA.
   table ? 0,
+  # Sub-heading above the table ("Est"); none when empty.
+  label ? "",
   # Rows shown before "show more"; 0 shows them all.
   collapseAfter ? 0,
-  # HTML put before the table; the "open in FotMob" button.
-  button ? "",
 }:
 let
   football = builtins.substring 0 7 league == "soccer/";
   stat = name: ''(.Int "stats.#(name==\"${name}\").value")'';
   statText = name: ''(.String "stats.#(name==\"${name}\").displayValue")'';
-  entries = ''.JSON.Array "children.${toString table}.standings.entries"'';
+  entries = ''$standings.JSON.Array "children.${toString table}.standings.entries"'';
 
   cell = width: content: ''<div class="shrink-0 text-right" style="width:${width}">${content}</div>'';
 
@@ -77,35 +77,28 @@ let
     else
       ''sortByInt "stats.#(name==\"playoffSeed\").value" "asc" (${entries})'';
 in
-{
-  type = "custom-api";
-  inherit title;
-  url = "https://site.api.espn.com/apis/v2/sports/${league}/standings";
-  # Standings move once a match ends.
-  cache = "1h";
-  update-interval = "1h";
-  template = ''
-    ${button}
-    {{ if ne .Response.StatusCode 200 }}
-      <p class="color-negative">ESPN indisponible : {{ .Response.Status }}</p>
-    {{ else }}
-      <div class="flex items-center gap-10 size-h6 uppercase standings-row">
-        <div class="shrink-0" style="width:2rem">#</div>
-        <div class="grow">Équipe</div>
-        ${columns.header}
-      </div>
-      <ul class="list list-gap-4 ${listClass}">
-        {{ range ${sorted} }}
-          {{ $rank := ${rank} }}
-          ${zone}
-          <li class="flex items-center gap-10 standings-row{{ if ne $zone "" }} standings-{{ $zone }}{{ end }}" title="{{ .String "note.description" }}">
-            <div class="shrink-0" style="width:2rem">{{ $rank }}</div>
-            <img class="shrink-0" src="{{ .String "team.logos.0.href" }}" alt="" style="width:1.6rem;height:1.6rem" loading="lazy">
-            <div class="grow text-truncate color-highlight">{{ .String "team.shortDisplayName" }}</div>
-            ${columns.row}
-          </li>
-        {{ end }}
-      </ul>
+''
+  ${
+    if label != "" then
+      ''<div class="size-h5 uppercase margin-bottom-5 margin-top-10">${label}</div>''
+    else
+      ""
+  }
+  <div class="flex items-center gap-10 size-h6 uppercase standings-row">
+    <div class="shrink-0" style="width:2rem">#</div>
+    <div class="grow">Équipe</div>
+    ${columns.header}
+  </div>
+  <ul class="list list-gap-4 ${listClass}">
+    {{ range ${sorted} }}
+      {{ $rank := ${rank} }}
+      ${zone}
+      <li class="flex items-center gap-10 standings-row{{ if ne $zone "" }} standings-{{ $zone }}{{ end }}" title="{{ .String "note.description" }}">
+        <div class="shrink-0" style="width:2rem">{{ $rank }}</div>
+        <img class="shrink-0" src="{{ .String "team.logos.0.href" }}" alt="" style="width:1.6rem;height:1.6rem" loading="lazy">
+        <div class="grow text-truncate color-highlight">{{ .String "team.shortDisplayName" }}</div>
+        ${columns.row}
+      </li>
     {{ end }}
-  '';
-}
+  </ul>
+''
