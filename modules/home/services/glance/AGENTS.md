@@ -21,9 +21,9 @@
 - **A docker-containers widget needs `category`.** Glance lists every container
   on the socket and filters on it; without it each widget shows the whole host,
   databases included. The per-container overrides must carry the same category.
-- **`oneList` categories** (Photos, Finances) list their linked local
-  containers in the monitor widget beside the host services and peer apps, in
-  table order, so the category reads as one grid. Their probe goes to
+- **`oneList` categories** (Photos, Finances) list their linked local containers
+  in the monitor widget beside the host services and peer apps, in table order,
+  so the category reads as one grid. Their probe goes to
   `http://<container>:<port>` over traefik-proxy (public routes may want a
   login); add a path to `checkPaths` when the root needs auth.
 - **Link-less containers stay visible** (flaresolverr, gluetun, ...): their
@@ -112,6 +112,11 @@
   `dafos-alert` class on the Monitoring page turns its tab red. Widgets add that
   class to the alerts they render; the script reads the live DOM there and
   fetches `/api/pages/monitoring/content/` every 2 min elsewhere.
+- **Group tabs survive live updates** (`group-tabs.js`): Dynacat 3.0.1 morphs a
+  refreshed group back to its first tab (its tab-state save skips the refreshed
+  widget itself). The script remembers each group's tab, in `localStorage` too,
+  and sets it back on `dynacat:widget-updated`. Drop it once upstream fixes
+  `getGroupTabStates`.
 - **No dollar-brace anywhere in the config**, JS and comments included: Dynacat
   expands each one as an environment variable and refuses the whole config if it
   is unset.

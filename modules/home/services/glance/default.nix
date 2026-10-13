@@ -591,13 +591,14 @@ in
         settings.branding = {
           logo-text = "dafos";
           # The footer is the only place Dynacat renders raw HTML straight
-          # into the page, so it carries the page scripts: the RER countdown
-          # and the Monitoring tab alert (widget templates arrive via
-          # innerHTML, where a <script> never runs). `.footer` itself is
-          # hidden in userCss.
+          # into the page, so it carries the page scripts: the RER countdown,
+          # the Monitoring tab alert and the group tab keeper (widget
+          # templates arrive via innerHTML, where a <script> never runs).
+          # `.footer` itself is hidden in userCss.
           custom-footer = lib.concatMapStrings (f: "<script>${builtins.readFile f}</script>") [
             ./rer-ticker.js
             ./monitoring-alert.js
+            ./group-tabs.js
           ];
         }
         // lib.optionalAttrs (cfg.engine == "dynacat") {
