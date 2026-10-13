@@ -124,14 +124,51 @@ in
               title = "{{ trigger.json.title }}";
               message = "{{ trigger.json.message }}";
             };
+            # One tag per alert source, so gatus's "rétabli" replaces its own
+            # "en panne" instead of stacking a second notification.
+            tag = "{{ 'alert_' ~ (trigger.json.title | regex_replace(' (en panne|rétabli)$', '') | slugify) }}";
+            # Own Android channel and shade group, apart from the house notifications.
+            phone = {
+              inherit tag;
+              group = "Monitoring";
+              channel = "Monitoring";
+              importance = "high";
+            };
+            resolved = {
+              condition = "template";
+              value_template = "{{ trigger.json.title is search(' rétabli$') }}";
+            };
           in
           [
             {
               action = "persistent_notification.create";
-              inherit data;
+              data = data // {
+                notification_id = tag;
+              };
             }
           ]
-          ++ map (action: { inherit action data; }) cfg.notify;
+          ++ map (action: {
+            # A recovery is still worth seeing, but is no longer current after an hour.
+            "if" = [ resolved ];
+            "then" = [
+              {
+                inherit action;
+                data = data // {
+                  data = phone // {
+                    timeout = 3600;
+                  };
+                };
+              }
+            ];
+            "else" = [
+              {
+                inherit action;
+                data = data // {
+                  data = phone;
+                };
+              }
+            ];
+          }) cfg.notify;
       }
     ];
 
