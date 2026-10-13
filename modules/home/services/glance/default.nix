@@ -49,13 +49,6 @@ let
   fotmobButton = fotmob false;
   fotmobLink = fotmob true;
 
-  # FotMob has no basketball.
-  nbaStandings = linkButton {
-    title = "Ouvrir sur NBA.com";
-    url = "https://www.nba.com/standings";
-    icon = "https://cdn.nba.com/logos/leagues/logo-nba.svg";
-  };
-
   # Dynacat's calendar can show Sonarr/Radarr releases. It reaches them over
   # the shared traefik-proxy network, not their public routes, which sit
   # behind Authelia; `public-url` is only for the links it renders.
@@ -654,6 +647,10 @@ in
           .standings-top { border-left-color: hsl(135, 45%, 50%); }
           .standings-mid { border-left-color: hsl(38, 85%, 60%); }
           .standings-down { border-left-color: var(--color-negative); }
+          /* Results and table side by side (scoreboard.nix), stacked when
+             the column is narrow. */
+          .sports-split { display: flex; flex-wrap: wrap; gap: 2.5rem; }
+          .sports-scores, .sports-table { flex: 1 1 32rem; min-width: 0; }
 
           /* Host temperatures (temperatures.nix), same palette as the RER rows. */
           .temp-ok { color: hsl(135, 45%, 50%); }
@@ -962,6 +959,8 @@ in
             rank = 1000;
             size = "full";
             widgets = [
+              # Football: each competition's tab holds its results and its
+              # table side by side, so they cannot drift apart.
               {
                 type = "group";
                 widgets =
@@ -970,11 +969,14 @@ in
                       title = "Ligue des champions";
                       league = "soccer/uefa.champions";
                       button = fotmobButton "leagues/42/overview/champions-league";
+                      # 36 clubs in the league phase; the first 24 go on.
+                      standings = [ { collapseAfter = 24; } ];
                     }
                     {
                       title = "Ligue 1";
                       league = "soccer/fra.1";
                       button = fotmobButton "leagues/53/overview/ligue-1";
+                      standings = [ { } ];
                     }
                   ]
                   ++ [
@@ -998,49 +1000,34 @@ in
                         ];
                       }
                     ))
-                    # FotMob has no basketball, hence NBA.com.
-                    (liveWidget (
-                      import ./scoreboard.nix {
-                        title = "NBA";
-                        league = "basketball/nba";
-                        button = linkButton {
-                          title = "Ouvrir sur NBA.com";
-                          url = "https://www.nba.com/games";
-                          icon = "https://cdn.nba.com/logos/leagues/logo-nba.svg";
-                        };
-                      }
-                    ))
                   ];
               }
-              {
-                type = "group";
-                widgets = map (w: liveWidget (import ./standings.nix w)) [
-                  {
-                    title = "Classement Ligue 1";
-                    league = "soccer/fra.1";
-                    button = fotmobButton "leagues/53/table/ligue-1";
-                  }
-                  {
-                    title = "Classement LDC";
-                    league = "soccer/uefa.champions";
-                    # 36 clubs in the league phase.
-                    collapseAfter = 24;
-                    button = fotmobButton "leagues/42/table/champions-league";
-                  }
-                  {
-                    title = "NBA Est";
-                    league = "basketball/nba";
-                    table = 0;
-                    button = nbaStandings;
-                  }
-                  {
-                    title = "NBA Ouest";
-                    league = "basketball/nba";
-                    table = 1;
-                    button = nbaStandings;
-                  }
-                ];
-              }
+              # Basketball on its own, away from the football tabs. FotMob
+              # has no basketball, hence NBA.com.
+              (liveWidget (
+                import ./scoreboard.nix {
+                  title = "NBA";
+                  league = "basketball/nba";
+                  button = linkButton {
+                    title = "Ouvrir sur NBA.com";
+                    url = "https://www.nba.com/games";
+                    icon = "https://cdn.nba.com/logos/leagues/logo-nba.svg";
+                  };
+                  # Ten rows per conference: the playoff and play-in places.
+                  standings = [
+                    {
+                      table = 0;
+                      label = "Conférence Est";
+                      collapseAfter = 10;
+                    }
+                    {
+                      table = 1;
+                      label = "Conférence Ouest";
+                      collapseAfter = 10;
+                    }
+                  ];
+                }
+              ))
             ];
           };
           columns.right = {

@@ -1,5 +1,6 @@
 # A Dynacat custom-api widget for one ESPN league: live games, the five
-# latest results and the five next fixtures.
+# latest results and the five next fixtures, with the league's standings
+# beside them (standings.nix) when `standings` is set.
 #
 # ESPN's scoreboard returns only the next matchday by default and answers 400
 # to a `dates=YYYYMMDD-YYYYMMDD` range, but accepts a whole month
@@ -13,6 +14,10 @@
   league,
   # HTML put before the matches; the "open in FotMob" button.
   button ? "",
+  # Standings tables shown beside the matches (standings.nix arguments,
+  # without `league`), so a tab holds its competition's results and table
+  # together. Empty: matches only.
+  standings ? [ ],
 }:
 let
   layout = "2006-01-02T15:04Z07:00";
@@ -24,6 +29,10 @@ let
       "status.displayClock"
     else
       "status.type.shortDetail";
+
+  tables = builtins.concatStringsSep "\n" (
+    map (t: import ./standings.nix (t // { inherit league; })) standings
+  );
 in
 {
   type = "custom-api";
@@ -55,6 +64,9 @@ in
         <div class="grow text-truncate color-highlight" style="flex-basis:0">{{ .String (concat $away ".team.shortDisplayName") }}</div>
       </li>
     {{ end }}
+
+    <div class="sports-split">
+    <div class="sports-scores">
 
     {{ $months := uniq (list (offsetNow "-504h" | formatTime "200601") (now | formatTime "200601") (offsetNow "504h" | formatTime "200601")) }}
     {{ $batches := list }}
@@ -120,5 +132,22 @@ in
     {{ if and (eq (add $live (add $past $next)) 0) (eq $failed "") }}
       <p>Aucun match dans les trois semaines.</p>
     {{ end }}
+    </div>
+    ${
+      if standings == [ ] then
+        ""
+      else
+        ''
+          <div class="sports-table">
+            {{ $standings := newRequest "https://site.api.espn.com/apis/v2/sports/${league}/standings" | getResponse }}
+            {{ if ne $standings.Response.StatusCode 200 }}
+              <p class="color-negative">Classement indisponible : {{ $standings.Response.Status }}</p>
+            {{ else }}
+              ${tables}
+            {{ end }}
+          </div>
+        ''
+    }
+    </div>
   '';
 }
