@@ -49,8 +49,14 @@ version-controlling. Anything created through the UI lives in the instance's own
 storage and will not appear in this repo — check both before concluding
 something is not configured.
 
-Frontend cards are packaged in `packages/` (`bubble-card`, `lovelace-*`,
-`custom-brand-icons`) and referenced from the module.
+Frontend cards come from nixpkgs (`home-assistant-custom-lovelace-modules`)
+when it has them, otherwise from `packages/` (`lovelace-*`, `custom-brand-icons`),
+all listed in `customLovelaceModules`. The dashboard is in storage mode, so a
+new card also needs its resource registered (`lovelace/resources/create`).
+
+The Maison dashboard (Origami) reads helpers generated from
+`modules/nixos/services/home-assistant/origami/rooms.nix`; add a room there
+first.
 
 ## Local LLM
 

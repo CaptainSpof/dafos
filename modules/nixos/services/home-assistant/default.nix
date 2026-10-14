@@ -13,6 +13,9 @@ let
 
   cfg = config.${namespace}.services.home-assistant;
 
+  # Helpers of the Maison dashboard (Origami), generated from ./origami/rooms.nix.
+  origami = import ./origami/helpers.nix { inherit lib; };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -235,6 +238,24 @@ in
             dontBuild = true;
             doCheck = false;
           })
+          # Bubble Card's backend: keeps its modules as YAML files under
+          # /config/bubble_card/modules (see the tmpfiles rules below) and
+          # replaces the legacy `Bubble Card Modules` template sensor, which it
+          # migrates on first setup. Config-flow setup, no requirements.
+          (pkgs.buildHomeAssistantComponent rec {
+            owner = "Clooos";
+            domain = "bubble_card_tools";
+            version = "1.1.1";
+            src = pkgs.fetchFromGitHub {
+              inherit owner;
+              repo = "Bubble-Card-Tools";
+              rev = "v${version}";
+              hash = "sha256-It74yOhvPaLE81eb6JGir4NWRe+wIi1woapx6EoOEf0=";
+            };
+            dontConfigure = true;
+            dontBuild = true;
+            doCheck = false;
+          })
         ];
 
         customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
@@ -250,11 +271,16 @@ in
           mini-media-player
           multiple-entity-row
           mushroom
+          navbar-card
           pkgs.dafos.custom-brand-icons
           pkgs.dafos.lovelace-auto-entities
           pkgs.dafos.lovelace-fold-entity-row
           pkgs.dafos.lovelace-idf-mobilite
           pkgs.dafos.lovelace-layout-card
+          pkgs.dafos.lovelace-origami
+          pkgs.dafos.lovelace-origami-notifications
+          pkgs.dafos.lovelace-origami-weather
+          pkgs.dafos.lovelace-paper-buttons-row
           template-entity-row
           universal-remote-card
           vacuum-card
@@ -294,6 +320,10 @@ in
             };
           };
 
+          # Origami (github.com/hazymorning/origami), the theme of the Maison
+          # dashboard. Selected per user in the profile.
+          frontend.themes = "!include_dir_merge_named ${pkgs.dafos.lovelace-origami.themes}";
+
           homeassistant = {
             name = "MaisonDaf";
             unit_system = "metric";
@@ -313,6 +343,7 @@ in
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
+          "script origami" = origami.scripts;
 
           "template" = [
             {
@@ -340,9 +371,11 @@ in
             # integration as separate blocks.
             { binary_sensor = import ./sensors/binary_sensors.nix; }
             { sensor = import ./sensors/template_sensors.nix; }
+            # The Maison dashboard (Origami), see ./origami/rooms.nix.
+            { sensor = origami.sensors; }
           ];
 
-          input_boolean = import ./sensors/input_booleans.nix;
+          input_boolean = import ./sensors/input_booleans.nix // origami.input_boolean;
           input_datetime = import ./sensors/input_datetimes.nix;
           input_number = import ./sensors/input_numbers.nix;
           input_text = import ./sensors/input_texts.nix;
@@ -449,9 +482,37 @@ in
     # `users.users.hass.homeMode = "750"` plus a UMask override, which is a
     # deliberate weakening of upstream's hardening — left alone for now. The
     # two subdirectories are still worth creating; HA needs them to exist.
+    #
+    # Origami's Bubble Card modules are copied, not symlinked: Bubble Card
+    # Tools resolve()s every module path and rejects one that lands outside
+    # /config/bubble_card. `C+` re-copies them on each activation, so the pinned
+    # version wins over edits made in the module editor; modules of our own sit
+    # beside them under other names and stay editable.
     systemd.tmpfiles.rules = [
       "d /var/lib/hass/scripts 0775 hass hass -"
       "d /var/lib/hass/custom_templates 0775 hass hass -"
-    ];
+      "d /var/lib/hass/bubble_card 0755 hass hass -"
+      "d /var/lib/hass/bubble_card/modules 0755 hass hass -"
+    ]
+    ++
+      map
+        (
+          name:
+          "C+ /var/lib/hass/bubble_card/modules/origami_${name}.yaml - - - - ${pkgs.dafos.lovelace-origami.bubbleCardModules}/origami_${name}.yaml"
+        )
+        # Listed by hand: readDir on the fetched source would be IFD.
+        [
+          "base"
+          "button"
+          "climate"
+          "fan"
+          "header"
+          "light"
+          "media"
+          "popup"
+          "slider"
+          "speaker"
+          "tiles"
+        ];
   };
 }
