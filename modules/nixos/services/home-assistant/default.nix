@@ -199,6 +199,10 @@ in
             # in flake.nix (and with the version in its manifest.json).
             version = "7.1.27";
             src = inputs.hass-tapo-control;
+            # manifest.json pins `python-kasa==0.10.2`, nixpkgs ships 0.11. No
+            # module of 7.1.27 imports kasa; upstream relaxed the pin to
+            # `>=0.10.2` in 7.2.8. Drop this when bumping past it.
+            ignoreVersionRequirement = [ "python-kasa" ];
             dontConfigure = true;
             dontBuild = true;
             doCheck = false;
