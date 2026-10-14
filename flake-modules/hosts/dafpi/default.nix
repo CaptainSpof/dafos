@@ -133,7 +133,10 @@ in
           # endpoints (group dafpi), like dafoltop's.
           health-push.enable = true;
           # Logs for dafoltop's Dozzle (its firewall rule is above).
-          dozzle.agent.enable = true;
+          dozzle.agent = {
+            enable = true;
+            hub = "dafoltop";
+          };
           it-tools.enable = true;
           papra.enable = true;
           securo = {

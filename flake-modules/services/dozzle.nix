@@ -56,6 +56,11 @@
             default = 7007;
             description = "Port the agent listens on (published on the host).";
           };
+          hub = mkOption {
+            type = types.str;
+            example = "dafoltop";
+            description = "Host running the Dozzle hub this agent serves: the agent runs the hub's image.";
+          };
         };
       };
 
@@ -152,8 +157,14 @@
 
         (mkIf cfg.agent.enable {
           services.podman.containers.dozzle-agent = {
-            # The hub's version: nps's dozzle stack pins it.
-            image = "docker.io/amir20/dozzle:v11.3.0";
+            # The hub's image, which nps's dozzle stack pins: hub and agent speak
+            # a private protocol and move together at nps bumps. A literal here
+            # was also bumped on its own by Renovate (PR #114).
+            inherit
+              (inputs.self.nixosConfigurations.${cfg.agent.hub}.config.home-manager.users.daf.services.podman.containers.dozzle
+              )
+              image
+              ;
             exec = "agent";
             ports = [ "${toString cfg.agent.port}:7007" ];
             volumes = certs;
