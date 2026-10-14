@@ -141,6 +141,23 @@ in
       '';
     }
     {
+      # Origami counts zone.home, which never drops below 1 here: the kiosk
+      # iPad's GPS sits inside the zone. Real people only, like
+      # binary_sensor.global_maybe_home_occupied.
+      name = "Maison · People home";
+      unique_id = "dafos.sensor.people_home_count";
+      default_entity_id = "sensor.people_home_count";
+      icon = "mdi:account-group-outline";
+      state = ''
+        {{ states.person | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf'])
+           | selectattr('state', 'in', ['home', 'House']) | list | count }}
+      '';
+      # Same reason as the occupancy sensor: no false 0 while persons load.
+      availability = ''
+        {{ states.person | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf']) | list | count > 0 }}
+      '';
+    }
+    {
       name = "Greetings";
       unique_id = "dafos.sensor.greetings";
       default_entity_id = "sensor.greetings";
