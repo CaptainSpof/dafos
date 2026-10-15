@@ -148,6 +148,9 @@ in
           "led_ble" # discovered on the LAN
           "local_calendar"
           "mealie"
+          # Model Context Protocol server at /api/mcp, for Claude Code (.mcp.json).
+          # It serves the Assist API: only entities exposed to Assist are visible.
+          "mcp_server"
           "met"
           "meteo_france"
           "mobile_app"

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "home-assistant": {
+      "type": "http",
+      "url": "https://home.daftdaf.dev/api/mcp",
+      "headersHelper": "$HOME/.config/dafos/.claude/hass-mcp-headers.sh"
+    }
+  }
+}
