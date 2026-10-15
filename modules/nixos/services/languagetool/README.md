@@ -53,3 +53,30 @@ Check it from daftop over the tailnet:
 ```bash
 curl -s -d 'language=auto&text=Je suis aller' https://languagetool.daftdaf.dev/v2/check | jq '.matches[0].replacements[0]'
 ```
+
+## N-gram data
+
+`ngrams.languages` downloads upstream's n-gram indexes and points
+`languageModel` at them, which turns on the confusion rules (a/à, ces/ses,
+their/there) that the bare server lacks. `languagetool-ngrams.service` fetches
+each missing `<lang>/` once, then restarts the server; until it finishes, the
+server runs without them and only logs `ngram index dir … not found`.
+
+The first `nixos-rebuild switch` waits on that oneshot: fr is a 1.8 GB zip, en
+a 9 GB one. dafbox keeps the ~18 GB unpacked under `/home`, which the unit
+reaches through `ProtectHome=tmpfs` plus a read-only bind mount.
+
+Dropping a language from the list leaves its directory behind; delete it by
+hand.
+
+## Grammalecte
+
+LanguageTool's French rules miss things like the infinitive after « avoir l'air
+de » (« l'air de détecté »). `grammalecte.enable` runs a localhost Grammalecte
+server and sets LanguageTool's `grammalecteServer`, so its matches come back
+through the same `/v2/check` API as `grammalecte_*` rule ids. LanguageTool
+already drops Grammalecte's typography-only rules (apostrophes, spaces).
+
+nixpkgs' server crashes on Python 3.12+ (its vendored bottle imports `cgi` and
+`imp`); the module patches it onto the packaged bottle. Two worker processes
+use about 200 MB.

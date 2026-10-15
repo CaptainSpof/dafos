@@ -91,7 +91,18 @@ in
     services.sunshine = enabled;
     services.moondeck-buddy = enabled;
     # Backs the DMS proofreader plugin (localhost only).
-    services.languagetool = enabled;
+    services.languagetool = {
+      enable = true;
+      # ~18 GB unpacked: /home has the room, the 100G root does not.
+      ngrams = {
+        languages = [
+          "fr"
+          "en"
+        ];
+        directory = "/home/languagetool-ngrams";
+      };
+      grammalecte = enabled;
+    };
 
     suites = {
       desktop = enabled;
