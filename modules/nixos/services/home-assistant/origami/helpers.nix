@@ -84,6 +84,35 @@ let
 
   openings = filter (o: o != null) (map (r: r.opening) rooms);
 
+  # Temperature trend for the thermostat cards. `derivative` gives °C/h over
+  # half an hour; its name is ASCII so its entity id is predictable
+  # (sensor.climate_rate_<id>), as YAML platform sensors take no
+  # default_entity_id.
+  rateSensor = r: {
+    platform = "derivative";
+    name = "Climate rate ${r.id}";
+    unique_id = "dafos.sensor.climate_rate_${r.id}";
+    source = r.temperature;
+    unit_time = "h";
+    time_window = "00:30:00";
+    round = 2;
+  };
+
+  # The card shows this sensor's icon: rising, falling or steady, with a dead
+  # band of ±0.2 °C/h so sensor noise does not flip the arrow.
+  trendSensor = r: {
+    name = "Climate · ${r.name} trend";
+    unique_id = "dafos.sensor.climate_${r.id}_trend";
+    default_entity_id = "sensor.climate_${r.id}_trend";
+    unit_of_measurement = "°C/h";
+    state = "{{ states('sensor.climate_rate_${r.id}') | float(0) | round(1) }}";
+    availability = "{{ has_value('sensor.climate_rate_${r.id}') }}";
+    icon = ''
+      {% set d = states('sensor.climate_rate_${r.id}') | float(0) %}
+      {{ 'mdi:arrow-top-right' if d > 0.2 else 'mdi:arrow-bottom-right' if d < -0.2 else 'mdi:arrow-right' }}
+    '';
+  };
+
   # Rows for the notifications card. It shows an input_boolean's translated
   # state ("Activé") under the name and has no option to change it, so each
   # notice is a sensor whose state is the text to show, and `off` otherwise.
@@ -126,8 +155,11 @@ let
   };
 in
 {
+  platformSensors = map rateSensor climateRooms;
+
   sensors =
     map climateSensor climateRooms
+    ++ map trendSensor climateRooms
     ++ map noticeSensor notices
     ++ [
       {

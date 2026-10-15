@@ -381,7 +381,8 @@ in
               ];
             }
           ]
-          ++ (import ./sensors/sensors.nix);
+          ++ (import ./sensors/sensors.nix)
+          ++ origami.platformSensors;
 
           # No `zha:` block: ZHA is config-flow only. It reads the coordinator
           # from the config entry and `create_zha_config` overwrites whatever
