@@ -5,8 +5,9 @@
 #
 # Running -> live countdown notification (chronometer) with "Annuler".
 # Paused  -> static notification with the time left.
-# Finished -> rings on the alarm stream (through silent mode), every 30 s for
-#             3 min, until "Arrêter" is pressed on the phone or the device.
+# Finished -> alarm notification plus "Minuteur terminé" spoken on the alarm
+#             stream (through silent mode), every 30 s for 3 min, until
+#             "Arrêter" is pressed on the phone or the device.
 # Idle    -> notification cleared.
 #
 # mode: restart, so any state change (including the acknowledgement) cuts
@@ -33,9 +34,13 @@ variables:
 
 
 
+
+
        else '%02d:%02d' % (s // 60, s % 60) }}
   reste: >-
     {% set s = states('sensor.minuteur_restant') | int(0) %} {{ '%d:%02d:%02d' % (s // 3600, s // 60 % 60, s % 60) if s >= 3600
+
+
 
 
 
@@ -108,6 +113,18 @@ actions:
                       actions:
                         - action: MINUTEUR_STOP
                           title: Arrêter
+                # The notification sound alone is not an alarm: Android 15+
+                # "notification cooldown" mutes it after a burst of HA
+                # notifications (silent in the 2026-10-15 2-min test). Spoken
+                # text on the alarm stream is not a notification sound.
+                - action: notify.mobile_app_dafphone
+                  data:
+                    message: TTS
+                    data:
+                      tts_text: Minuteur terminé
+                      media_stream: alarm_stream
+                      priority: high
+                      ttl: 0
                 - delay: "00:00:30"
       - conditions:
           - condition: template
