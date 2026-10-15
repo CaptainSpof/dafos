@@ -83,128 +83,172 @@ let
   };
 
   openings = filter (o: o != null) (map (r: r.opening) rooms);
-in
-{
-  sensors = map climateSensor climateRooms ++ [
+
+  # Rows for the notifications card. It shows an input_boolean's translated
+  # state ("Activé") under the name and has no option to change it, so each
+  # notice is a sensor whose state is the text to show, and `off` otherwise.
+  notices = [
     {
-      name = "Climate · Temperature peaks";
-      unique_id = "dafos.sensor.climate_temperature_peaks";
-      default_entity_id = "sensor.climate_temperature_peaks";
-      icon = "mdi:thermometer";
-      state = peak "temperature" climateRooms "max";
-      attributes.lowest = peak "temperature" climateRooms "min";
+      id = "dishwasher_done";
+      name = "Lave-vaisselle";
+      source = "input_boolean.kitchen_dishwasher_is_finished";
+      text = "Terminé";
+      icon = "mdi:dishwasher";
     }
     {
-      name = "Climate · Humidity peaks";
-      unique_id = "dafos.sensor.climate_humidity_peaks";
-      default_entity_id = "sensor.climate_humidity_peaks";
-      icon = "mdi:water-percent";
-      state = peak "humidity" humidityRooms "max";
-      attributes.lowest = peak "humidity" humidityRooms "min";
+      id = "washing_machine_done";
+      name = "Lave-linge";
+      source = "input_boolean.laundry_washing_machine_is_finished";
+      text = "Terminé";
+      icon = "mdi:washing-machine";
     }
     {
-      name = "Climate · Temperature average";
-      unique_id = "dafos.sensor.temperature_average";
-      default_entity_id = "sensor.temperature_average";
-      unit_of_measurement = "°C";
-      device_class = "temperature";
-      state = average "temperature" climateRooms 1;
+      id = "dryer_done";
+      name = "Sèche-linge";
+      source = "input_boolean.laundry_dryer_is_finished";
+      text = "Terminé";
+      icon = "mdi:tumble-dryer";
     }
     {
-      name = "Climate · Humidity average";
-      unique_id = "dafos.sensor.humidity_average";
-      default_entity_id = "sensor.humidity_average";
-      unit_of_measurement = "%";
-      device_class = "humidity";
-      state = average "humidity" humidityRooms 0;
-    }
-    {
-      name = "Climate · Home";
-      unique_id = "dafos.sensor.climate_home";
-      default_entity_id = "sensor.climate_home";
-      icon = "mdi:home-thermometer";
-      state = rounded "sensor.temperature_average" 1 "?";
-      attributes = {
-        temperature_average = rounded "sensor.temperature_average" 0 "?";
-        humidity_average = rounded "sensor.humidity_average" 0 "?";
-        windows_open = ''
-          {% set w = states('sensor.windows_open_count') %}
-          {{ '?' if w in ['unknown', 'unavailable'] else w }}
-        '';
-        front_door_open = "{{ states('binary_sensor.entry_door_sensor_opening') }}";
-      };
-    }
-    {
-      # Doors, really: the house has no window contacts. Same list as the
-      # room cards, so the header count matches what the cards show.
-      name = "Climate · Openings open count";
-      unique_id = "dafos.sensor.windows_open_count";
-      default_entity_id = "sensor.windows_open_count";
-      icon = "mdi:door-open";
-      state = ''
-        {{ ${builtins.toJSON openings} | select('is_state', 'on') | list | count }}
-      '';
-    }
-    {
-      # Origami counts zone.home, which never drops below 1 here: the kiosk
-      # iPad's GPS sits inside the zone. Real people only, like
-      # binary_sensor.global_maybe_home_occupied.
-      name = "Maison · People home";
-      unique_id = "dafos.sensor.people_home_count";
-      default_entity_id = "sensor.people_home_count";
-      icon = "mdi:account-group-outline";
-      state = ''
-        {{ states.person | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf'])
-           | selectattr('state', 'in', ['home', 'House']) | list | count }}
-      '';
-      # Same reason as the occupancy sensor: no false 0 while persons load.
-      availability = ''
-        {{ states.person | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf']) | list | count > 0 }}
-      '';
-    }
-    {
-      # The small line above the greeting: the next event within a day from
-      # the family or Cédric's calendar, otherwise today's date. A calendar
-      # without an upcoming event has no `message`, which showed `undefined`.
-      name = "Maison · Greeting subtitle";
-      unique_id = "dafos.sensor.greeting_subtitle";
-      default_entity_id = "sensor.greeting_subtitle";
-      icon = "mdi:calendar-today";
-      state = ''
-        {% set ns = namespace(start=none, msg=none) %}
-        {% for c in ['calendar.famille', 'calendar.dafonseca_cedric_gmail_com'] %}
-          {% set s = state_attr(c, 'start_time') | as_datetime(none) %}
-          {% set s = s | as_local if s is not none else none %}
-          {% if s is not none and state_attr(c, 'message') and s < now() + timedelta(days=1)
-                and (ns.start is none or s < ns.start) %}
-            {% set ns.start = s %}{% set ns.msg = state_attr(c, 'message') %}
-          {% endif %}
-        {% endfor %}
-        {% if ns.msg %}
-          {{ ('maintenant' if ns.start <= now() else ns.start.strftime('%H:%M')) ~ ' · ' ~ ns.msg }}
-        {% else %}
-          {% set days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
-          {% set months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
-                           'août', 'septembre', 'octobre', 'novembre', 'décembre'] %}
-          {{ days[now().weekday()] ~ ' ' ~ now().day ~ ' ' ~ months[now().month - 1] }}
-        {% endif %}
-      '';
-    }
-    {
-      name = "Greetings";
-      unique_id = "dafos.sensor.greetings";
-      default_entity_id = "sensor.greetings";
-      icon = "mdi:hand-wave";
-      state = ''
-        {% set h = now().hour %}
-        {% if h < 5 %}encore debout ?
-        {% elif h < 12 %}bonjour
-        {% elif h < 18 %}bon après-midi
-        {% elif h < 22 %}bonsoir
-        {% else %}bonne nuit{% endif %}
-      '';
+      id = "mail";
+      name = "Courrier";
+      source = "input_boolean.outdoor_check_mailbox";
+      text = "Arrivé";
+      icon = "mdi:mailbox-up";
     }
   ];
+
+  noticeSensor = n: {
+    inherit (n) name icon;
+    unique_id = "dafos.sensor.maison_notice_${n.id}";
+    default_entity_id = "sensor.maison_notice_${n.id}";
+    state = "{{ '${n.text}' if is_state('${n.source}', 'on') else 'off' }}";
+  };
+in
+{
+  sensors =
+    map climateSensor climateRooms
+    ++ map noticeSensor notices
+    ++ [
+      {
+        name = "Climate · Temperature peaks";
+        unique_id = "dafos.sensor.climate_temperature_peaks";
+        default_entity_id = "sensor.climate_temperature_peaks";
+        icon = "mdi:thermometer";
+        state = peak "temperature" climateRooms "max";
+        attributes.lowest = peak "temperature" climateRooms "min";
+      }
+      {
+        name = "Climate · Humidity peaks";
+        unique_id = "dafos.sensor.climate_humidity_peaks";
+        default_entity_id = "sensor.climate_humidity_peaks";
+        icon = "mdi:water-percent";
+        state = peak "humidity" humidityRooms "max";
+        attributes.lowest = peak "humidity" humidityRooms "min";
+      }
+      {
+        name = "Climate · Temperature average";
+        unique_id = "dafos.sensor.temperature_average";
+        default_entity_id = "sensor.temperature_average";
+        unit_of_measurement = "°C";
+        device_class = "temperature";
+        state = average "temperature" climateRooms 1;
+      }
+      {
+        name = "Climate · Humidity average";
+        unique_id = "dafos.sensor.humidity_average";
+        default_entity_id = "sensor.humidity_average";
+        unit_of_measurement = "%";
+        device_class = "humidity";
+        state = average "humidity" humidityRooms 0;
+      }
+      {
+        name = "Climate · Home";
+        unique_id = "dafos.sensor.climate_home";
+        default_entity_id = "sensor.climate_home";
+        icon = "mdi:home-thermometer";
+        state = rounded "sensor.temperature_average" 1 "?";
+        attributes = {
+          temperature_average = rounded "sensor.temperature_average" 0 "?";
+          humidity_average = rounded "sensor.humidity_average" 0 "?";
+          windows_open = ''
+            {% set w = states('sensor.windows_open_count') %}
+            {{ '?' if w in ['unknown', 'unavailable'] else w }}
+          '';
+          front_door_open = "{{ states('binary_sensor.entry_door_sensor_opening') }}";
+        };
+      }
+      {
+        # Doors, really: the house has no window contacts. Same list as the
+        # room cards, so the header count matches what the cards show.
+        name = "Climate · Openings open count";
+        unique_id = "dafos.sensor.windows_open_count";
+        default_entity_id = "sensor.windows_open_count";
+        icon = "mdi:door-open";
+        state = ''
+          {{ ${builtins.toJSON openings} | select('is_state', 'on') | list | count }}
+        '';
+      }
+      {
+        # Origami counts zone.home, which never drops below 1 here: the kiosk
+        # iPad's GPS sits inside the zone. Real people only, like
+        # binary_sensor.global_maybe_home_occupied.
+        name = "Maison · People home";
+        unique_id = "dafos.sensor.people_home_count";
+        default_entity_id = "sensor.people_home_count";
+        icon = "mdi:account-group-outline";
+        state = ''
+          {{ states.person | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf'])
+             | selectattr('state', 'in', ['home', 'House']) | list | count }}
+        '';
+        # Same reason as the occupancy sensor: no false 0 while persons load.
+        availability = ''
+          {{ states.person | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf']) | list | count > 0 }}
+        '';
+      }
+      {
+        # The small line above the greeting: the next event within a day from
+        # the family or Cédric's calendar, otherwise today's date. A calendar
+        # without an upcoming event has no `message`, which showed `undefined`.
+        name = "Maison · Greeting subtitle";
+        unique_id = "dafos.sensor.greeting_subtitle";
+        default_entity_id = "sensor.greeting_subtitle";
+        icon = "mdi:calendar-today";
+        state = ''
+          {% set ns = namespace(start=none, msg=none) %}
+          {% for c in ['calendar.famille', 'calendar.dafonseca_cedric_gmail_com'] %}
+            {% set s = state_attr(c, 'start_time') | as_datetime(none) %}
+            {% set s = s | as_local if s is not none else none %}
+            {% if s is not none and state_attr(c, 'message') and s < now() + timedelta(days=1)
+                  and (ns.start is none or s < ns.start) %}
+              {% set ns.start = s %}{% set ns.msg = state_attr(c, 'message') %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.msg %}
+            {{ ('maintenant' if ns.start <= now() else ns.start.strftime('%H:%M')) ~ ' · ' ~ ns.msg }}
+          {% else %}
+            {% set days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
+            {% set months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
+                             'août', 'septembre', 'octobre', 'novembre', 'décembre'] %}
+            {{ days[now().weekday()] ~ ' ' ~ now().day ~ ' ' ~ months[now().month - 1] }}
+          {% endif %}
+        '';
+      }
+      {
+        name = "Greetings";
+        unique_id = "dafos.sensor.greetings";
+        default_entity_id = "sensor.greetings";
+        icon = "mdi:hand-wave";
+        state = ''
+          {% set h = now().hour %}
+          {% if h < 5 %}encore debout ?
+          {% elif h < 12 %}bonjour
+          {% elif h < 18 %}bon après-midi
+          {% elif h < 22 %}bonsoir
+          {% else %}bonne nuit{% endif %}
+        '';
+      }
+    ];
 
   input_boolean = {
     # Opens the climate table under the rooms header
