@@ -18,6 +18,8 @@ let
 
   plugins = import ./jellyfin-plugins.nix { inherit lib pkgs; };
 
+  mkXmlPin = import ./xml-pin.nix { inherit lib pkgs; };
+
   jellyfinPluginDir = "${config.nps.storageBaseDir}/streaming/jellyfin/data/plugins";
 
   # What the plugins directory should contain: the 12.x set, plus whichever of
@@ -115,46 +117,30 @@ let
 
   jellyfinEncodingXml = "${config.nps.storageBaseDir}/streaming/jellyfin/encoding.xml";
 
-  # Updates only elements whose value differs, so an already-correct file is
-  # left byte-for-byte alone. A list is one `<string>` per item, and its
-  # children are rewritten as a whole when they differ. xmlstarlet refuses
-  # malformed input, and that is deliberate: a broken file makes Jellyfin
-  # reset the whole thing, so better to fail the start loudly than to patch
-  # around it. A missing file (first
-  # start) is skipped; Jellyfin writes its defaults and the next start pins.
-  pinJellyfinEncoding = pkgs.writeShellApplication {
+  pinJellyfinEncoding = mkXmlPin {
     name = "pin-jellyfin-encoding";
-    runtimeInputs = [ pkgs.xmlstarlet ];
-    text = ''
-      f=${lib.escapeShellArg jellyfinEncodingXml}
-      [ -e "$f" ] || exit 0
-    ''
-    + lib.concatStrings (
-      lib.mapAttrsToList (
-        name: value:
-        if lib.isList value then
-          ''
-            xpath=/EncodingOptions/${name}
-            if [ "$(xmlstarlet sel -t -v "count($xpath)" "$f")" = 0 ]; then
-              xmlstarlet ed -L -s /EncodingOptions -t elem -n ${name} "$f"
-            fi
-            if [ "$(xmlstarlet sel -t -m "$xpath/string" -v . -n "$f" || true)" != ${lib.escapeShellArg (lib.concatStringsSep "\n" value)} ]; then
-              xmlstarlet ed -L -d "$xpath/*" ${
-                lib.concatMapStringsSep " " (v: ''-s "$xpath" -t elem -n string -v ${lib.escapeShellArg v}'') value
-              } "$f"
-            fi
-          ''
-        else
-          ''
-            xpath=/EncodingOptions/${name}
-            if [ "$(xmlstarlet sel -t -v "count($xpath)" "$f")" = 0 ]; then
-              xmlstarlet ed -L -s /EncodingOptions -t elem -n ${name} -v ${lib.escapeShellArg value} "$f"
-            elif [ "$(xmlstarlet sel -t -v "$xpath" "$f")" != ${lib.escapeShellArg value} ]; then
-              xmlstarlet ed -L -u "$xpath" -v ${lib.escapeShellArg value} "$f"
-            fi
-          ''
-      ) jellyfinEncoding
-    );
+    file = jellyfinEncodingXml;
+    root = "EncodingOptions";
+    values = jellyfinEncoding;
+  };
+
+  # Jellyfin Enhanced's admin settings, pinned the same way; the rest of the
+  # file stays the plugin page's.
+  #
+  # - RemoveContinueWatchingEnabled: the per-user toggle only shows the "Remove
+  #   from Continue Watching" menu and hides the card in the open page. The
+  #   server-side filter on the resume endpoints runs only when this admin
+  #   switch (or HiddenContentEnabled) is on, so with it off every removed item
+  #   came back on reload and was never hidden on Android TV (2026-10-15).
+  jellyfinEnhanced = {
+    RemoveContinueWatchingEnabled = "true";
+  };
+
+  pinJellyfinEnhanced = mkXmlPin {
+    name = "pin-jellyfin-enhanced";
+    file = "${jellyfinPluginDir}/configurations/Jellyfin.Plugin.JellyfinEnhanced.xml";
+    root = "PluginConfiguration";
+    values = jellyfinEnhanced;
   };
 
   # qBittorrent shares gluetun's network namespace, and nps starts it the
@@ -286,7 +272,10 @@ in
               autoUpdate = "local";
 
               # Merges with nps' own ExecStartPre list (volume dirs, templates).
-              extraConfig.Service.ExecStartPre = [ (lib.getExe pinJellyfinEncoding) ];
+              extraConfig.Service.ExecStartPre = [
+                (lib.getExe pinJellyfinEncoding)
+                (lib.getExe pinJellyfinEnhanced)
+              ];
 
               # `volumeMap`, not `volumes`. nps builds `volumes` as
               #

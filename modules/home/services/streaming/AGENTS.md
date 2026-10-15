@@ -103,6 +103,15 @@ survives only until the container restarts. That is why
 `EnableLdapProfileImageSync` stays off: it would re-fetch every avatar on every
 restart.
 
+One element of Jellyfin Enhanced's admin config is pinned the way `encoding.xml`
+is: `jellyfinEnhanced` in [default.nix](default.nix) forces
+`RemoveContinueWatchingEnabled` on from an `ExecStartPre`. The per-user toggle
+only shows the "Remove from Continue Watching" menu; the server-side filter that
+keeps removed items out of the resume row on every client runs only with this
+admin switch (or `HiddenContentEnabled`) on. Without it, removed items came back
+on reload and never left Android TV. The rest of that file stays the plugin
+page's. `xml-pin.nix` generates both pins.
+
 ## Two login paths, one set of groups
 
 `jellyfin_admin` and `jellyfin_user` — created by nps for the OIDC half — gate
