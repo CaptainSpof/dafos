@@ -84,7 +84,8 @@
       opening = "binary_sensor.veranda_door_sensor_contact";
       climate = "climate.veranda_radiator";
       presence = "binary_sensor.everything_presence_lite_61659c_occupancy";
-      media = "media_player.daftv";
+      # The Google TV Streamer (Android TV Remote), which drives daftv over CEC
+      media = "media_player.televiseur_living_room_2";
       vacuum = "input_boolean.veranda_vacuum";
       extras = [ ];
     }
