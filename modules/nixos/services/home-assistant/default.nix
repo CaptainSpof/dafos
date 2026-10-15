@@ -426,6 +426,20 @@ in
         webrtc.listen = ":8555";
       };
     };
+    # go2rtc saves every stream HA adds into its first config file and answers
+    # 400 when it cannot: the module's file is in the read-only store, so the
+    # first WebRTC offer after each go2rtc start failed. /dev/null as the first
+    # file takes the write and keeps nothing, so the camera credentials HA
+    # sends are never written to disk; the real settings follow it.
+    systemd.services.go2rtc.serviceConfig.ExecStart = mkForce (
+      lib.escapeShellArgs [
+        (lib.getExe' config.services.go2rtc.package "go2rtc")
+        "-config"
+        "/dev/null"
+        "-config"
+        ((pkgs.formats.yaml { }).generate "go2rtc.yaml" config.services.go2rtc.settings)
+      ]
+    );
 
     # HA's failed logins, copied to a plain file for CrowdSec (the
     # crowdsecurity/home-assistant collection, wired in the crowdsec HM
