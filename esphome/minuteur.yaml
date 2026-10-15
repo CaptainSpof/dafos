@@ -1,0 +1,531 @@
+# Kitchen countdown timer on a Waveshare ESP32-S3-Knob-Touch-LCD-1.8
+# (Guition JC3636K518C). The knob sets the duration, a tap starts / pauses /
+# resumes, a long press cancels. The device owns the countdown, so it keeps
+# working without Wi-Fi; Home Assistant only mirrors it to the phone (see
+# minuteur-automation.yaml). Build and flash with ./run, see AGENTS.md.
+substitutions:
+  screen_timeout: 30s
+  # Ignore the touch or turn that wakes a dark screen, so waking it never
+  # starts or stops anything.
+  wake_guard_ms: "600"
+esphome:
+  name: minuteur
+  friendly_name: Minuteur
+  platformio_options:
+    board_build.flash_mode: dio
+    board_build.f_flash: 80000000L
+    board_build.f_cpu: 240000000L
+  on_boot:
+    - priority: -100
+      then:
+        - delay: 1s
+        - script.execute: haptic_init
+        - script.execute: wake
+        - script.execute: paint
+        - script.execute: publish
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 16MB
+  cpu_frequency: 240MHz
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+psram:
+  mode: octal
+  speed: 80MHz
+logger:
+api:
+  encryption:
+    key: !secret minuteur_api_key
+  actions:
+    # Phone notification button "Arrêter": cancels a running timer or
+    # silences a finished one.
+    - action: stop
+      then:
+        - script.execute: stop
+ota:
+  - platform: esphome
+    password: !secret minuteur_ota_password
+# No SSID here on purpose: on first boot the device opens the "Minuteur"
+# access point and the Wi-Fi network is chosen from its captive portal.
+wifi:
+  ap:
+    ssid: Minuteur
+    password: !secret minuteur_ap_password
+  on_connect:
+    - lambda: |-
+        ESP_LOGI("wifi", "Connected on channel %d",
+                 (int) wifi::global_wifi_component->get_wifi_channel());
+captive_portal:
+time:
+  - platform: homeassistant
+    id: ha_time
+# --- Hardware (pinout from tomereli/coffee-knob and KrX3D/WaveShare-Knob-Esp32S3)
+spi:
+  id: display_qspi
+  type: quad
+  clk_pin: 13
+  data_pins: [15, 16, 17, 18]
+display:
+  - platform: mipi_spi
+    id: main_display
+    model: JC3636W518V2
+    data_rate: 80MHz
+    color_order: rgb
+    cs_pin: 14
+    reset_pin: 21
+    invert_colors: true
+    auto_clear_enabled: false
+    update_interval: never
+    dimensions:
+      height: 360
+      width: 360
+# Touch (CST816 at 0x15) and the DRV2605 haptic driver (0x5A) share this bus.
+i2c:
+  id: ic_bus
+  sda: 11
+  scl: 12
+touchscreen:
+  - platform: cst816
+    id: touch
+    display: main_display
+    interrupt_pin: GPIO9
+    reset_pin: GPIO10
+    on_touch:
+      - script.execute: wake
+output:
+  - platform: ledc
+    pin: GPIO47
+    id: backlight_pwm
+light:
+  - platform: monochromatic
+    id: backlight
+    output: backlight_pwm
+    internal: true
+    restore_mode: ALWAYS_ON
+    default_transition_length: 0s
+    on_turn_off:
+      - lvgl.pause:
+    on_turn_on:
+      - lvgl.resume:
+# The knob gives one pulse per detent on A (clockwise) or B (anticlockwise),
+# not a quadrature signal, so the stock rotary_encoder reads nothing.
+external_components:
+  - source:
+      type: git
+      url: https://github.com/KrX3D/WaveShare-Knob-Esp32S3
+      ref: 74511f2260e3e7ce3c84ca3136569307cfb8b26b
+    components: [rotary_encoder_custom]
+sensor:
+  - platform: rotary_encoder_custom
+    id: knob
+    internal: true
+    pin_a: GPIO8
+    pin_b: GPIO7
+    restore_mode: ALWAYS_ZERO
+    on_clockwise:
+      - script.execute:
+          id: turn
+          dir: 1
+    on_anticlockwise:
+      - script.execute:
+          id: turn
+          dir: -1
+  - platform: wifi_signal
+    name: Signal Wi-Fi
+    entity_category: diagnostic
+    update_interval: 60s
+  - platform: template
+    name: Canal Wi-Fi
+    entity_category: diagnostic
+    accuracy_decimals: 0
+    update_interval: 60s
+    lambda: "return wifi::global_wifi_component->get_wifi_channel();"
+  # Seconds left, published on every state change (not every second).
+  - platform: template
+    id: remaining_sensor
+    name: Restant
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: never
+  - platform: template
+    id: total_sensor
+    name: Durée
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: never
+text_sensor:
+  # idle | running | paused | finished
+  - platform: template
+    id: state_sensor
+    name: État
+    update_interval: never
+  # UTC ISO 8601 end time while running, empty otherwise. Plain text rather
+  # than a timestamp entity, so the empty value is not an invalid datetime.
+  - platform: template
+    id: end_sensor
+    name: Fin
+    update_interval: never
+button:
+  - platform: template
+    name: Arrêter
+    on_press:
+      - script.execute: stop
+# --- State
+globals:
+  # Duration chosen with the knob, kept across reboots.
+  - id: set_s
+    type: int
+    restore_value: true
+    initial_value: "300"
+  # 0 idle, 1 running, 2 paused, 3 finished
+  - id: state
+    type: int
+    initial_value: "0"
+  - id: total_s
+    type: int
+    initial_value: "0"
+  - id: end_ms
+    type: uint32_t
+    initial_value: "0"
+  - id: left_ms
+    type: uint32_t
+    initial_value: "0"
+  - id: shown_s
+    type: int
+    initial_value: "-1"
+  - id: screen_on
+    type: bool
+    initial_value: "true"
+  - id: wake_ms
+    type: uint32_t
+    initial_value: "0"
+interval:
+  - interval: 200ms
+    then:
+      - if:
+          condition:
+            lambda: "return id(state) == 1;"
+          then:
+            - lambda: |-
+                int32_t left = (int32_t) (id(end_ms) - millis());
+                if (left <= 0) {
+                  id(state) = 3;
+                  id(left_ms) = 0;
+                  return;
+                }
+                id(left_ms) = left;
+            - if:
+                condition:
+                  lambda: "return id(state) == 3;"
+                then:
+                  - script.execute: ring
+                else:
+                  - script.execute: paint
+# --- Behaviour
+script:
+  - id: haptic_init
+    then:
+      # The DRV2605 acks writes but NAKs reads, so the RAR/esphome-drv2605
+      # component fails setup. Write the three setup registers directly:
+      # out of standby, LRA mode, LRA effect library.
+      - lambda: |-
+          const uint8_t addr = 0x5A;
+          uint8_t mode[2] = {0x01, 0x00};
+          uint8_t feedback[2] = {0x1A, 0x80};
+          uint8_t library[2] = {0x03, 0x06};
+          id(ic_bus)->write(addr, mode, 2);
+          id(ic_bus)->write(addr, feedback, 2);
+          id(ic_bus)->write(addr, library, 2);
+  # DRV2605 library effects: 1 strong click, 7 soft bump, 10 double click,
+  # 16 one-second alert.
+  - id: haptic
+    parameters:
+      effect: int
+    mode: parallel
+    max_runs: 4
+    then:
+      - lambda: |-
+          const uint8_t addr = 0x5A;
+          uint8_t wave[2] = {0x04, (uint8_t) effect};
+          uint8_t end[2] = {0x05, 0x00};
+          uint8_t go[2] = {0x0C, 0x01};
+          id(ic_bus)->write(addr, wave, 2);
+          id(ic_bus)->write(addr, end, 2);
+          id(ic_bus)->write(addr, go, 2);
+  # Lights the screen and restarts the dim timer. Records when a dark screen
+  # was woken so that input is swallowed by the wake guard.
+  - id: wake
+    then:
+      - lambda: |-
+          if (!id(screen_on)) id(wake_ms) = millis();
+          id(screen_on) = true;
+      - light.turn_on:
+          id: backlight
+          brightness: 80%
+      - script.execute: screen_timer
+  - id: screen_timer
+    mode: restart
+    then:
+      - delay: $screen_timeout
+      - if:
+          condition:
+            lambda: "return id(state) == 3;"
+          then:
+            # A finished timer keeps the screen lit until acknowledged.
+            - script.execute: screen_timer
+          else:
+            - if:
+                condition:
+                  lambda: "return id(state) == 1;"
+                then:
+                  # Running: stay readable, dimmed.
+                  - light.turn_on:
+                      id: backlight
+                      brightness: 15%
+                else:
+                  - lambda: "id(screen_on) = false;"
+                  - light.turn_off: backlight
+  - id: turn
+    parameters:
+      dir: int
+    then:
+      - if:
+          condition:
+            lambda: "return !id(screen_on) || millis() - id(wake_ms) < ${wake_guard_ms};"
+          then:
+            - script.execute: wake
+          else:
+            - script.execute: wake
+            - if:
+                condition:
+                  lambda: "return id(state) == 3;"
+                then:
+                  - script.execute: stop
+                else:
+                  - if:
+                      condition:
+                        lambda: "return id(state) == 0;"
+                      then:
+                        # Finer steps for short durations: 10 s below 1 min, 30 s
+                        # below 10 min, 1 min below 1 h, then 5 min up to 3 h.
+                        - lambda: |-
+                            int s = id(set_s);
+                            int ref = dir > 0 ? s : s - 1;
+                            int step = ref < 60 ? 10 : ref < 600 ? 30 : ref < 3600 ? 60 : 300;
+                            s += dir * step;
+                            if (s < 10) s = 10;
+                            if (s > 10800) s = 10800;
+                            id(set_s) = s;
+                        - script.execute:
+                            id: haptic
+                            effect: 7
+                        - script.execute: paint
+  - id: tap
+    then:
+      - if:
+          condition:
+            lambda: "return millis() - id(wake_ms) >= ${wake_guard_ms};"
+          then:
+            - lambda: |-
+                switch (id(state)) {
+                  case 0:  // start
+                    id(total_s) = id(set_s);
+                    id(left_ms) = (uint32_t) id(set_s) * 1000;
+                    id(end_ms) = millis() + id(left_ms);
+                    id(state) = 1;
+                    break;
+                  case 1:  // pause
+                    id(left_ms) = id(end_ms) - millis();
+                    id(state) = 2;
+                    break;
+                  case 2:  // resume
+                    id(end_ms) = millis() + id(left_ms);
+                    id(state) = 1;
+                    break;
+                }
+            - if:
+                condition:
+                  lambda: "return id(state) == 3;"
+                then:
+                  - script.execute: stop
+                else:
+                  - script.execute:
+                      id: haptic
+                      effect: 1
+                  - script.execute: paint
+                  - script.execute: publish
+  - id: long_press
+    then:
+      - if:
+          condition:
+            lambda: "return id(state) == 1 || id(state) == 2;"
+          then:
+            - script.execute: stop
+  # Back to idle from any state: cancels a countdown or silences an alarm.
+  - id: stop
+    then:
+      - lambda: |-
+          id(state) = 0;
+          id(left_ms) = 0;
+      - script.stop: ring
+      - script.execute:
+          id: haptic
+          effect: 10
+      - script.execute: wake
+      - script.execute: paint
+      - script.execute: publish
+  # Vibrates for up to two minutes. The "finished" state outlives it, so the
+  # phone alarm keeps ringing until someone acknowledges either end.
+  - id: ring
+    mode: single
+    then:
+      - script.execute: publish
+      - script.execute: wake
+      - script.execute: paint
+      - repeat:
+          count: 60
+          then:
+            - if:
+                condition:
+                  lambda: "return id(state) == 3;"
+                then:
+                  - script.execute:
+                      id: haptic
+                      effect: 16
+            - delay: 2s
+  - id: publish
+    then:
+      - lambda: |-
+          static const char *const names[] = {"idle", "running", "paused", "finished"};
+          id(state_sensor).publish_state(names[id(state)]);
+          id(total_sensor).publish_state(id(state) == 0 ? 0 : id(total_s));
+          id(remaining_sensor).publish_state((id(left_ms) + 999) / 1000);
+          std::string end = "";
+          auto now = id(ha_time).now();
+          if (id(state) == 1 && now.is_valid()) {
+            ESPTime t = ESPTime::from_epoch_utc(now.timestamp + (id(left_ms) + 500) / 1000);
+            end = t.strftime("%Y-%m-%dT%H:%M:%SZ");
+          }
+          id(end_sensor).publish_state(end);
+  - id: paint
+    then:
+      - lambda: |-
+          int s = id(state) == 0 ? id(set_s) : (int) ((id(left_ms) + 999) / 1000);
+          if (s == id(shown_s) && id(state) == 1) return;
+          id(shown_s) = s;
+      - lvgl.label.update:
+          id: lbl_time
+          text: !lambda |-
+            static char b[16];
+            int s = id(shown_s);
+            if (s >= 3600) snprintf(b, sizeof(b), "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60);
+            else snprintf(b, sizeof(b), "%02d:%02d", s / 60, s % 60);
+            return b;
+      - lvgl.label.update:
+          id: lbl_state
+          text: !lambda |-
+            static const char *const t[] = {"Minuteur", "En cours", "En pause", "Terminé !"};
+            return t[id(state)];
+      - lvgl.label.update:
+          id: lbl_hint
+          text: !lambda |-
+            static const char *const t[] = {
+              "Toucher pour lancer",
+              "Toucher : pause\nAppui long : annuler",
+              "Toucher : reprendre\nAppui long : annuler",
+              "Toucher pour arrêter",
+            };
+            return t[id(state)];
+      - lvgl.arc.update:
+          id: ring_arc
+          value: !lambda |-
+            int v;
+            if (id(state) == 0) v = id(set_s) >= 3600 ? 1000 : id(set_s) * 1000 / 3600;
+            else if (id(state) == 3) v = 1000;
+            else v = id(total_s) > 0 ? (int) (id(left_ms) / id(total_s)) : 0;
+            return v;
+          indicator:
+            arc_color: !lambda |-
+              static const uint32_t c[] = {0x4FA3FF, 0xF5A623, 0x8A8A8A, 0xE53935};
+              return lv_color_hex(c[id(state)]);
+# --- Screen
+font:
+  - file: "gfonts://Roboto Mono@500"
+    id: font_time
+    size: 68
+    glyphs: "0123456789:"
+  - file: "gfonts://Roboto@400"
+    id: font_text
+    size: 22
+    glyphs: " !:'-.,0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzàâçéèêëîïôùûü"
+lvgl:
+  displays: [main_display]
+  touchscreens:
+    - touchscreen_id: touch
+      long_press_time: 800ms
+  buffer_size: 25%
+  color_depth: 16
+  bg_color: 0x000000
+  pages:
+    - id: main_page
+      bg_color: 0x000000
+      widgets:
+        - arc:
+            id: ring_arc
+            align: CENTER
+            width: 344
+            height: 344
+            rotation: 270
+            start_angle: 0
+            end_angle: 360
+            min_value: 0
+            max_value: 1000
+            value: 0
+            adjustable: false
+            clickable: false
+            arc_width: 14
+            arc_color: 0x202020
+            indicator:
+              arc_width: 14
+              arc_color: 0x4FA3FF
+            knob:
+              bg_opa: TRANSP
+        - label:
+            id: lbl_state
+            align: CENTER
+            y: -78
+            text: "Minuteur"
+            text_font: font_text
+            text_color: 0x9A9A9A
+        - label:
+            id: lbl_time
+            align: CENTER
+            y: -6
+            text: "05:00"
+            text_font: font_time
+            text_color: 0xFFFFFF
+        - label:
+            id: lbl_hint
+            align: CENTER
+            y: 74
+            text: "Toucher pour lancer"
+            text_font: font_text
+            text_align: CENTER
+            text_color: 0x9A9A9A
+        # Transparent full-screen hit area, declared last so it sits on top
+        # and receives every tap.
+        - obj:
+            align: CENTER
+            width: 360
+            height: 360
+            bg_opa: TRANSP
+            border_width: 0
+            on_short_click:
+              - script.execute: tap
+            on_long_press:
+              - script.execute: long_press

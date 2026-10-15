@@ -1,0 +1,120 @@
+# UI automation mirroring the knob timer (minuteur.yaml) on dafphone. Not
+# loaded by Nix: like the other UI automations, it is pushed through the
+# config API once the device is adopted (see AGENTS.md), and this file is its
+# source of truth.
+#
+# Running -> live countdown notification (chronometer) with "Annuler".
+# Paused  -> static notification with the time left.
+# Finished -> rings on the alarm stream (through silent mode), every 30 s for
+#             3 min, until "Arrêter" is pressed on the phone or the device.
+# Idle    -> notification cleared.
+#
+# mode: restart, so any state change (including the acknowledgement) cuts
+# the ringing loop short.
+alias: Cuisine · Minuteur
+description: Relaie le minuteur à molette (ESPHome) sur dafphone.
+mode: restart
+triggers:
+  - trigger: state
+    entity_id: [sensor.minuteur_etat, sensor.minuteur_fin]
+    not_to: [unavailable, unknown]
+    id: state
+  - trigger: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: MINUTEUR_STOP
+    id: stop
+variables:
+  etat: "{{ states('sensor.minuteur_etat') }}"
+  fin: "{{ states('sensor.minuteur_fin') }}"
+  # 754 -> "12:34", 4000 -> "1:06:40"
+  total: >-
+    {% set s = states('sensor.minuteur_duree') | int(0) %} {{ '%d:%02d:%02d' % (s // 3600, s // 60 % 60, s % 60) if s >= 3600
+
+
+
+       else '%02d:%02d' % (s // 60, s % 60) }}
+  reste: >-
+    {% set s = states('sensor.minuteur_restant') | int(0) %} {{ '%d:%02d:%02d' % (s // 3600, s // 60 % 60, s % 60) if s >= 3600
+
+
+
+       else '%02d:%02d' % (s // 60, s % 60) }}
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: stop
+        sequence:
+          - action: button.press
+            target:
+              entity_id: button.minuteur_arreter
+      - conditions:
+          - condition: template
+            value_template: >-
+              {{ etat == 'running' and fin is match('\d{4}-\d{2}-\d{2}T') }}
+        sequence:
+          - action: notify.mobile_app_dafphone
+            data:
+              title: Minuteur · {{ total }}
+              message: Fin à {{ as_local(as_datetime(fin)).strftime('%H:%M') }}
+              data:
+                tag: minuteur
+                group: Tâches
+                channel: Minuteur
+                chronometer: true
+                when: "{{ as_timestamp(fin) | int }}"
+                live_update: true
+                alert_once: true
+                sticky: "true"
+                actions:
+                  - action: MINUTEUR_STOP
+                    title: Annuler
+      - conditions:
+          - condition: template
+            value_template: "{{ etat == 'paused' }}"
+        sequence:
+          - action: notify.mobile_app_dafphone
+            data:
+              title: Minuteur · en pause
+              message: "{{ reste }} restantes sur {{ total }}"
+              data:
+                tag: minuteur
+                group: Tâches
+                channel: Minuteur
+                alert_once: true
+                sticky: "true"
+                actions:
+                  - action: MINUTEUR_STOP
+                    title: Annuler
+      - conditions:
+          - condition: template
+            value_template: "{{ etat == 'finished' }}"
+        sequence:
+          - repeat:
+              count: 7
+              sequence:
+                - action: notify.mobile_app_dafphone
+                  data:
+                    title: Minuteur terminé
+                    message: "{{ total }} écoulées"
+                    data:
+                      tag: minuteur
+                      group: Tâches
+                      channel: alarm_stream
+                      priority: high
+                      ttl: 0
+                      sticky: "true"
+                      actions:
+                        - action: MINUTEUR_STOP
+                          title: Arrêter
+                - delay: "00:00:30"
+      - conditions:
+          - condition: template
+            value_template: "{{ etat == 'idle' }}"
+        sequence:
+          - action: notify.mobile_app_dafphone
+            data:
+              message: clear_notification
+              data:
+                tag: minuteur

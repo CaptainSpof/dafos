@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Runs an ESPHome command on one of the device configs in this directory,
+# from a work directory outside the repo so the decrypted secrets.yaml and the
+# .esphome build tree never land in git.
+#
+#   esphome/run config minuteur
+#   esphome/run compile minuteur
+#   esphome/run upload minuteur --device minuteur.local
+#   esphome/run logs minuteur
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+  echo "usage: $0 <esphome command> <device> [esphome args...]" >&2
+  exit 1
+fi
+cmd=$1 device=$2
+shift 2
+
+here=$(cd "$(dirname "$0")" && pwd)
+repo=$(dirname "$here")
+work=${XDG_CACHE_HOME:-$HOME/.cache}/dafos-esphome
+
+mkdir -p "$work"
+cp "$here/$device.yaml" "$work/"
+# Decrypted only for the duration of the command.
+trap 'rm -f "$work/secrets.yaml"' EXIT
+(umask 077 && sops -d "$repo/secrets/dafoltop/esphome.yaml" >"$work/secrets.yaml")
+
+# esphome from the flake's own nixpkgs pin.
+nix shell --inputs-from "$repo" nixpkgs#esphome -c esphome "$cmd" "$work/$device.yaml" "$@"

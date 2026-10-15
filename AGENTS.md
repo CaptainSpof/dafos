@@ -89,6 +89,8 @@ Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkOpt'`,
   workflow
 - [templates/AGENTS.md](templates/AGENTS.md) — devenv project templates
   (`devinit`)
+- [esphome/AGENTS.md](esphome/AGENTS.md) — DIY ESPHome device firmware (build,
+  first flash, board quirks)
 - [modules/home/services/AGENTS.md](modules/home/services/AGENTS.md) —
   self-hosted service stack
 
