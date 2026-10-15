@@ -14,6 +14,10 @@
 # - opening: door or window contact, shown on the card and counted as open.
 # - vacuum: the input_boolean that selects the room for
 #   script.global_vacuum_selected_rooms, or null.
+# - manual: the sensor-light blueprint's bypass for the room (lights switched on
+#   by hand, motion ignored) and its Bypass Auto OFF delay in minutes. The
+#   delay lives in the UI automation; keep the two in sync. The card draws a
+#   ring that empties over that delay while the bypass is on.
 # - extras: plugs and devices for the pop-up. Never the fridges, the server
 #   plug or the stove switch: nothing here is turned off by "Tout éteindre".
 {
@@ -49,6 +53,7 @@
       presence = "binary_sensor.living_room_combined_presence_sensors";
       media = null;
       vacuum = "input_boolean.living_room_vacuum";
+      manual = null;
       extras = [ "binary_sensor.living_room_stove_is_maybe_burning" ];
     }
     {
@@ -88,6 +93,7 @@
       # The Google TV Streamer (Android TV Remote), which drives daftv over CEC
       media = "media_player.televiseur_living_room_2";
       vacuum = "input_boolean.veranda_vacuum";
+      manual = null;
       extras = [ ];
     }
     {
@@ -115,6 +121,10 @@
       presence = "binary_sensor.kitchen_motion_sensor_occupancy";
       media = null;
       vacuum = "input_boolean.kitchen_vacuum";
+      manual = {
+        bypass = "input_boolean.kitchen_lights_bypass_toggle";
+        minutes = 60;
+      };
       extras = [ "switch.kitchen_dishwasher_plug_switch" ];
     }
     {
@@ -133,6 +143,10 @@
       presence = "binary_sensor.entry_motion_sensor_occupancy";
       media = null;
       vacuum = "input_boolean.entry_vacuum";
+      manual = {
+        bypass = "input_boolean.entry_lights_bypass_toggle";
+        minutes = 45;
+      };
       extras = [ "switch.entry_plug" ];
     }
     {
@@ -151,6 +165,7 @@
       presence = null;
       media = null;
       vacuum = "input_boolean.study_room_vacuum";
+      manual = null;
       extras = [ "vacuum.dafspi" ];
     }
     {
@@ -182,6 +197,7 @@
       presence = null;
       media = null;
       vacuum = null;
+      manual = null;
       extras = [ "switch.bedroom_bed_plug" ];
     }
     {
@@ -216,6 +232,7 @@
       presence = null;
       media = null;
       vacuum = null;
+      manual = null;
       extras = [
         "switch.desk_plug"
         "button.wake_on_lan_dafbox"
@@ -237,6 +254,7 @@
       presence = null;
       media = null;
       vacuum = null;
+      manual = null;
       extras = [ ];
     }
     {
@@ -256,6 +274,7 @@
       presence = null;
       media = null;
       vacuum = null;
+      manual = null;
       extras = [ ];
     }
     {
@@ -274,6 +293,10 @@
       presence = "binary_sensor.stairs_motion_sensor_upstairs_occupancy";
       media = null;
       vacuum = null;
+      manual = {
+        bypass = "input_boolean.stairs_bypass_toggle";
+        minutes = 25;
+      };
       extras = [ ];
     }
     {
@@ -292,6 +315,7 @@
       presence = null;
       media = null;
       vacuum = null;
+      manual = null;
       extras = [ ];
     }
     {
@@ -310,6 +334,7 @@
       presence = "binary_sensor.outdoor_motion_sensor_occupancy";
       media = null;
       vacuum = null;
+      manual = null;
       extras = [ ];
     }
   ];
