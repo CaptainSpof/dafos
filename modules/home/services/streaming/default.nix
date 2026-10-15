@@ -157,6 +157,29 @@ let
     );
   };
 
+  # qBittorrent shares gluetun's network namespace, and nps starts it the
+  # instant gluetun's container is up -- before gluetun has created tun0. On
+  # the default "any interface" setting libtorrent enumerates interfaces once,
+  # binds only eth*/lo, and never picks tun0 up later; gluetun's firewall then
+  # drops every announce ("Operation not permitted") and qui shows every
+  # torrent as Tracker Down. Binding to tun0 by name makes libtorrent retry the
+  # interface until it exists, and keeps traffic off eth* if the VPN drops.
+  # qBittorrent rewrites its config on exit, so this runs before each start.
+  qbittorrentConf = "${config.nps.storageBaseDir}/qbittorrent/qbittorrent/qBittorrent/qBittorrent.conf";
+
+  pinQbittorrentInterface = pkgs.writeShellApplication {
+    name = "pin-qbittorrent-interface";
+    runtimeInputs = [ pkgs.crudini ];
+    text = ''
+      f=${lib.escapeShellArg qbittorrentConf}
+      [ -e "$f" ] || exit 0
+      # nospace matches qBittorrent's own key=value, so a no-op run leaves the
+      # file alone.
+      crudini --ini-options=nospace --set "$f" BitTorrent 'Session\Interface' tun0
+      crudini --ini-options=nospace --set "$f" BitTorrent 'Session\InterfaceName' tun0
+    '';
+  };
+
   brandingXml = pkgs.writeText "branding.xml" ''
     <?xml version="1.0" encoding="utf-8"?>
     <BrandingOptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -349,6 +372,8 @@ in
               ports = [ "8888:8888" ];
             };
             qbittorrent = {
+              # Merges with nps' own ExecStartPre list (volume dirs, templates).
+              extraConfig.Service.ExecStartPre = [ (lib.getExe pinQbittorrentInterface) ];
               volumes = lib.mkForce [
                 "/mnt/data/yahrr:/yahrr"
                 # Its own directory, not radarr's: sharing it handed qbittorrent

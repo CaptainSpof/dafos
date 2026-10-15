@@ -113,3 +113,19 @@ about who is allowed in.
 LDAP binds as `CN=readonly,OU=people,…` — `CN=`, not `uid=`, which is lldap's
 own bind-DN form and what Authelia already uses against this directory. `uid`
 remains the username attribute.
+
+## qBittorrent is pinned to tun0
+
+qBittorrent shares gluetun's network namespace and starts the moment gluetun's
+container does — before gluetun has created `tun0`. On the default "any
+interface" setting libtorrent binds the `eth*`/`lo` addresses it sees at startup
+and never picks `tun0` up afterwards, so gluetun's firewall drops every announce
+(`Operation not permitted`) and qui shows every torrent as **Tracker Down**.
+That happened on 2026-10-15 after both containers restarted together.
+
+`pinQbittorrentInterface` in [default.nix](default.nix) writes
+`Session\Interface=tun0` into the stateful `qBittorrent.conf` from an
+`ExecStartPre`, like `jellyfinEncoding`. Bound by name, qBittorrent logs
+`The configured network interface is invalid` at start, then listens on `tun0`
+as soon as it appears, and rebinds when gluetun recreates it on a reconnect.
+Choosing a different interface in the WebUI lasts only until the next restart.
