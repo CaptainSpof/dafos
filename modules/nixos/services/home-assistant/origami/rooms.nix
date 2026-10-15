@@ -11,6 +11,8 @@
 #   controls, groups only (a ceiling, not its bulbs), with French names.
 # - temperature, humidity: sources of sensor.climate_<id>; null shows `?`.
 # - opening: door or window contact, shown on the card and counted as open.
+# - vacuum: the input_boolean that selects the room for
+#   script.global_vacuum_selected_rooms, or null.
 # - extras: plugs and devices for the pop-up. Never the fridges, the server
 #   plug or the stove switch: nothing here is turned off by "Tout éteindre".
 {
@@ -45,6 +47,7 @@
       climate = "climate.sejour";
       presence = "binary_sensor.living_room_combined_presence_sensors";
       media = null;
+      vacuum = "input_boolean.living_room_vacuum";
       extras = [ "binary_sensor.living_room_stove_is_maybe_burning" ];
     }
     {
@@ -82,6 +85,7 @@
       climate = "climate.veranda_radiator";
       presence = "binary_sensor.everything_presence_lite_61659c_occupancy";
       media = "media_player.daftv";
+      vacuum = "input_boolean.veranda_vacuum";
       extras = [ ];
     }
     {
@@ -108,6 +112,7 @@
       climate = "climate.kitchen_radiator_thermostat";
       presence = "binary_sensor.kitchen_motion_sensor_occupancy";
       media = null;
+      vacuum = "input_boolean.kitchen_vacuum";
       extras = [ "switch.kitchen_dishwasher_plug_switch" ];
     }
     {
@@ -125,6 +130,7 @@
       climate = null;
       presence = "binary_sensor.entry_motion_sensor_occupancy";
       media = null;
+      vacuum = "input_boolean.entry_vacuum";
       extras = [ "switch.entry_plug" ];
     }
     {
@@ -142,6 +148,7 @@
       climate = null;
       presence = null;
       media = null;
+      vacuum = "input_boolean.study_room_vacuum";
       extras = [ "vacuum.dafspi" ];
     }
     {
@@ -172,6 +179,7 @@
       climate = "climate.bedroom_radiator_thermostat";
       presence = null;
       media = null;
+      vacuum = null;
       extras = [ "switch.bedroom_bed_plug" ];
     }
     {
@@ -205,6 +213,7 @@
       climate = "climate.desk_radiator_thermostat";
       presence = null;
       media = null;
+      vacuum = null;
       extras = [
         "switch.desk_plug"
         "button.wake_on_lan_dafbox"
@@ -225,6 +234,7 @@
       climate = "climate.parents_bedroom_radiator";
       presence = null;
       media = null;
+      vacuum = null;
       extras = [ ];
     }
     {
@@ -243,6 +253,7 @@
       climate = "climate.bathroom_radiator";
       presence = null;
       media = null;
+      vacuum = null;
       extras = [ ];
     }
     {
@@ -260,6 +271,7 @@
       climate = null;
       presence = "binary_sensor.stairs_motion_sensor_upstairs_occupancy";
       media = null;
+      vacuum = null;
       extras = [ ];
     }
     {
@@ -277,6 +289,7 @@
       climate = null;
       presence = null;
       media = null;
+      vacuum = null;
       extras = [ ];
     }
     {
@@ -294,6 +307,7 @@
       climate = null;
       presence = "binary_sensor.outdoor_motion_sensor_occupancy";
       media = null;
+      vacuum = null;
       extras = [ ];
     }
   ];
