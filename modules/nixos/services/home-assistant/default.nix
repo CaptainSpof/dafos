@@ -243,9 +243,12 @@ in
             doCheck = false;
           })
           # Bubble Card's backend: keeps its modules as YAML files under
-          # /config/bubble_card/modules (see the tmpfiles rules below) and
-          # replaces the legacy `Bubble Card Modules` template sensor, which it
-          # migrates on first setup. Config-flow setup, no requirements.
+          # /config/bubble_card/modules (see the tmpfiles rules below). Replaced
+          # the `Bubble Card Modules` template sensor. Its automatic migration
+          # did not run here (the Origami files were already in place), so
+          # daf_module and square_light_card were written over its websocket
+          # API by hand on 2026-10-15.
+          # Config-flow setup, no requirements.
           (pkgs.buildHomeAssistantComponent rec {
             owner = "Clooos";
             domain = "bubble_card_tools";
@@ -350,25 +353,6 @@ in
           "script origami" = origami.scripts;
 
           "template" = [
-            {
-              trigger = [
-                {
-                  trigger = "event";
-                  event_type = "bubble_card_update_modules";
-                }
-              ];
-              sensor = [
-                {
-                  name = "Bubble Card Modules";
-                  state = "saved";
-                  icon = "mdi:puzzle";
-                  attributes = {
-                    modules = "{{ trigger.event.data.modules }}";
-                    last_updated = "{{ trigger.event.data.last_updated }}";
-                  };
-                }
-              ];
-            }
             # Template binary sensors + sensors migrated from the legacy
             # `binary_sensor:`/`sensor: - platform: template` format that HA
             # 2026.6 removed. They now live under the modern `template:`
