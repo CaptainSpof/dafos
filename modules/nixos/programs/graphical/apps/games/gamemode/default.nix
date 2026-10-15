@@ -81,11 +81,10 @@ in
         };
       };
 
-      security.wrappers.gamemode = {
-        owner = "root";
-        group = "root";
-        source = "${getExe' pkgs.gamemode "gamemoderun"}";
-        capabilities = "cap_sys_ptrace,cap_sys_nice+pie";
-      };
+      # No security.wrappers for gamemoderun: it is a shell script that only
+      # preloads libgamemodeauto, needs no capabilities, and NixOS refuses
+      # capability wrappers around scripts (ensure-wrapper-integrity, env var
+      # injection). Renicing goes through the module's gamemoded wrapper
+      # (enableRenice above).
     };
 }
