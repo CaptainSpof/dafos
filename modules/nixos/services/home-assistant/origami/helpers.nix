@@ -9,9 +9,14 @@
 { lib }:
 
 let
-  inherit (lib) concatMapStringsSep filter;
+  inherit (lib)
+    concatMapStringsSep
+    filter
+    listToAttrs
+    nameValuePair
+    ;
 
-  rooms = import ./rooms.nix;
+  inherit (import ./rooms.nix) floors rooms;
 
   climateRooms = filter (r: r.temperature != null) rooms;
   humidityRooms = filter (r: r.humidity != null) rooms;
@@ -158,6 +163,34 @@ in
       '';
     }
     {
+      # The small line above the greeting: the next event within a day from
+      # the family or Cédric's calendar, otherwise today's date. A calendar
+      # without an upcoming event has no `message`, which showed `undefined`.
+      name = "Maison · Greeting subtitle";
+      unique_id = "dafos.sensor.greeting_subtitle";
+      default_entity_id = "sensor.greeting_subtitle";
+      icon = "mdi:calendar-today";
+      state = ''
+        {% set ns = namespace(start=none, msg=none) %}
+        {% for c in ['calendar.famille', 'calendar.dafonseca_cedric_gmail_com'] %}
+          {% set s = state_attr(c, 'start_time') | as_datetime(none) %}
+          {% set s = s | as_local if s is not none else none %}
+          {% if s is not none and state_attr(c, 'message') and s < now() + timedelta(days=1)
+                and (ns.start is none or s < ns.start) %}
+            {% set ns.start = s %}{% set ns.msg = state_attr(c, 'message') %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.msg %}
+          {{ ('maintenant' if ns.start <= now() else ns.start.strftime('%H:%M')) ~ ' · ' ~ ns.msg }}
+        {% else %}
+          {% set days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
+          {% set months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
+                           'août', 'septembre', 'octobre', 'novembre', 'décembre'] %}
+          {{ days[now().weekday()] ~ ' ' ~ now().day ~ ' ' ~ months[now().month - 1] }}
+        {% endif %}
+      '';
+    }
+    {
       name = "Greetings";
       unique_id = "dafos.sensor.greetings";
       default_entity_id = "sensor.greetings";
@@ -179,12 +212,24 @@ in
       name = "Maison · Room climate table";
       icon = "mdi:table";
     };
-    # Shows the rooms beyond the pinned ones
-    all_rooms = {
-      name = "Maison · All rooms";
-      icon = "mdi:home-group";
-    };
-  };
+  }
+  # Unfolds a floor's rooms; rooms with a light on show while folded too
+  // listToAttrs (
+    map (
+      f:
+      nameValuePair "maison_floor_${f.id}" {
+        name = "Maison · ${f.name} unfolded";
+        icon = "mdi:home-floor-${
+          if f.id == "basement" then
+            "negative-1"
+          else if f.id == "first_floor" then
+            "1"
+          else
+            "0"
+        }";
+      }
+    ) floors
+  );
 
   scripts = {
     # The plus and minus buttons of the thermostat rows
