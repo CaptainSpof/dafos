@@ -2,7 +2,7 @@
   description = "Here lies my shipwrecks. I mean fleet of hosts.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     # nixpkgs.url = "github:K900/nixpkgs/plasma-6.4";
 
     # Home Manager
