@@ -334,6 +334,9 @@ in
           # dashboard. Selected per user in the profile.
           frontend.themes = "!include_dir_merge_named ${pkgs.dafos.lovelace-origami.themes}";
 
+          # The go2rtc server below, for WebRTC camera streams.
+          go2rtc.url = "http://127.0.0.1:1984";
+
           homeassistant = {
             name = "MaisonDaf";
             unit_system = "metric";
@@ -404,7 +407,24 @@ in
     networking.firewall = {
       allowedTCPPorts = [
         8123
+        # go2rtc WebRTC media (below)
+        8555
       ];
+      allowedUDPPorts = [ 8555 ];
+    };
+
+    # go2rtc for camera streams. Without it HA's go2rtc integration has no
+    # server and cameras only offer HLS, which takes 5-10 s to show the first
+    # frame; with it the frontend gets WebRTC. HA registers each camera's
+    # source (credentials included) through the API at runtime, so nothing
+    # secret lives here. API and RTSP stay on loopback: go2rtc has no auth.
+    services.go2rtc = {
+      enable = true;
+      settings = {
+        api.listen = "127.0.0.1:1984";
+        rtsp.listen = "127.0.0.1:8554";
+        webrtc.listen = ":8555";
+      };
     };
 
     # HA's failed logins, copied to a plain file for CrowdSec (the
