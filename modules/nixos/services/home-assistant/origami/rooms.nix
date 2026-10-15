@@ -4,7 +4,8 @@
 #
 # - id: the HA area id, and the suffix of the room's helpers and pop-up hash.
 # - floor: one of `floors`. Each floor folds; rooms with a light on stay shown.
-# - main: shown on its folded floor while none of the floor's rooms is lit.
+# - favorite: always shown on its floor, folded or not; the other rooms show
+#   while folded only when lit (or their PC, TV or vacuum is on).
 # - device: a PC or TV whose on state colours the card's icon (the lights tint
 #   the icon's background instead).
 # - light: the group behind the room card's icon colour. lights: the pop-up's
@@ -37,7 +38,7 @@
       floor = "ground_floor";
       name = "Salon";
       icon = "mdi:table-furniture";
-      main = true;
+      favorite = true;
       device = null;
       light = "light.living_room_ceiling_lights";
       lights = [ ];
@@ -55,7 +56,7 @@
       floor = "ground_floor";
       name = "Véranda";
       icon = "mdi:television";
-      main = true;
+      favorite = true;
       device = {
         entity = "binary_sensor.veranda_maybe_daftv_running";
         color = "var(--state-media_player-active-color)";
@@ -94,7 +95,7 @@
       floor = "ground_floor";
       name = "Cuisine";
       icon = "mdi:knife";
-      main = false;
+      favorite = false;
       device = null;
       light = "light.kitchen_all_lights";
       lights = [
@@ -121,7 +122,7 @@
       floor = "ground_floor";
       name = "Entrée";
       icon = "mdi:door";
-      main = false;
+      favorite = false;
       device = null;
       light = "light.entry_ceiling_lights";
       lights = [ ];
@@ -139,7 +140,7 @@
       floor = "ground_floor";
       name = "Bureau RdC";
       icon = "mdi:typewriter";
-      main = false;
+      favorite = false;
       device = null;
       light = null;
       lights = [ ];
@@ -157,7 +158,7 @@
       floor = "first_floor";
       name = "Chambre";
       icon = "mdi:bed-double";
-      main = true;
+      favorite = true;
       device = null;
       light = "light.bedroom_all_lights";
       lights = [
@@ -188,7 +189,7 @@
       floor = "first_floor";
       name = "Bureau";
       icon = "mdi:desktop-classic";
-      main = true;
+      favorite = true;
       device = {
         entity = "binary_sensor.desk_maybe_dafbox_running";
         color = "var(--state-switch-active-color)";
@@ -225,7 +226,7 @@
       floor = "first_floor";
       name = "Chambre Parents";
       icon = "mdi:bed-king";
-      main = false;
+      favorite = false;
       device = null;
       light = null;
       lights = [ ];
@@ -243,7 +244,7 @@
       floor = "first_floor";
       name = "Salle de bain";
       icon = "mdi:shower";
-      main = false;
+      favorite = false;
       device = null;
       light = null;
       lights = [ ];
@@ -262,7 +263,7 @@
       floor = "first_floor";
       name = "Escaliers";
       icon = "mdi:stairs";
-      main = false;
+      favorite = false;
       device = null;
       light = "light.stairs_ceiling_lights";
       lights = [ ];
@@ -280,7 +281,7 @@
       floor = "basement";
       name = "Buanderie";
       icon = "mdi:washing-machine";
-      main = false;
+      favorite = false;
       device = null;
       light = null;
       lights = [ ];
@@ -298,7 +299,7 @@
       floor = "basement";
       name = "Palier";
       icon = "mdi:coach-lamp";
-      main = false;
+      favorite = false;
       device = null;
       light = "light.outdoor_ceiling_light";
       lights = [ ];
