@@ -7,7 +7,8 @@
 # - main: shown on its folded floor while none of the floor's rooms is lit.
 # - device: a PC or TV whose on state colours the card's icon (the lights tint
 #   the icon's background instead).
-# - light: the group behind the room card's icon colour; lights: its pop-up.
+# - light: the group behind the room card's icon colour. lights: the pop-up's
+#   controls, groups only (a ceiling, not its bulbs), with French names.
 # - temperature, humidity: sources of sensor.climate_<id>; null shows `?`.
 # - opening: door or window contact, shown on the card and counted as open.
 # - extras: plugs and devices for the pop-up. Never the fridges, the server
@@ -37,10 +38,7 @@
       main = true;
       device = null;
       light = "light.living_room_ceiling_lights";
-      lights = [
-        "light.living_room_ceiling_left_light"
-        "light.living_room_ceiling_right_light"
-      ];
+      lights = [ ];
       temperature = "sensor.living_room_current_temperature";
       humidity = null;
       opening = null;
@@ -61,10 +59,22 @@
       };
       light = "light.veranda_all_lights";
       lights = [
-        "light.veranda_ceiling_light"
-        "light.veranda_side_lamp_light"
-        "light.veranda_tv_light"
-        "light.veranda_color_panel"
+        {
+          entity = "light.veranda_ceiling_light";
+          name = "Plafonnier";
+        }
+        {
+          entity = "light.veranda_side_lamp_light";
+          name = "Lampe d'appoint";
+        }
+        {
+          entity = "light.veranda_tv_light";
+          name = "Lampe télé";
+        }
+        {
+          entity = "light.veranda_color_panel";
+          name = "Panneau couleur";
+        }
       ];
       temperature = "sensor.veranda_temperature_sensor_temperature";
       humidity = "sensor.veranda_temperature_sensor_humidity";
@@ -83,10 +93,14 @@
       device = null;
       light = "light.kitchen_all_lights";
       lights = [
-        "light.kitchen_ceiling_1_light"
-        "light.kitchen_ceiling_2_light"
-        "light.kitchen_ceiling_3_light"
-        "light.kitchen_cabinet_lights"
+        {
+          entity = "light.kitchen_ceiling_lights";
+          name = "Plafonnier";
+        }
+        {
+          entity = "light.kitchen_cabinet_lights";
+          name = "Lumières armoire";
+        }
       ];
       temperature = "sensor.kitchen_temperature_sensor_temperature_2";
       humidity = "sensor.kitchen_temperature_sensor_humidity_2";
@@ -104,11 +118,7 @@
       main = false;
       device = null;
       light = "light.entry_ceiling_lights";
-      lights = [
-        "light.entry_ceiling_1_light"
-        "light.entry_ceiling_2_light"
-        "light.entry_ceiling_3_light"
-      ];
+      lights = [ ];
       temperature = null;
       humidity = null;
       opening = "binary_sensor.entry_door_sensor_opening";
@@ -143,12 +153,18 @@
       device = null;
       light = "light.bedroom_all_lights";
       lights = [
-        "light.bedroom_ceiling_1_light"
-        "light.bedroom_ceiling_2_light"
-        "light.bedroom_ceiling_3_light"
-        "light.bedroom_bedside_left_light"
-        "light.bedroom_bedside_right_light"
-        "light.bedroom_strobe_lights"
+        {
+          entity = "light.bedroom_ceiling_lights";
+          name = "Plafonnier";
+        }
+        {
+          entity = "light.bedroom_bedside_lights";
+          name = "Lampes de chevet";
+        }
+        {
+          entity = "light.bedroom_strobe_lights";
+          name = "Lampes Studio";
+        }
       ];
       temperature = "sensor.bedroom_bed_side_temperature_sensor_temperature";
       humidity = "sensor.bedroom_bed_side_temperature_sensor_humidity";
@@ -170,11 +186,18 @@
       };
       light = "light.desk_all_lights";
       lights = [
-        "light.desk_ceiling_1_light"
-        "light.desk_ceiling_2_light"
-        "light.desk_ceiling_3_light"
-        "light.desk_desk_light"
-        "light.desk_color_panel"
+        {
+          entity = "light.desk_ceiling_lights";
+          name = "Plafonnier";
+        }
+        {
+          entity = "light.desk_desk_light";
+          name = "Lampe de bureau";
+        }
+        {
+          entity = "light.desk_color_panel";
+          name = "Panneau couleur";
+        }
       ];
       temperature = "sensor.desk_current_temperature";
       humidity = null;
@@ -230,12 +253,7 @@
       main = false;
       device = null;
       light = "light.stairs_ceiling_lights";
-      lights = [
-        "light.stairs_ceiling_1_light"
-        "light.stairs_ceiling_2_light"
-        "light.stairs_ceiling_3_light"
-        "light.stairs_ceiling_4_light"
-      ];
+      lights = [ ];
       temperature = null;
       humidity = null;
       opening = null;
