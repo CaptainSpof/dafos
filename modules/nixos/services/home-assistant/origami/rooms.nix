@@ -4,7 +4,7 @@
 #
 # - id: the HA area id, and the suffix of the room's helpers and pop-up hash.
 # - floor: one of `floors`. Each floor folds; rooms with a light on stay shown.
-# - main: shown on its folded floor while none of the floor's rooms is lit.
+# - main: shown on its folded floor while no room of the house is lit.
 # - device: a PC or TV whose on state colours the card's icon (the lights tint
 #   the icon's background instead).
 # - light: the group behind the room card's icon colour; lights: its pop-up.
@@ -264,8 +264,8 @@
     {
       id = "outdoor";
       floor = "basement";
-      name = "Extérieur";
-      icon = "mdi:tree";
+      name = "Palier";
+      icon = "mdi:coach-lamp";
       main = false;
       device = null;
       light = "light.outdoor_ceiling_light";
