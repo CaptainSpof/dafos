@@ -4,6 +4,9 @@
 #
 # - id: the HA area id, and the suffix of the room's helpers and pop-up hash.
 # - floor: one of `floors`. Each floor folds; rooms with a light on stay shown.
+# - main: shown on its folded floor while none of the floor's rooms is lit.
+# - device: a PC or TV whose on state colours the card's icon (the lights tint
+#   the icon's background instead).
 # - light: the group behind the room card's icon colour; lights: its pop-up.
 # - temperature, humidity: sources of sensor.climate_<id>; null shows `?`.
 # - opening: door or window contact, shown on the card and counted as open.
@@ -30,7 +33,9 @@
       id = "living_room";
       floor = "ground_floor";
       name = "Salon";
-      icon = "mdi:sofa";
+      icon = "mdi:table-furniture";
+      main = true;
+      device = null;
       light = "light.living_room_ceiling_lights";
       lights = [
         "light.living_room_ceiling_left_light"
@@ -49,6 +54,11 @@
       floor = "ground_floor";
       name = "Véranda";
       icon = "mdi:television";
+      main = true;
+      device = {
+        entity = "binary_sensor.veranda_maybe_daftv_running";
+        color = "var(--state-media_player-active-color)";
+      };
       light = "light.veranda_all_lights";
       lights = [
         "light.veranda_ceiling_light"
@@ -68,7 +78,9 @@
       id = "kitchen";
       floor = "ground_floor";
       name = "Cuisine";
-      icon = "mdi:silverware-fork-knife";
+      icon = "mdi:knife";
+      main = false;
+      device = null;
       light = "light.kitchen_all_lights";
       lights = [
         "light.kitchen_ceiling_1_light"
@@ -89,6 +101,8 @@
       floor = "ground_floor";
       name = "Entrée";
       icon = "mdi:door";
+      main = false;
+      device = null;
       light = "light.entry_ceiling_lights";
       lights = [
         "light.entry_ceiling_1_light"
@@ -107,7 +121,9 @@
       id = "desk_ground_floor";
       floor = "ground_floor";
       name = "Bureau RdC";
-      icon = "mdi:robot-vacuum";
+      icon = "mdi:typewriter";
+      main = false;
+      device = null;
       light = null;
       lights = [ ];
       temperature = null;
@@ -122,7 +138,9 @@
       id = "bedroom";
       floor = "first_floor";
       name = "Chambre";
-      icon = "mdi:bed";
+      icon = "mdi:bed-double";
+      main = true;
+      device = null;
       light = "light.bedroom_all_lights";
       lights = [
         "light.bedroom_ceiling_1_light"
@@ -144,7 +162,12 @@
       id = "desk";
       floor = "first_floor";
       name = "Bureau";
-      icon = "mdi:desk";
+      icon = "mdi:desktop-classic";
+      main = true;
+      device = {
+        entity = "binary_sensor.desk_maybe_dafbox_running";
+        color = "var(--state-switch-active-color)";
+      };
       light = "light.desk_all_lights";
       lights = [
         "light.desk_ceiling_1_light"
@@ -169,6 +192,8 @@
       floor = "first_floor";
       name = "Chambre Parents";
       icon = "mdi:bed-king";
+      main = false;
+      device = null;
       light = null;
       lights = [ ];
       temperature = "sensor.parents_bedroom_current_temperature";
@@ -184,6 +209,8 @@
       floor = "first_floor";
       name = "Salle de bain";
       icon = "mdi:shower";
+      main = false;
+      device = null;
       light = null;
       lights = [ ];
       # The room sensor is often offline; the radiator's own probe always reports.
@@ -200,6 +227,8 @@
       floor = "first_floor";
       name = "Escaliers";
       icon = "mdi:stairs";
+      main = false;
+      device = null;
       light = "light.stairs_ceiling_lights";
       lights = [
         "light.stairs_ceiling_1_light"
@@ -220,6 +249,8 @@
       floor = "basement";
       name = "Buanderie";
       icon = "mdi:washing-machine";
+      main = false;
+      device = null;
       light = null;
       lights = [ ];
       temperature = "sensor.laundry_humidity_sensor_temperature";
@@ -235,6 +266,8 @@
       floor = "basement";
       name = "Extérieur";
       icon = "mdi:tree";
+      main = false;
+      device = null;
       light = "light.outdoor_ceiling_light";
       lights = [ ];
       temperature = null;
