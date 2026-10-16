@@ -288,6 +288,12 @@ in
       name = "Maison · Room climate table";
       icon = "mdi:table";
     };
+    # Unfolds the plugs in a room pop-up; every pop-up turns it off on close,
+    # so the plugs start folded and are not switched off by a stray tap.
+    plugs_unfolded = {
+      name = "Maison · Plugs unfolded";
+      icon = "mdi:power-socket-eu";
+    };
   }
   # Unfolds a floor's rooms; rooms with a light on show while folded too
   // listToAttrs (
