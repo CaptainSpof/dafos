@@ -54,17 +54,23 @@ separate because the timer automation runs in `mode: restart`.
   (gone on replug), then read with pyserial. Opening the port resets the chip
   even with DTR/RTS low, which conveniently yields a full boot log; a plain
   `cat` loses everything after the reset.
-- **The knob is not quadrature**: one pulse per detent on A (clockwise) or B, so
-  the stock `rotary_encoder` reads nothing; `rotary_encoder_custom` from KrX3D
-  is pinned to a reviewed commit. There is no push contact.
-- **The polled knob misses fast spins** (a redraw holds the loop longer than a
-  pulse), which is why the inertia rarely kicks in. An edge-interrupt reader
-  (2026-10-16, reverted) made it worse: some detents counted backwards, likely
-  short pulses on the opposite channel that polling never saw, and the
-  touchscreen stopped responding. Measure the real pulse widths per channel
-  before trying again. Also: ESPHome's `attach_interrupt()` returns without
-  attaching when the GPIO ISR service already exists, so never install it before
-  the touchscreen sets up.
+- **The knob is not quadrature**: a detent holds one channel low, A (GPIO8)
+  clockwise, B (GPIO7) anticlockwise; there is no push contact. It is read by
+  edge interrupts in `minuteur/knob.h`, whose header records the measured pulse
+  shapes and the filter they imply. The polled `rotary_encoder_custom` it
+  replaced missed most detents of a fast spin (an LVGL redraw outlasts a pulse),
+  so knob inertia never kicked in.
+- **The opposite channel glitches for 2–300 µs after every detent**, often read
+  back high by the handler: a naive "low for ≥ X" filter turns them into
+  backwards detents. `minuteur/knob_probe.h` is the edge recorder that found
+  this; reuse it before touching the filter.
+- **Never install the GPIO ISR service yourself**: the touchscreen attaches its
+  interrupt late in setup, and ESPHome's `attach_interrupt()` gives up without
+  attaching when the service already exists (dead touchscreen). Arm the knob
+  after boot (`on_boot` -100, after the delay).
+- **The knob can rest half-way with a channel held low** (seen at boot and for
+  seconds after a spin). `go_to_sleep` leaves such a pin out of the ext1 mask
+  instead of refusing to sleep.
 - **No IMU on this board**, so orientation is a fixed `rotation: 180` on
   `lvgl:`.
 - **The DRV2605 NAKs register reads**, so the haptics component fails setup; the

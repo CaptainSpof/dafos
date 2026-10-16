@@ -19,6 +19,7 @@ esphome:
   includes:
     - <driver/rtc_io.h>
     - <esp_sleep.h>
+    - minuteur/knob.h
   platformio_options:
     board_build.flash_mode: dio
     board_build.f_flash: 80000000L
@@ -35,7 +36,10 @@ esphome:
             ESP_LOGI("sleep", "Wake cause: %d", (int) esp_sleep_get_wakeup_cause());
     - priority: -100
       then:
+        # Once setup is over: the touchscreen attaches its interrupt late in
+        # setup, and must be the one to install the GPIO ISR service.
         - delay: 1s
+        - lambda: "knob::setup();"
         - script.execute: haptic_init
         - script.execute: wake
         - script.execute: paint
@@ -71,15 +75,15 @@ ota:
     on_error:
       - script.execute: idle_sleep
 # Wakes on any of the knob's two channels or the touch interrupt going low.
-# These pins are also used by the knob and the touchscreen.
+# GPIO9 is shared with the touchscreen; the knob pins are read by
+# minuteur/knob.h outside ESPHome's pin registry. go_to_sleep narrows this
+# mask to the pins that are high at that moment.
 deep_sleep:
   id: sleeper
   esp32_ext1_wakeup:
     pins:
-      - number: GPIO7
-        allow_other_uses: true
-      - number: GPIO8
-        allow_other_uses: true
+      - GPIO7
+      - GPIO8
       - number: GPIO9
         allow_other_uses: true
     mode: ANY_LOW
@@ -147,33 +151,7 @@ light:
       - lvgl.pause:
     on_turn_on:
       - lvgl.resume:
-# The knob gives one pulse per detent on A (clockwise) or B (anticlockwise),
-# not a quadrature signal, so the stock rotary_encoder reads nothing.
-external_components:
-  - source:
-      type: git
-      url: https://github.com/KrX3D/WaveShare-Knob-Esp32S3
-      ref: 74511f2260e3e7ce3c84ca3136569307cfb8b26b
-    components: [rotary_encoder_custom]
 sensor:
-  - platform: rotary_encoder_custom
-    id: knob
-    internal: true
-    pin_a:
-      number: GPIO8
-      allow_other_uses: true
-    pin_b:
-      number: GPIO7
-      allow_other_uses: true
-    restore_mode: ALWAYS_ZERO
-    on_clockwise:
-      - script.execute:
-          id: turn
-          dir: 1
-    on_anticlockwise:
-      - script.execute:
-          id: turn
-          dir: -1
   # Battery behind a 2:1 divider on GPIO1 (ADC1_CH0).
   - platform: adc
     id: battery_voltage
@@ -311,6 +289,13 @@ globals:
     type: float
     initial_value: "400"
 interval:
+  # The knob is read by interrupts (minuteur/knob.h); this drains the count.
+  # A batch of several detents is one fast movement.
+  - interval: 20ms
+    then:
+      - lambda: |-
+          int n = knob::take();
+          if (n != 0) id(turn)->execute(n > 0 ? 1 : -1, n > 0 ? n : -n);
   - interval: 1s
     then:
       - if:
@@ -410,13 +395,24 @@ script:
       - if:
           condition:
             # ext1 wakes on a level: a pin already low would wake it at once.
+            # A finger on the screen (GPIO9 low) keeps it awake. A knob
+            # channel held low (resting half-way through a detent) is left
+            # out of the wake mask instead: the other channel and touch
+            # still wake it.
             lambda: |-
-              for (gpio_num_t pin : {GPIO_NUM_7, GPIO_NUM_8, GPIO_NUM_9}) {
+              if (gpio_get_level(GPIO_NUM_9) == 0) {
+                ESP_LOGW("sleep", "Touch interrupt low, staying awake");
+                return false;
+              }
+              uint64_t mask = 1ULL << GPIO_NUM_9;
+              for (gpio_num_t pin : {GPIO_NUM_7, GPIO_NUM_8}) {
                 if (gpio_get_level(pin) == 0) {
-                  ESP_LOGW("sleep", "GPIO%d is low, staying awake", (int) pin);
-                  return false;
+                  ESP_LOGW("sleep", "GPIO%d held low, not a wake source", (int) pin);
+                } else {
+                  mask |= 1ULL << pin;
                 }
               }
+              id(sleeper)->set_ext1_wakeup({mask, ESP_EXT1_WAKEUP_ANY_LOW});
               return true;
           then:
             - logger.log: "Idle, going to deep sleep"
@@ -467,6 +463,7 @@ script:
   - id: turn
     parameters:
       dir: int
+      count: int
     then:
       - if:
           condition:
@@ -488,14 +485,17 @@ script:
                         # Finer steps for short durations: 10 s below 1 min, 30 s
                         # below 10 min, 1 min below 1 h, then 5 min up to 3 h.
                         #
-                        # Inertia: a fast spin multiplies that step (up to x10).
-                        # Limited for now: the polled knob reader misses most
-                        # detents of a fast spin, so fast spins rarely register
-                        # as fast. A pause (400 ms) or a change of direction
-                        # drops back to x1; the result snaps onto the step grid.
+                        # Inertia: a fast spin multiplies that step (up to x10)
+                        # so long durations take a flick, not many turns. The
+                        # speed is a smoothed interval per detent (count detents
+                        # since the last batch). Measured: ~25 ms per detent on a
+                        # fast spin, 600+ ms on a slow one. A pause (400 ms) or a
+                        # change of direction drops back to x1, so a small, slow
+                        # movement stays precise; each detent snaps onto the
+                        # step grid, so values stay round.
                         - lambda: |-
                             uint32_t now = millis();
-                            uint32_t dt = now - id(turn_last_ms);
+                            uint32_t dt = (now - id(turn_last_ms)) / count;
                             id(turn_last_ms) = now;
                             if (dt > 400 || dir != id(turn_last_dir)) {
                               id(turn_avg_ms) = 400;
@@ -507,14 +507,16 @@ script:
                             int mult = a < 30 ? 10 : a < 50 ? 6 : a < 80 ? 3 : a < 130 ? 2 : 1;
 
                             int s = id(set_s);
-                            int ref = dir > 0 ? s : s - 1;
-                            int step = ref < 60 ? 10 : ref < 600 ? 30 : ref < 3600 ? 60 : 300;
-                            s += dir * step * mult;
-                            if (s < 10) s = 10;
-                            if (s > 10800) s = 10800;
-                            int grid = s < 60 ? 10 : s < 600 ? 30 : s < 3600 ? 60 : 300;
-                            s = dir > 0 ? s / grid * grid : (s + grid - 1) / grid * grid;
-                            if (s < 10) s = 10;
+                            for (int i = 0; i < count; i++) {
+                              int ref = dir > 0 ? s : s - 1;
+                              int step = ref < 60 ? 10 : ref < 600 ? 30 : ref < 3600 ? 60 : 300;
+                              s += dir * step * mult;
+                              if (s < 10) s = 10;
+                              if (s > 10800) s = 10800;
+                              int grid = s < 60 ? 10 : s < 600 ? 30 : s < 3600 ? 60 : 300;
+                              s = dir > 0 ? s / grid * grid : (s + grid - 1) / grid * grid;
+                              if (s < 10) s = 10;
+                            }
                             id(set_s) = s;
                         - script.execute:
                             id: haptic
