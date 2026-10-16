@@ -16,6 +16,10 @@ let
   # Helpers of the Maison dashboard (Origami), generated from ./origami/rooms.nix.
   origami = import ./origami/helpers.nix { inherit lib; };
 
+  # Kitchen and veranda air quality: detectors, level sensors and the airing
+  # notifications.
+  airQuality = import ./air_quality.nix { inherit lib; };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -352,7 +356,7 @@ in
             filename = "ui-lovelace.yaml";
           };
 
-          "automation manual" = [ ];
+          "automation manual" = airQuality.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
@@ -367,9 +371,14 @@ in
             { sensor = import ./sensors/template_sensors.nix; }
             # The Maison dashboard (Origami), see ./origami/rooms.nix.
             { sensor = origami.sensors; }
+            {
+              binary_sensor = airQuality.binarySensors;
+              sensor = airQuality.sensors;
+            }
           ];
 
-          input_boolean = import ./sensors/input_booleans.nix // origami.input_boolean;
+          input_boolean =
+            import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
           input_datetime = import ./sensors/input_datetimes.nix;
           input_number = import ./sensors/input_numbers.nix;
           input_text = import ./sensors/input_texts.nix;
