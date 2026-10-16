@@ -22,6 +22,11 @@ work=${XDG_CACHE_HOME:-$HOME/.cache}/dafos-esphome
 
 mkdir -p "$work"
 cp "$here/$device.yaml" "$work/"
+# C++ headers a config includes (esphome: includes: <device>/...).
+if [ -d "$here/$device" ]; then
+  rm -rf "${work:?}/$device"
+  cp -r "$here/$device" "$work/"
+fi
 # Decrypted only for the duration of the command.
 trap 'rm -f "$work/secrets.yaml"' EXIT
 (umask 077 && sops -d "$repo/secrets/dafoltop/esphome.yaml" >"$work/secrets.yaml")

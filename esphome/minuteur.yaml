@@ -299,6 +299,17 @@ globals:
   - id: api_up_s
     type: int
     initial_value: "0"
+  # Knob inertia (see turn): when the last detent came, its direction, and a
+  # smoothed interval between detents in ms.
+  - id: turn_last_ms
+    type: uint32_t
+    initial_value: "0"
+  - id: turn_last_dir
+    type: int
+    initial_value: "0"
+  - id: turn_avg_ms
+    type: float
+    initial_value: "400"
 interval:
   - interval: 1s
     then:
@@ -476,13 +487,34 @@ script:
                       then:
                         # Finer steps for short durations: 10 s below 1 min, 30 s
                         # below 10 min, 1 min below 1 h, then 5 min up to 3 h.
+                        #
+                        # Inertia: a fast spin multiplies that step (up to x10).
+                        # Limited for now: the polled knob reader misses most
+                        # detents of a fast spin, so fast spins rarely register
+                        # as fast. A pause (400 ms) or a change of direction
+                        # drops back to x1; the result snaps onto the step grid.
                         - lambda: |-
+                            uint32_t now = millis();
+                            uint32_t dt = now - id(turn_last_ms);
+                            id(turn_last_ms) = now;
+                            if (dt > 400 || dir != id(turn_last_dir)) {
+                              id(turn_avg_ms) = 400;
+                            } else {
+                              id(turn_avg_ms) = 0.6f * id(turn_avg_ms) + 0.4f * dt;
+                            }
+                            id(turn_last_dir) = dir;
+                            float a = id(turn_avg_ms);
+                            int mult = a < 30 ? 10 : a < 50 ? 6 : a < 80 ? 3 : a < 130 ? 2 : 1;
+
                             int s = id(set_s);
                             int ref = dir > 0 ? s : s - 1;
                             int step = ref < 60 ? 10 : ref < 600 ? 30 : ref < 3600 ? 60 : 300;
-                            s += dir * step;
+                            s += dir * step * mult;
                             if (s < 10) s = 10;
                             if (s > 10800) s = 10800;
+                            int grid = s < 60 ? 10 : s < 600 ? 30 : s < 3600 ? 60 : 300;
+                            s = dir > 0 ? s / grid * grid : (s + grid - 1) / grid * grid;
+                            if (s < 10) s = 10;
                             id(set_s) = s;
                         - script.execute:
                             id: haptic
@@ -640,6 +672,10 @@ lvgl:
       long_press_time: 800ms
   buffer_size: 25%
   color_depth: 16
+  # Upside down, to suit how the device sits. Rotation belongs here, not on
+  # display: LVGL rejects a rotated display and rotates touch input itself.
+  # The board has no IMU, so this cannot follow the device.
+  rotation: 180
   bg_color: 0x000000
   pages:
     - id: main_page

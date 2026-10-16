@@ -57,6 +57,16 @@ separate because the timer automation runs in `mode: restart`.
 - **The knob is not quadrature**: one pulse per detent on A (clockwise) or B, so
   the stock `rotary_encoder` reads nothing; `rotary_encoder_custom` from KrX3D
   is pinned to a reviewed commit. There is no push contact.
+- **The polled knob misses fast spins** (a redraw holds the loop longer than a
+  pulse), which is why the inertia rarely kicks in. An edge-interrupt reader
+  (2026-10-16, reverted) made it worse: some detents counted backwards, likely
+  short pulses on the opposite channel that polling never saw, and the
+  touchscreen stopped responding. Measure the real pulse widths per channel
+  before trying again. Also: ESPHome's `attach_interrupt()` returns without
+  attaching when the GPIO ISR service already exists, so never install it before
+  the touchscreen sets up.
+- **No IMU on this board**, so orientation is a fixed `rotation: 180` on
+  `lvgl:`.
 - **The DRV2605 NAKs register reads**, so the haptics component fails setup; the
   config writes the registers directly over I²C.
 - **LVGL text lambdas return `const char*` from a multi-statement body** (static
