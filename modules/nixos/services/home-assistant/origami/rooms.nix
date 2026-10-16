@@ -18,6 +18,10 @@
 #   by hand, motion ignored) and its Bypass Auto OFF delay in minutes. The
 #   delay lives in the UI automation; keep the two in sync. The card draws a
 #   ring that empties over that delay while the bypass is on.
+# - presence: what the card's presence icon shows. The motion sensors use
+#   their `_motion` entity (a few seconds per detection); their `_occupancy`
+#   holds 10 min after the last motion. The mmWave rooms keep occupancy, and
+#   outdoor has no `_motion`.
 # - extras: plugs and devices for the pop-up. Never the fridges, the server
 #   plug or the stove switch: nothing here is turned off by "Tout éteindre".
 {
@@ -118,7 +122,7 @@
       humidity = "sensor.kitchen_temperature_sensor_humidity_2";
       opening = "binary_sensor.kitchen_door_sensor_contact";
       climate = "climate.kitchen_radiator_thermostat";
-      presence = "binary_sensor.kitchen_motion_sensor_occupancy";
+      presence = "binary_sensor.kitchen_motion_sensor_motion";
       media = null;
       vacuum = "input_boolean.kitchen_vacuum";
       manual = {
@@ -140,7 +144,7 @@
       humidity = null;
       opening = "binary_sensor.entry_door_sensor_opening";
       climate = null;
-      presence = "binary_sensor.entry_motion_sensor_occupancy";
+      presence = "binary_sensor.entry_motion_sensor_motion";
       media = null;
       vacuum = "input_boolean.entry_vacuum";
       manual = {
@@ -290,7 +294,7 @@
       humidity = null;
       opening = null;
       climate = null;
-      presence = "binary_sensor.stairs_motion_sensor_upstairs_occupancy";
+      presence = "binary_sensor.stairs_motion_sensor_upstairs_motion";
       media = null;
       vacuum = null;
       manual = {
