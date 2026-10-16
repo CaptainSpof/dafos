@@ -28,7 +28,8 @@ build time.
 Kitchen countdown timer. The device owns the countdown; Home Assistant only
 mirrors it to dafphone through `minuteur-automation.yaml`, a UI automation whose
 source of truth is this file (push it with the config API, as with the other UI
-automations).
+automations). `minuteur-battery-automation.yaml` is the low-battery alert, kept
+separate because the timer automation runs in `mode: restart`.
 
 - **The first flash is over USB** (16 MB layout differs from stock, OTA can't
   change it). The port is `root:dialout`, so flash the factory image with
@@ -61,6 +62,20 @@ automations).
 - **LVGL text lambdas return `const char*` from a multi-statement body** (static
   buffer): a one-line lambda returning `std::string` fails to compile on ESPHome
   2026.7+.
+- **Deep sleep when idle** (`sleep_after`, 1 min): wakes on ext1 `ANY_LOW` from
+  the knob (GPIO7/8) or the touch interrupt (GPIO9); a wake is a reboot. It only
+  sleeps once HA has been connected 20 s straight (`api_up_s`): sleeping the
+  moment HA connected left HA with `unknown` states. With `deep_sleep` present
+  HA keeps the last states while asleep instead of `unavailable`.
+- **A sleeping device has no USB port and no OTA**: turn the knob, then flash
+  within the minute; for OTA, switch off `Veille automatique` in HA first. On
+  USB, `journalctl -k` shows each sleep (USB disconnect) and wake.
+- **Pads held across sleep** (backlight GPIO47 low, touch reset GPIO10 high) and
+  the wake pins left as RTC IO must be released at boot, before the display,
+  touch and knob set up (`on_boot` priority 1000).
+- **Battery**: GPIO1 behind a 2:1 divider; on USB it reads ~4.3 V (charging), so
+  100 % there means "plugged in". The board's second chip (the auxiliary ESP32,
+  still on stock firmware) draws power that no setting here reaches.
 
 Pinout and the board quirks come from
 [tomereli/coffee-knob](https://github.com/tomereli/coffee-knob) and

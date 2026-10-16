@@ -8,14 +8,31 @@ substitutions:
   # Ignore the touch or turn that wakes a dark screen, so waking it never
   # starts or stops anything.
   wake_guard_ms: "600"
+  # Deep sleep after this long idle with nothing running; the knob or a touch
+  # wakes it (a reboot, ~3 s to the screen, longer to Home Assistant).
+  sleep_after: 60s
+  # An unacknowledged alarm gives up and goes back to idle (then to sleep).
+  finished_timeout: 10min
 esphome:
   name: minuteur
   friendly_name: Minuteur
+  includes:
+    - <driver/rtc_io.h>
+    - <esp_sleep.h>
   platformio_options:
     board_build.flash_mode: dio
     board_build.f_flash: 80000000L
     board_build.f_cpu: 240000000L
   on_boot:
+    # Before the display, touch and knob are set up: undo what go_to_sleep
+    # left behind (pad holds, wake pins switched to RTC IO).
+    - priority: 1000
+      then:
+        - lambda: |-
+            gpio_deep_sleep_hold_dis();
+            for (gpio_num_t pin : {GPIO_NUM_10, GPIO_NUM_47}) gpio_hold_dis(pin);
+            for (gpio_num_t pin : {GPIO_NUM_7, GPIO_NUM_8, GPIO_NUM_9}) rtc_gpio_deinit(pin);
+            ESP_LOGI("sleep", "Wake cause: %d", (int) esp_sleep_get_wakeup_cause());
     - priority: -100
       then:
         - delay: 1s
@@ -48,6 +65,24 @@ api:
 ota:
   - platform: esphome
     password: !secret minuteur_ota_password
+    # Never fall asleep mid-upload.
+    on_begin:
+      - script.stop: idle_sleep
+    on_error:
+      - script.execute: idle_sleep
+# Wakes on any of the knob's two channels or the touch interrupt going low.
+# These pins are also used by the knob and the touchscreen.
+deep_sleep:
+  id: sleeper
+  esp32_ext1_wakeup:
+    pins:
+      - number: GPIO7
+        allow_other_uses: true
+      - number: GPIO8
+        allow_other_uses: true
+      - number: GPIO9
+        allow_other_uses: true
+    mode: ANY_LOW
 # No SSID here on purpose: on first boot the device opens the "Minuteur"
 # access point and the Wi-Fi network is chosen from its captive portal.
 wifi:
@@ -91,7 +126,9 @@ touchscreen:
   - platform: cst816
     id: touch
     display: main_display
-    interrupt_pin: GPIO9
+    interrupt_pin:
+      number: GPIO9
+      allow_other_uses: true
     reset_pin: GPIO10
     on_touch:
       - script.execute: wake
@@ -122,8 +159,12 @@ sensor:
   - platform: rotary_encoder_custom
     id: knob
     internal: true
-    pin_a: GPIO8
-    pin_b: GPIO7
+    pin_a:
+      number: GPIO8
+      allow_other_uses: true
+    pin_b:
+      number: GPIO7
+      allow_other_uses: true
     restore_mode: ALWAYS_ZERO
     on_clockwise:
       - script.execute:
@@ -133,6 +174,46 @@ sensor:
       - script.execute:
           id: turn
           dir: -1
+  # Battery behind a 2:1 divider on GPIO1 (ADC1_CH0).
+  - platform: adc
+    id: battery_voltage
+    pin: GPIO1
+    name: Tension batterie
+    entity_category: diagnostic
+    attenuation: 12db
+    update_interval: 10s
+    accuracy_decimals: 2
+    filters:
+      - multiply: 2.0
+      # Publish soon after a wake: awake windows are short.
+      - median:
+          window_size: 5
+          send_every: 6
+          send_first_at: 2
+    on_value:
+      - component.update: battery_level
+  - platform: template
+    id: battery_level
+    name: Batterie
+    device_class: battery
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    update_interval: never
+    lambda: "return id(battery_voltage).state;"
+    filters:
+      - calibrate_linear:
+          method: exact
+          datapoints:
+            - 3.00 -> 0.0
+            - 3.50 -> 10.0
+            - 3.65 -> 30.0
+            - 3.75 -> 50.0
+            - 3.90 -> 70.0
+            - 4.10 -> 90.0
+            - 4.20 -> 100.0
+      - clamp:
+          min_value: 0
+          max_value: 100
   - platform: wifi_signal
     name: Signal Wi-Fi
     entity_category: diagnostic
@@ -170,6 +251,16 @@ text_sensor:
     id: end_sensor
     name: Fin
     update_interval: never
+switch:
+  # Off keeps the device awake (for OTA from the desk, or debugging).
+  - platform: template
+    id: auto_sleep
+    name: Veille automatique
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      - script.execute: idle_sleep
 button:
   - platform: template
     name: Arrêter
@@ -204,7 +295,20 @@ globals:
   - id: wake_ms
     type: uint32_t
     initial_value: "0"
+  # Seconds HA has been connected without a break (see idle_sleep).
+  - id: api_up_s
+    type: int
+    initial_value: "0"
 interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            api.connected:
+          then:
+            - lambda: "id(api_up_s)++;"
+          else:
+            - lambda: "id(api_up_s) = 0;"
   - interval: 200ms
     then:
       - if:
@@ -268,6 +372,65 @@ script:
           id: backlight
           brightness: 80%
       - script.execute: screen_timer
+      - script.execute: idle_sleep
+  # Restarted by every interaction (through wake). Only an idle timer sleeps:
+  # running, paused and finished all keep the device up. Waits until HA has
+  # been connected for 20 s: Wi-Fi can take a minute (the box's BSS fails
+  # before the repeater answers), and sleeping the moment HA connects left HA
+  # with "unknown" states (the on_client_connected trigger raced the sleep).
+  # Without Wi-Fi at all, it sleeps anyway after 3 min of uptime.
+  - id: idle_sleep
+    mode: restart
+    then:
+      - delay: $sleep_after
+      - if:
+          condition:
+            lambda: "return id(state) == 0 && id(auto_sleep).state;"
+          then:
+            - if:
+                condition:
+                  lambda: "return id(api_up_s) >= 20 || millis() > 180000;"
+                then:
+                  - script.execute: go_to_sleep
+                else:
+                  - script.execute: idle_sleep
+  - id: go_to_sleep
+    then:
+      - if:
+          condition:
+            # ext1 wakes on a level: a pin already low would wake it at once.
+            lambda: |-
+              for (gpio_num_t pin : {GPIO_NUM_7, GPIO_NUM_8, GPIO_NUM_9}) {
+                if (gpio_get_level(pin) == 0) {
+                  ESP_LOGW("sleep", "GPIO%d is low, staying awake", (int) pin);
+                  return false;
+                }
+              }
+              return true;
+          then:
+            - logger.log: "Idle, going to deep sleep"
+            - lambda: |-
+                // Haptic driver into standby.
+                uint8_t standby[2] = {0x01, 0x40};
+                id(ic_bus)->write(0x5A, standby, 2);
+                // Backlight held off, touch controller held out of reset
+                // (it must stay alive to wake us).
+                gpio_reset_pin(GPIO_NUM_47);
+                gpio_set_direction(GPIO_NUM_47, GPIO_MODE_OUTPUT);
+                gpio_set_level(GPIO_NUM_47, 0);
+                gpio_set_level(GPIO_NUM_10, 1);
+                gpio_hold_en(GPIO_NUM_47);
+                gpio_hold_en(GPIO_NUM_10);
+                gpio_deep_sleep_hold_en();
+                // Keep the wake pins pulled up while asleep.
+                esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+                for (gpio_num_t pin : {GPIO_NUM_7, GPIO_NUM_8, GPIO_NUM_9}) {
+                  rtc_gpio_pullup_en(pin);
+                  rtc_gpio_pulldown_dis(pin);
+                }
+            - deep_sleep.enter: sleeper
+          else:
+            - script.execute: idle_sleep
   - id: screen_timer
     mode: restart
     then:
@@ -380,7 +543,8 @@ script:
       - script.execute: paint
       - script.execute: publish
   # Vibrates for up to two minutes. The "finished" state outlives it, so the
-  # phone alarm keeps ringing until someone acknowledges either end.
+  # phone alarm keeps ringing until someone acknowledges either end, or until
+  # finished_timeout gives up so the device can sleep again.
   - id: ring
     mode: single
     then:
@@ -398,6 +562,12 @@ script:
                       id: haptic
                       effect: 16
             - delay: 2s
+      - delay: $finished_timeout
+      - if:
+          condition:
+            lambda: "return id(state) == 3;"
+          then:
+            - script.execute: stop
   - id: publish
     then:
       - lambda: |-

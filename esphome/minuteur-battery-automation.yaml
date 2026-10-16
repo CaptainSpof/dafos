@@ -1,0 +1,50 @@
+# UI automation: low-battery alert for the knob timer (minuteur.yaml). Like
+# minuteur-automation.yaml, pushed through the config API; this file is its
+# source of truth. Kept apart from that one because it runs in mode: restart,
+# and a battery update must never cut the alarm loop short.
+#
+# The weekly Blackshome low-battery blueprint also sees this sensor, but only
+# on Sundays: far too rare for a device that lasts hours to days.
+#
+# Below 20 % -> one notification (Maison group), replaced as it drops.
+# Back above 50 % (charged) -> notification cleared.
+alias: Cuisine · Minuteur batterie
+description: Prévient quand la batterie du minuteur à molette est faible.
+mode: queued
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.cuisine_minuteur_batterie
+    below: 20
+    id: low
+  - trigger: numeric_state
+    entity_id: sensor.cuisine_minuteur_batterie
+    below: 10
+    id: low
+  - trigger: numeric_state
+    entity_id: sensor.cuisine_minuteur_batterie
+    above: 50
+    id: charged
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: low
+        sequence:
+          - action: notify.mobile_app_dafphone
+            data:
+              title: Minuteur · batterie faible
+              message: >-
+                {{ states('sensor.cuisine_minuteur_batterie') | int(0) }} % restants, à brancher.
+              data:
+                tag: minuteur_batterie
+                group: Maison
+                channel: household
+      - conditions:
+          - condition: trigger
+            id: charged
+        sequence:
+          - action: notify.mobile_app_dafphone
+            data:
+              message: clear_notification
+              data:
+                tag: minuteur_batterie
