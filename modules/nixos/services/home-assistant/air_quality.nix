@@ -101,7 +101,10 @@ in
         {
           trigger = "state";
           entity_id = poor r;
-          from = "off";
+          # Not `from = "off"`: after an HA restart the detector sits at
+          # unknown until its 15 min delay_off elapses, and an episode starting
+          # then goes unknown -> on. A sensor dropout must not re-notify.
+          not_from = [ "unavailable" ];
           to = "on";
           id = "${r.id}-poor";
         }
