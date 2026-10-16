@@ -29,6 +29,9 @@ let
   # Living room manual mode (remote presses -> sensor-light bypass).
   manualLights = import ./manual_lights.nix { };
 
+  # Trigger sensors for the sensor-light automations.
+  lightTriggers = import ./light_triggers.nix { };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -390,6 +393,7 @@ in
             { sensor = import ./sensors/template_sensors.nix; }
             # The Maison dashboard (Origami), see ./origami/rooms.nix.
             { sensor = origami.sensors; }
+            { binary_sensor = lightTriggers.binarySensors; }
             {
               binary_sensor = airQuality.binarySensors;
               sensor = airQuality.sensors;
