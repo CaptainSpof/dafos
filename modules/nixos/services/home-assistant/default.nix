@@ -130,6 +130,10 @@ in
         # flow for them and failing with `No module named ...` on every start
         # (homekit_controller alone was ~30 tracebacks per boot). Building them
         # in is what makes the discovery flow work instead of erroring.
+        #
+        # aioipp: the ipp integration's requirement since HA 2026.10, missing
+        # from nixpkgs (see ./aioipp.nix).
+        extraPackages = ps: [ (ps.callPackage ./aioipp.nix { }) ];
         extraComponents = [
           # "apple_tv"
           "androidtv_remote" # discovered on the LAN
