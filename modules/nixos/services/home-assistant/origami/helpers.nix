@@ -238,6 +238,20 @@ in
           {% else %}bonne nuit{% endif %}
         '';
       }
+      {
+        # The kitchen timer's end (esphome/minuteur.yaml) as a timestamp, which
+        # the notifications card shows as a countdown. The device publishes it
+        # as text, empty when the timer is not running.
+        name = "Minuteur · Fin";
+        unique_id = "dafos.sensor.kitchen_timer_end";
+        default_entity_id = "sensor.kitchen_timer_end";
+        device_class = "timestamp";
+        icon = "mdi:timer-sand";
+        state = ''
+          {{ states('sensor.minuteur_fin') | as_datetime(none)
+             if is_state('sensor.minuteur_etat', 'running') else none }}
+        '';
+      }
     ];
 
   input_boolean = {
