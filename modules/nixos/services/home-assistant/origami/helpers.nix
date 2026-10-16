@@ -112,47 +112,6 @@ let
       {{ 'mdi:arrow-top-right' if d > 0.2 else 'mdi:arrow-bottom-right' if d < -0.2 else 'mdi:arrow-right' }}
     '';
   };
-
-  # Rows for the notifications card. It shows an input_boolean's translated
-  # state ("Activé") under the name and has no option to change it, so each
-  # notice is a sensor whose state is the text to show, and `off` otherwise.
-  notices = [
-    {
-      id = "dishwasher_done";
-      name = "Lave-vaisselle";
-      source = "input_boolean.kitchen_dishwasher_is_finished";
-      text = "Terminé";
-      icon = "mdi:dishwasher";
-    }
-    {
-      id = "washing_machine_done";
-      name = "Lave-linge";
-      source = "input_boolean.laundry_washing_machine_is_finished";
-      text = "Terminé";
-      icon = "mdi:washing-machine";
-    }
-    {
-      id = "dryer_done";
-      name = "Sèche-linge";
-      source = "input_boolean.laundry_dryer_is_finished";
-      text = "Terminé";
-      icon = "mdi:tumble-dryer";
-    }
-    {
-      id = "mail";
-      name = "Courrier";
-      source = "input_boolean.outdoor_check_mailbox";
-      text = "Arrivé";
-      icon = "mdi:mailbox-up";
-    }
-  ];
-
-  noticeSensor = n: {
-    inherit (n) name icon;
-    unique_id = "dafos.sensor.maison_notice_${n.id}";
-    default_entity_id = "sensor.maison_notice_${n.id}";
-    state = "{{ '${n.text}' if is_state('${n.source}', 'on') else 'off' }}";
-  };
 in
 {
   platformSensors = map rateSensor climateRooms;
@@ -160,7 +119,6 @@ in
   sensors =
     map climateSensor climateRooms
     ++ map trendSensor climateRooms
-    ++ map noticeSensor notices
     ++ [
       {
         name = "Climate · Temperature peaks";

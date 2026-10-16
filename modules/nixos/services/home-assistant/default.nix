@@ -20,6 +20,9 @@ let
   # notifications.
   airQuality = import ./air_quality.nix { inherit lib; };
 
+  # Colour panel statuses as dismissible notifications.
+  statusNotices = import ./status_notices.nix { inherit lib; };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -356,7 +359,7 @@ in
             filename = "ui-lovelace.yaml";
           };
 
-          "automation manual" = airQuality.automations;
+          "automation manual" = airQuality.automations ++ statusNotices.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
