@@ -57,7 +57,10 @@
       presence = "binary_sensor.living_room_combined_presence_sensors";
       media = null;
       vacuum = "input_boolean.living_room_vacuum";
-      manual = null;
+      manual = {
+        bypass = "input_boolean.living_room_lights_bypass_toggle";
+        minutes = 180;
+      };
       extras = [ "binary_sensor.living_room_stove_is_maybe_burning" ];
     }
     {

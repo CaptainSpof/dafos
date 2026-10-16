@@ -26,6 +26,9 @@ let
   # Canon TS9100 ink levels, read from its remote UI (IPP/SNMP report -2).
   printerInk = import ./printer_ink.nix { inherit lib; };
 
+  # Living room manual mode (remote presses -> sensor-light bypass).
+  manualLights = import ./manual_lights.nix { };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -368,7 +371,11 @@ in
 
           inherit (printerInk) rest;
 
-          "automation manual" = airQuality.automations ++ statusNotices.automations ++ printerInk.automations;
+          "automation manual" =
+            airQuality.automations
+            ++ statusNotices.automations
+            ++ printerInk.automations
+            ++ manualLights.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
