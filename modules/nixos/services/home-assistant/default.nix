@@ -23,6 +23,9 @@ let
   # Colour panel statuses as dismissible notifications.
   statusNotices = import ./status_notices.nix { inherit lib; };
 
+  # Canon TS9100 ink levels, read from its remote UI (IPP/SNMP report -2).
+  printerInk = import ./printer_ink.nix { inherit lib; };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -362,6 +365,8 @@ in
             mode = "yaml";
             filename = "ui-lovelace.yaml";
           };
+
+          inherit (printerInk) rest;
 
           "automation manual" = airQuality.automations ++ statusNotices.automations;
           "automation ui" = "!include automations.yaml";
