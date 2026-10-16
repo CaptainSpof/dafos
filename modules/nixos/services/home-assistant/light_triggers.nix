@@ -16,13 +16,13 @@ let
 
   # Living room. The cat set the lights off in the evening through the
   # Everything Presence radar. The radar now lights the room only while someone
-  # is likely up: in the day, or from 21:00 to 06:00 when an occupied bedroom
+  # is likely up: in the day, or from 22:00 to 06:00 when an occupied bedroom
   # has its door open (Cédric's if he is home, the parents' if one of them is).
   # Coming down the stairs always lights it, and lets the radar hold it for
   # 20 min after.
   downstairs = "binary_sensor.stairs_going_dowstairs_sensor";
   livingRadar = "binary_sensor.everything_presence_lite_61659c_occupancy";
-  eveningHour = 21;
+  eveningHour = 22;
   morningHour = 6; # the night state ends at 06:00
   downstairsHoldMinutes = 20;
 in
