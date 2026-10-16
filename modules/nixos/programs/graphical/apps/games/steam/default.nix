@@ -34,34 +34,39 @@ in
   config = mkIf cfg.enable {
     programs.steam = {
       enable = true;
-      extest.enable = true;
+      # extest (XTest → uinput) lets the Desktop Layout move the real cursor
+      # under Niri; plain XTest only reaches xwayland-satellite. Preloaded via
+      # extraEnv below, not extest.enable: that ships the i686 build only,
+      # which the 64-bit steamrt64 client skips.
       localNetworkGameTransfers.openFirewall = true;
       protontricks.enable = true;
       remotePlay.openFirewall = true;
       extraCompatPackages = [ pkgs.proton-ge-bin ];
       platformOptimizations = enabled;
-      package = pkgs.steam.override (
-        {
-          # Wayland (Niri) needs PipeWire for screen capture — required for
-          # Remote Play streaming and in-game overlay screencasting.
-          extraArgs = "-pipewire";
-          # Steam's FHS sandbox resets PATH (and isolates /tmp), so host
-          # binaries in /run/current-system/sw/bin are invisible to launch
-          # options — `gamescope ... -- %command%` fails inside Steam with
-          # "command not found" unless the tools live inside the sandbox.
-          extraPkgs =
-            p:
-            lib.optional gamesCfg.gamescope.enable p.gamescope
-            ++ lib.optional gamesCfg.gamemode.enable p.gamemode;
-          # libgamemode.so must be dlopen-able by libgamemodeauto from both
-          # 64-bit and 32-bit games, hence multiPkgs (extraLibraries) rather
-          # than extraPkgs.
-          extraLibraries = p: lib.optional gamesCfg.gamemode.enable p.gamemode.lib;
+      package = pkgs.steam.override {
+        # Wayland (Niri) needs PipeWire for screen capture — required for
+        # Remote Play streaming and in-game overlay screencasting.
+        extraArgs = "-pipewire";
+        # Steam's FHS sandbox resets PATH (and isolates /tmp), so host
+        # binaries in /run/current-system/sw/bin are invisible to launch
+        # options — `gamescope ... -- %command%` fails inside Steam with
+        # "command not found" unless the tools live inside the sandbox.
+        extraPkgs =
+          p:
+          lib.optional gamesCfg.gamescope.enable p.gamescope
+          ++ lib.optional gamesCfg.gamemode.enable p.gamemode;
+        # libgamemode.so must be dlopen-able by libgamemodeauto from both
+        # 64-bit and 32-bit games, hence multiPkgs (extraLibraries) rather
+        # than extraPkgs.
+        extraLibraries = p: lib.optional gamesCfg.gamemode.enable p.gamemode.lib;
+        # ld.so skips whichever build has the wrong ELF class per process.
+        extraEnv = {
+          LD_PRELOAD = "${pkgs.extest}/lib/libextest.so ${pkgs.pkgsi686Linux.extest}/lib/libextest.so";
         }
         // optionalAttrs (cfg.ignoreControllers != [ ]) {
-          extraEnv.SDL_GAMECONTROLLER_IGNORE_DEVICES = concatStringsSep "," cfg.ignoreControllers;
-        }
-      );
+          SDL_GAMECONTROLLER_IGNORE_DEVICES = concatStringsSep "," cfg.ignoreControllers;
+        };
+      };
     };
 
     hardware.steam-hardware.enable = true;
