@@ -24,7 +24,7 @@ let
   statusNotices = import ./status_notices.nix { inherit lib; };
 
   # Canon TS9100 ink levels, read from its remote UI (IPP/SNMP report -2).
-  printerInk = import ./printer_ink.nix { inherit lib; };
+  printerInk = import ./printer_ink.nix { inherit lib pkgs; };
 
   # Living room manual mode (remote presses -> sensor-light bypass).
   manualLights = import ./manual_lights.nix { };
@@ -372,7 +372,7 @@ in
             filename = "ui-lovelace.yaml";
           };
 
-          inherit (printerInk) rest;
+          inherit (printerInk) command_line;
 
           "automation manual" =
             airQuality.automations

@@ -7,12 +7,26 @@
 # - level indexes Lv100, Lv090 … Lv000 (100 % to 0 % in 10 % steps), 11 = unknown;
 # - mark: 0 fine, 1 low, 2 empty, 3 unknown.
 # Read without credentials, once an hour.
-{ lib }:
+#
+# Read with curl, not the rest integration: asleep, the printer answers the
+# first request with a 404 ("A specification file is not found") and only
+# serves the page a few seconds later. With rest, an HA start during the
+# printer's sleep never created the sensors (PlatformNotReady, retried only
+# against the next hourly read, itself a 404 again). curl retries for ~30 s
+# and passes on only the tank lines.
+{ lib, pkgs }:
 
 let
   inherit (lib) imap0 map;
 
   url = "http://192.168.0.60/JS_MDL/model.js";
+  # `inktank[0]=[0,6,0] inktank[1]=[1,1,0] ...`, empty when the printer
+  # cannot be read (switched off): the sensors then read unknown.
+  command = lib.concatStringsSep " " [
+    "${pkgs.curl}/bin/curl -sf -m 10 --retry 6 --retry-delay 5 --retry-all-errors ${url}"
+    "| ${pkgs.gnugrep}/bin/grep -o 'inktank\\[[0-9]*\\]=\\[[0-9,]*\\]'"
+    "| ${pkgs.coreutils}/bin/tr '\\n' ' '"
+  ];
 
   # inkCOL order on the printer
   tanks = [
@@ -81,12 +95,17 @@ let
   '';
 in
 {
-  rest = [
-    {
-      resource = url;
-      scan_interval = 3600;
-      timeout = 15;
-      sensor =
+  # One command per sensor: command_line has no shared resource as rest has.
+  command_line =
+    map
+      (sensor: {
+        sensor = sensor // {
+          inherit command;
+          scan_interval = 3600;
+          command_timeout = 90;
+        };
+      })
+      (
         imap0 (colour: t: {
           name = "Printer ink ${t.id}";
           unique_id = "dafos.sensor.printer_ink_${t.id}";
@@ -112,12 +131,12 @@ in
                   {% set ns.out = ns.out + [names[c | int] ~ (' vide' if m | int == 2 else ' bas')] %}
                 {% endif %}
               {% endfor %}
-              {{ ns.out | join(', ') if ns.out else 'OK' }}
+              {% if value | regex_findall('inktank') | count == 0 %}{{ none }}
+              {% else %}{{ ns.out | join(', ') if ns.out else 'OK' }}{% endif %}
             '';
           }
-        ];
-    }
-  ];
+        ]
+      );
 
   automations = [
     {
