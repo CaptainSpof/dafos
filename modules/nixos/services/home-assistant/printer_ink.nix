@@ -10,7 +10,7 @@
 { lib }:
 
 let
-  inherit (lib) imap0;
+  inherit (lib) imap0 map;
 
   url = "http://192.168.0.60/JS_MDL/model.js";
 
@@ -18,26 +18,32 @@ let
   tanks = [
     {
       id = "cyan";
+      label = "Cyan";
       name = "Cyan";
     }
     {
       id = "black";
+      label = "Noir";
       name = "Black (BK)";
     }
     {
       id = "photo_blue";
+      label = "Bleu photo";
       name = "Photo Blue";
     }
     {
       id = "yellow";
+      label = "Jaune";
       name = "Yellow";
     }
     {
       id = "pigment_black";
+      label = "Noir pigment";
       name = "Black (PGBK)";
     }
     {
       id = "magenta";
+      label = "Magenta";
       name = "Magenta";
     }
   ];
@@ -47,6 +53,30 @@ let
     {% set ns = namespace(t=none) %}
     {% for c, l, m in value | regex_findall('inktank\\[\\d+\\]=\\[(\\d+),(\\d+),(\\d+)\\]') %}
       {% if c | int == ${toString colour} %}{% set ns.t = [l | int, m | int] %}{% endif %}
+    {% endfor %}
+  '';
+  # A tank counts as low at 20 % or less (two gauge steps before empty), or as
+  # soon as the printer itself marks one low or empty.
+  lowLevel = 20;
+  # Back to fine once every tank is at 30 % or more: a cartridge was replaced.
+  fineLevel = 30;
+
+  sensorOf = t: "sensor.printer_ink_${t.id}";
+  alert = "sensor.printer_ink_alert";
+
+  # Jinja: "Jaune 20 %, Cyan 10 %" for the tanks at or under lowLevel
+  lowList = ''
+    {% set ns = namespace(out=[]) %}
+    {% for e, n in ${
+      builtins.toJSON (
+        map (t: [
+          (sensorOf t)
+          t.label
+        ]) tanks
+      )
+    } %}
+      {% set v = states(e) | float(none) %}
+      {% if v is not none and v <= ${toString lowLevel} %}{% set ns.out = ns.out + [n ~ ' ' ~ (v | int) ~ ' %'] %}{% endif %}
     {% endfor %}
   '';
 in
@@ -86,6 +116,95 @@ in
             '';
           }
         ];
+    }
+  ];
+
+  automations = [
+    {
+      id = "dafos_printer_ink_low";
+      alias = "Printer · Ink Low";
+      description = "Notifies when a Canon TS9100 tank drops to ${toString lowLevel} % or the printer marks one low or empty; clears once every tank is back at ${toString fineLevel} % or more. Managed in Nix (modules/nixos/services/home-assistant/printer_ink.nix).";
+      mode = "queued";
+      triggers =
+        map (t: {
+          trigger = "numeric_state";
+          entity_id = sensorOf t;
+          below = lowLevel + 1;
+          id = "low";
+        }) tanks
+        ++ [
+          {
+            trigger = "state";
+            entity_id = alert;
+            not_to = [
+              "OK"
+              "unknown"
+              "unavailable"
+            ];
+            id = "low";
+          }
+          {
+            trigger = "state";
+            entity_id = map sensorOf tanks;
+            id = "change";
+          }
+        ];
+      actions = [
+        {
+          choose = [
+            {
+              alias = "A tank is low: notify, listing the low tanks";
+              conditions = [
+                {
+                  condition = "trigger";
+                  id = "low";
+                }
+              ];
+              sequence = [
+                {
+                  action = "notify.mobile_app_dafphone";
+                  data = {
+                    title = "Encre faible sur l'imprimante";
+                    message = ''
+                      ${lowList}
+                      {% set marked = states('${alert}') %}
+                      {{ (ns.out | join(', ')) if ns.out else marked }}{{ ' (imprimante : ' ~ marked ~ ')' if ns.out and marked not in ['OK', 'unknown', 'unavailable'] else ''' }}
+                    '';
+                    data = {
+                      tag = "printer_ink";
+                      group = "Tâches";
+                      channel = "household";
+                      notification_icon = "mdi:printer-alert";
+                    };
+                  };
+                }
+              ];
+            }
+            {
+              alias = "Every tank fine again (cartridge replaced): clear";
+              conditions = [
+                {
+                  condition = "trigger";
+                  id = "change";
+                }
+                {
+                  condition = "template";
+                  value_template = "{{ ${builtins.toJSON (map sensorOf tanks)} | map('states') | map('float', 0) | min >= ${toString fineLevel} and is_state('${alert}', 'OK') }}";
+                }
+              ];
+              sequence = [
+                {
+                  action = "notify.mobile_app_dafphone";
+                  data = {
+                    message = "clear_notification";
+                    data.tag = "printer_ink";
+                  };
+                }
+              ];
+            }
+          ];
+        }
+      ];
     }
   ];
 

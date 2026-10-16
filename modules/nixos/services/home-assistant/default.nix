@@ -368,7 +368,7 @@ in
 
           inherit (printerInk) rest;
 
-          "automation manual" = airQuality.automations ++ statusNotices.automations;
+          "automation manual" = airQuality.automations ++ statusNotices.automations ++ printerInk.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
