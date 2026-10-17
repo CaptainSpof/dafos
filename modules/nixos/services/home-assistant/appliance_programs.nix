@@ -160,36 +160,35 @@ in
                   }
                 ];
               }
-              # After Household · Appliances, which still folds the cycle into
-              # its moving average at the same moment: the next cycle starts
-              # from the shortest programme.
-              { delay.seconds = 15; }
-              (setExpected a (pick a "0"))
             ];
           }) appliances;
         }
         {
-          alias = "Running cycles: expect the shortest programme not yet outlasted";
+          # Idle appliances expect their shortest programme, so the next
+          # start's notification already has it. This also overrides the
+          # moving average Household · Appliances still writes at each end.
+          alias = "Expect the shortest programme the cycle has not outlasted (idle: the shortest)";
           "if" = [
             {
               condition = "trigger";
               id = "tick";
             }
           ];
-          "then" = map (a: {
-            "if" = [
-              {
-                condition = "state";
-                entity_id = active a;
-                state = "on";
-              }
-              {
-                condition = "template";
-                value_template = "${setTarget a (minutesSinceStart a)}{{ target | int != states('${expected a}') | int(0) }}";
-              }
-            ];
-            "then" = [ (setExpected a (pick a (minutesSinceStart a))) ];
-          }) appliances;
+          "then" = map (
+            a:
+            let
+              elapsed = "(${minutesSinceStart a} if is_state('${active a}', 'on') else 0)";
+            in
+            {
+              "if" = [
+                {
+                  condition = "template";
+                  value_template = "${setTarget a elapsed}{{ target | int != states('${expected a}') | int(0) }}";
+                }
+              ];
+              "then" = [ (setExpected a (pick a elapsed)) ];
+            }
+          ) appliances;
         }
       ];
     }
