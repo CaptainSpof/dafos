@@ -1,0 +1,32 @@
+# Firmware for the knob board's SECOND chip, the ESP32-U4WDH next to the
+# ESP32-S3 that runs minuteur.yaml. It only goes to deep sleep, for good.
+#
+# Waveshare's stock firmware on this chip keeps its Wi-Fi/Bluetooth radio
+# busy, and two uncoordinated 2.4 GHz radios a few millimetres apart deafen
+# each other: with it running the S3's scans mostly found no network at all;
+# with it held in its bootloader, every scan saw the box (-68 dBm) and the
+# repeater, and HA connected on the first try (2026-10-17). Its encoder EC2,
+# the audio DAC and the TF slot are unused by the timer.
+#
+# Flash over the CH341 port (the USB-C cable flipped), see AGENTS.md. The
+# auto-reset circuit wakes it into the bootloader, so it stays reflashable.
+# Stock backup: ~/Documents/waveshare-knob/aux-stock-firmware.bin.
+esphome:
+  name: minuteur-aux
+  includes:
+    - <esp_sleep.h>
+  on_boot:
+    - priority: 1000
+      then:
+        - lambda: |-
+            ESP_LOGI("aux", "Radio off: deep sleep until reset");
+            esp_deep_sleep_start();
+esp32:
+  board: esp32dev
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      # ESP32-U4WDH is single-core.
+      CONFIG_FREERTOS_UNICORE: "y"
+logger:

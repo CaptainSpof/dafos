@@ -46,10 +46,17 @@ separate because the timer automation runs in `mode: restart`.
   never reconnect ("No networks found" means no _matching_ network, and the boot
   log showed `Loaded settings:` with nothing after it). Check the boot log for
   `Loaded settings: DafWifi` after provisioning.
-- **The signal is marginal** (metal case): −80 to −87 dBm at the desk, 40 % ping
-  loss, and an OTA upload dropped the link mid-transfer. Watch the
-  `Signal Wi-Fi` diagnostic sensor where the device actually lives, and flash
-  over USB when OTA keeps timing out.
+- **The board's second chip jams the S3's radio.** Waveshare's stock firmware on
+  the ESP32-U4WDH keeps its Wi-Fi/BT busy: the S3's scans mostly found nothing
+  ("No networks found", "Probe Request Unsuccessful", even next to the box) and
+  timers never reached HA. `minuteur-aux.yaml` puts that chip in deep sleep for
+  good; flash it over the CH341 port (`/dev/ttyUSB0`, cable flipped) at
+  `--baud 460800` (921600 corrupts). Stock backup:
+  `~/Documents/waveshare-knob/aux-stock-firmware.bin` (two identical reads).
+  Before blaming distance, put that chip in its bootloader
+  (`esptool --after no-reset flash-id`) and compare the S3's scans.
+- **The box's BSS refuses the timer** ("Not Associated") even at −70 dBm; it
+  connects through the repeater after two failed attempts on every wake.
 - **Serial logs without sudo**: `sudo setfacl -m u:daf:rw /dev/ttyACM1` once
   (gone on replug), then read with pyserial. Opening the port resets the chip
   even with DTR/RTS low, which conveniently yields a full boot log; a plain
