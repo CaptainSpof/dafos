@@ -26,8 +26,8 @@ let
   # Canon TS9100 ink levels, read from its remote UI (IPP/SNMP report -2).
   printerInk = import ./printer_ink.nix { inherit lib pkgs; };
 
-  # Living room manual mode (remote presses -> sensor-light bypass).
-  manualLights = import ./manual_lights.nix { };
+  # Appliance programme lengths, learned from their cycles.
+  appliancePrograms = import ./appliance_programs.nix { inherit lib; };
 
   # Trigger sensors for the sensor-light automations.
   lightTriggers = import ./light_triggers.nix { };
@@ -378,7 +378,7 @@ in
             airQuality.automations
             ++ statusNotices.automations
             ++ printerInk.automations
-            ++ manualLights.automations;
+            ++ appliancePrograms.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
@@ -404,7 +404,7 @@ in
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
           input_datetime = import ./sensors/input_datetimes.nix;
           input_number = import ./sensors/input_numbers.nix;
-          input_text = import ./sensors/input_texts.nix;
+          input_text = import ./sensors/input_texts.nix // appliancePrograms.input_text;
           sensor = [
             {
               platform = "time_date";

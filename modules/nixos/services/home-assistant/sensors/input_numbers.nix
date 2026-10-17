@@ -1,9 +1,9 @@
 # Expected cycle length in minutes, the 100% mark of the live-update progress
-# bar. The "Household · Appliances" automation folds every finished cycle into
-# it (moving average), so it tracks the programmes actually used.
+# bar and of the Maison dashboard's rings. Household · Appliance Programmes
+# (../appliance_programs.nix) sets it from the programme lengths it learns:
+# the shortest one the running cycle has not yet outlasted.
 #
-# No `initial`: it would reset the learned value on every restart. Seed a new
-# entry once with input_number.set_value.
+# No `initial`: it would reset the value on every restart.
 let
   duration = name: icon: {
     inherit name icon;
