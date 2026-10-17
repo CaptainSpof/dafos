@@ -101,6 +101,12 @@ captive_portal:
 time:
   - platform: homeassistant
     id: ha_time
+    # A wake is a reboot: a timer started with the knob before HA answered
+    # went out as "running" with no end time (no clock yet) and a stale
+    # remaining, which the dashboard and the phone read as a dead timer.
+    # Publish again once the clock is set.
+    on_time_sync:
+      - script.execute: publish
 # --- Hardware (pinout from tomereli/coffee-knob and KrX3D/WaveShare-Knob-Esp32S3)
 spi:
   id: display_qspi
@@ -303,8 +309,15 @@ interval:
             api.connected:
           then:
             - lambda: "id(api_up_s)++;"
+            - lvgl.widget.update:
+                id: link_dot
+                hidden: true
           else:
             - lambda: "id(api_up_s) = 0;"
+            # Not connected to HA (yet): the amber dot under the hint.
+            - lvgl.widget.update:
+                id: link_dot
+                hidden: false
   - interval: 200ms
     then:
       - if:
@@ -725,6 +738,18 @@ lvgl:
             text_font: font_text
             text_align: CENTER
             text_color: 0x9A9A9A
+        # Shown while HA is not connected (see the 1 s interval).
+        - obj:
+            id: link_dot
+            align: CENTER
+            y: 118
+            width: 12
+            height: 12
+            radius: 6
+            bg_color: 0xE5A100
+            border_width: 0
+            clickable: false
+            hidden: false
         # Transparent full-screen hit area, declared last so it sits on top
         # and receives every tap.
         - obj:
