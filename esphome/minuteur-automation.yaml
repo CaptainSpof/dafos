@@ -11,7 +11,8 @@
 # Finished -> alarm notification plus "Minuteur terminé" spoken on the alarm
 #             stream (through silent mode), every 30 s for 3 min, until
 #             "Arrêter" is pressed on the phone or the device.
-# Idle     -> notification cleared.
+# Idle     -> notification cleared. Coming from "finished" (acknowledged on
+#             the device or the phone), the phrase being spoken is cut too.
 #
 # mode: restart, so any state change (including the acknowledgement) cuts
 # the refresh and ringing loops short.
@@ -144,6 +145,15 @@ actions:
           - condition: template
             value_template: "{{ etat == 'idle' }}"
         sequence:
+          # mode: restart already stops the ringing loop; this stops what is
+          # still playing. Clearing the notification ends its alarm sound.
+          - if:
+              - condition: template
+                value_template: "{{ trigger.from_state is not none and trigger.from_state.state == 'finished' }}"
+            then:
+              - action: notify.mobile_app_dafphone
+                data:
+                  message: command_stop_tts
           - action: notify.mobile_app_dafphone
             data:
               message: clear_notification
