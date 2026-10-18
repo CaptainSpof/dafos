@@ -178,19 +178,6 @@ let
       widgets.systray
       widgets.digitalclock
       {
-        name = "org.dhruv8sh.kara";
-        config = {
-          general = {
-            animationDuration = 200;
-            spacing = 3;
-            type = 0;
-          };
-          type1 = {
-            t1activeWidth = 15;
-          };
-        };
-      }
-      {
         kickoff = {
           applicationsDisplayMode = "list";
           compactDisplayStyle = false;
