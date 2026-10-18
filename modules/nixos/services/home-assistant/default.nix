@@ -29,6 +29,9 @@ let
   # Appliance programme lengths, learned from their cycles.
   appliancePrograms = import ./appliance_programs.nix { inherit lib; };
 
+  # dafspi's cycle as a Live Update notification.
+  vacuumProgress = import ./vacuum_progress.nix { };
+
   # Trigger sensors for the sensor-light automations.
   lightTriggers = import ./light_triggers.nix { };
 
@@ -378,7 +381,8 @@ in
             airQuality.automations
             ++ statusNotices.automations
             ++ printerInk.automations
-            ++ appliancePrograms.automations;
+            ++ appliancePrograms.automations
+            ++ vacuumProgress.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
