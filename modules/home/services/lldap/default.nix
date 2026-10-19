@@ -79,6 +79,8 @@ let
         bar-assistant.oidc.userGroup
         grimmory.oidc.userGroup
         donetick.oidc.userGroup
+        excalidash.oidc.adminGroup
+        excalidash.oidc.userGroup
         kaneo.oidc.userGroup
         karakeep.oidc.userGroup
         kitchenowl.oidc.userGroup

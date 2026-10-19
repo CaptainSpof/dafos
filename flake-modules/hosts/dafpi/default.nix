@@ -98,6 +98,7 @@ in
         bar-assistant-stack
         donetick
         dozzle
+        excalidash
         glance-agent
         health-push
         kaneo
@@ -144,6 +145,7 @@ in
             enableBankingAppId = "2d512d1c-a7f8-45d3-9a17-7b2c5e1f97ae";
           };
           donetick.enable = true;
+          excalidash.enable = true;
           glance-agent.enable = true;
           kaneo.enable = true;
           karakeep.enable = true;

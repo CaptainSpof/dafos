@@ -257,7 +257,10 @@ let
       title = "Outils";
       icon = "mdi:tools";
       page = "services";
-      containers = [ "it-tools" ];
+      containers = [
+        "it-tools"
+        "excalidash"
+      ];
     }
     {
       title = "Supervision";
@@ -319,6 +322,7 @@ let
     calibre = "Bibliothèque d'ebooks";
     crowdsec = "Protection collaborative contre les attaques";
     donetick = "Tâches du quotidien";
+    excalidash = "Tableau blanc et schémas";
     flaresolverr = "Contournement de Cloudflare";
     gluetun = "Client VPN";
     grimmory = "Collection de livres";
