@@ -15,6 +15,8 @@ let
 
   # Helpers of the Maison dashboard (Origami), generated from ./origami/rooms.nix.
   origami = import ./origami/helpers.nix { inherit lib; };
+  # Which of the dashboard's entities are unavailable.
+  offline = import ./origami/offline.nix { inherit lib; };
 
   # Kitchen and veranda air quality: detectors, level sensors and the airing
   # notifications.
@@ -400,7 +402,7 @@ in
             { binary_sensor = import ./sensors/binary_sensors.nix; }
             { sensor = import ./sensors/template_sensors.nix; }
             # The Maison dashboard (Origami), see ./origami/rooms.nix.
-            { sensor = origami.sensors; }
+            { sensor = origami.sensors ++ offline.sensors; }
             { binary_sensor = lightTriggers.binarySensors; }
             {
               binary_sensor = airQuality.binarySensors;
