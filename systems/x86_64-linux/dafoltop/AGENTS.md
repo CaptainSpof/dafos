@@ -101,6 +101,17 @@ FIDECO dual-bay dock:
   lease, so pin it in Freebox OS), plus the tailnet. The server is tied to the
   `/mnt/data` mount, so it stops when the dock drops and starts when the mount
   returns.
+- **Immich's data is split by bind mounts over `/var/lib/immich`** (module
+  options `originalsPath` and `derivedPath`; `IMMICH_MEDIA_LOCATION` and every
+  path in its database are unchanged): `upload/` and `library/` (the originals)
+  come from `/mnt/data/immich`, `thumbs/`, `encoded-video/` and `backups/` from
+  `/home/immich-data` on the NVMe (thumbnails are ~0.7 MB per photo), `profile/`
+  and Postgres stay on the root. `immich-server` requires the mounts, so with
+  the dock missing it fails and alerts instead of writing to the root, and it is
+  wanted by `mnt-data.mount`, so it returns after a drop. Create the source
+  directories by hand, never with tmpfiles: on a missing disk that would
+  recreate them on the root and defeat the guard. Moved 2026-10-12; the old
+  copies sit in `/var/lib/immich/*.old` until a backup night has passed.
 - The Freebox is no longer primary storage. Its CIFS mounts in `hardware.nix`
   are still declared but nothing uses them. The share is `sec=none`, readable by
   anyone on the LAN, so never put anything unencrypted on it.
