@@ -40,6 +40,9 @@ let
   # Reload, then restart HA when the Netatmo integration stays down.
   netatmoWatchdog = import ./netatmo_watchdog.nix { };
 
+  # The desk and veranda colour panels mirror each other.
+  colorPanels = import ./color_panels.nix { };
+
   # Trigger sensors for the sensor-light automations.
   lightTriggers = import ./light_triggers.nix { };
 
@@ -392,7 +395,8 @@ in
             ++ appliancePrograms.automations
             ++ vacuumProgress.automations
             ++ heatingUsage.automations
-            ++ netatmoWatchdog.automations;
+            ++ netatmoWatchdog.automations
+            ++ colorPanels.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
