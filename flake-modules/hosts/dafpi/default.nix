@@ -13,6 +13,7 @@ in
       gatus
       home
       locale
+      matter-server
       networking
       nix
       openssh
@@ -47,6 +48,13 @@ in
           # the Free /64: see the networkd token in ./hardware.nix.
           hostAddress6 = "2a01:e0a:b6c:4b90::15";
           peers = [ "dafpi" ];
+        };
+        # Matter controller for dafoltop's Home Assistant (dafoltop has no
+        # IPv6, which Matter needs): the websocket is open to dafoltop only.
+        matter-server = {
+          enable = true;
+          interface = "end0";
+          clients = [ "192.168.0.10" ];
         };
         openssh.enable = true;
         tailscale.enable = true;
