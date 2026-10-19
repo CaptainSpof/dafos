@@ -11,3 +11,8 @@ Orange Pi 5 (aarch64), the first host built only from `flake-modules` aspects:
   dafbox (binfmt). Deploys build on the Pi (`remoteBuild`).
 - Services move here from dafoltop one at a time; see the plan in
   `~/.claude/plans/je-veux-installer-nixos-functional-spark.md`.
+- dafoltop's Home Assistant uses dafpi's Matter controller
+  (`flake-modules/services/matter-server.nix`, `ws://192.168.0.15:5580/ws`,
+  open to dafoltop only): Matter and Thread need IPv6, which dafoltop has none
+  of by design. Thread's border router is meant to join it here, on the SONOFF
+  dongle reflashed with OpenThread RCP once ZHA is retired.
