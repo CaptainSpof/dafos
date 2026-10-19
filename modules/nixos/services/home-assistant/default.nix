@@ -32,6 +32,9 @@ let
   # dafspi's cycle as a Live Update notification.
   vacuumProgress = import ./vacuum_progress.nix { };
 
+  # Stove against boiler: run signals, last runs and totals.
+  heatingUsage = import ./heating_usage.nix { inherit lib; };
+
   # Trigger sensors for the sensor-light automations.
   lightTriggers = import ./light_triggers.nix { };
 
@@ -402,7 +405,8 @@ in
               binary_sensor = airQuality.binarySensors;
               sensor = airQuality.sensors;
             }
-          ];
+          ]
+          ++ heatingUsage.templates;
 
           input_boolean =
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
@@ -424,7 +428,8 @@ in
             }
           ]
           ++ (import ./sensors/sensors.nix)
-          ++ origami.platformSensors;
+          ++ origami.platformSensors
+          ++ heatingUsage.platformSensors;
 
           # No `zha:` block: ZHA is config-flow only. It reads the coordinator
           # from the config entry and `create_zha_config` overwrites whatever
