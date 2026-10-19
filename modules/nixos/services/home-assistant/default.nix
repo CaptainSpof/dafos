@@ -37,6 +37,9 @@ let
   # Stove against boiler: run signals, last runs and totals.
   heatingUsage = import ./heating_usage.nix { inherit lib; };
 
+  # Reload, then restart HA when the Netatmo integration stays down.
+  netatmoWatchdog = import ./netatmo_watchdog.nix { };
+
   # Trigger sensors for the sensor-light automations.
   lightTriggers = import ./light_triggers.nix { };
 
@@ -388,7 +391,8 @@ in
             ++ printerInk.automations
             ++ appliancePrograms.automations
             ++ vacuumProgress.automations
-            ++ heatingUsage.automations;
+            ++ heatingUsage.automations
+            ++ netatmoWatchdog.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
@@ -413,7 +417,7 @@ in
 
           input_boolean =
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
-          input_datetime = import ./sensors/input_datetimes.nix;
+          input_datetime = import ./sensors/input_datetimes.nix // netatmoWatchdog.input_datetime;
           input_number = import ./sensors/input_numbers.nix;
           input_text = import ./sensors/input_texts.nix // appliancePrograms.input_text;
           sensor = [
