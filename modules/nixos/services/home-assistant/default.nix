@@ -385,7 +385,8 @@ in
             ++ statusNotices.automations
             ++ printerInk.automations
             ++ appliancePrograms.automations
-            ++ vacuumProgress.automations;
+            ++ vacuumProgress.automations
+            ++ heatingUsage.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";

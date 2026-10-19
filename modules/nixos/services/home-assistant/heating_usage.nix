@@ -168,5 +168,86 @@ in
 
   platformSensors = concatMap stats heaters;
 
+  # A phone notification when the stove lights or the boiler starts heating,
+  # replaced in silence by the run's length when it stops (same tag).
+  automations = [
+    {
+      id = "dafos_heating_usage_notifications";
+      alias = "Heating · Usage Notifications";
+      description = "Notifies dafphone when the stove lights or the boiler starts heating, and replaces it with the run's length when it stops. Managed in Nix (modules/nixos/services/home-assistant/heating_usage.nix).";
+      mode = "queued";
+      triggers = concatMap (h: [
+        {
+          trigger = "state";
+          entity_id = h.on;
+          from = "off";
+          to = "on";
+          id = "${h.id}-on";
+        }
+        {
+          trigger = "state";
+          entity_id = h.on;
+          from = "on";
+          to = "off";
+          id = "${h.id}-off";
+        }
+      ]) heaters;
+      actions = [
+        {
+          choose = concatMap (h: [
+            {
+              conditions = [
+                {
+                  condition = "trigger";
+                  id = "${h.id}-on";
+                }
+              ];
+              sequence = [
+                {
+                  action = "notify.mobile_app_dafphone";
+                  data = {
+                    title = "${h.name} en marche";
+                    message = "Démarré à {{ now().strftime('%H:%M') }} · salon à {{ states('sensor.living_room_current_temperature') }} °C";
+                    data = {
+                      tag = "heating_${h.id}";
+                      group = "Chauffage";
+                      channel = "Chauffage";
+                      notification_icon = h.icon;
+                    };
+                  };
+                }
+              ];
+            }
+            {
+              conditions = [
+                {
+                  condition = "trigger";
+                  id = "${h.id}-off";
+                }
+              ];
+              sequence = [
+                {
+                  action = "notify.mobile_app_dafphone";
+                  data = {
+                    title = "${h.name} arrêté";
+                    message = "Après {{ ((now() - trigger.from_state.last_changed).total_seconds() / 60) | round(0) | int }} min, à {{ now().strftime('%H:%M') }} · salon à {{ states('sensor.living_room_current_temperature') }} °C";
+                    data = {
+                      tag = "heating_${h.id}";
+                      group = "Chauffage";
+                      channel = "Chauffage";
+                      notification_icon = h.icon;
+                      # Updates the start notification without a new alert
+                      alert_once = true;
+                    };
+                  };
+                }
+              ];
+            }
+          ]) heaters;
+        }
+      ];
+    }
+  ];
+
   inherit heaters;
 }
