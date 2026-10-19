@@ -204,6 +204,59 @@ rec {
     };
   };
 
+  # The host for KefinTweaks, which is not a server plugin but a bundle of
+  # web-UI scripts: JS Injector serves them to the client and stores their
+  # settings server-side. The KefinTweaks loader script itself lives in JS
+  # Injector's configuration, set up from the dashboard like any other plugin
+  # setting -- KefinTweaks rewrites its own entries there on install.
+  javascript-injector = fetchPlugin {
+    pname = "javascript-injector";
+    version = "4.0.0.0";
+    dirName = "JavaScriptInjector_4.0.0.0";
+    supersedes = [
+      "JavaScriptInjector_*"
+      "JavaScript Injector_*"
+    ];
+    url = "https://github.com/n00bcodr/Jellyfin-JavaScript-Injector/releases/download/4.0.0.0/Jellyfin.Plugin.JavaScriptInjector_12.0.0.zip";
+    hash = "sha256-DiO+O8L9deFGkQTjEKKlZkHjBM2HmF7SHAg8r++M3C0=";
+    meta = {
+      # From n00bcodr's 12/manifest.json.
+      guid = "f5a34f7b-2e8a-4e6a-a722-3a216a81b374";
+      name = "JavaScript Injector";
+      overview = "Inject custom javascript(s) to the Jellyfin Web UI";
+      description = "Inject custom javascript(s) to the Jellyfin Web UI";
+      owner = "n00bcodr";
+      category = "General";
+      targetAbi = "12.0.0.0";
+    };
+  };
+
+  # Lets JS Injector (and Jellyfin Enhanced) inject into jellyfin-web by
+  # intercepting the served files instead of rewriting index.html on disk.
+  # Builds are per Jellyfin *minor* (targetAbi 12.2.0.0 here), so bump this
+  # with the server's minor version.
+  file-transformation = fetchPlugin {
+    pname = "file-transformation";
+    version = "3.0.2.0";
+    dirName = "FileTransformation_3.0.2.0";
+    supersedes = [
+      "FileTransformation_*"
+      "File Transformation_*"
+    ];
+    url = "https://github.com/IAmParadox27/jellyfin-plugin-file-transformation/releases/download/3.0.2.0/Release-12.2.0.zip";
+    hash = "sha256-YufVExHm9nC7yaSXAO7Z5f4mTbxRJ1y3rhWC4IwG0KE=";
+    meta = {
+      # From IAmParadox27's manifest at iamparadox.dev.
+      guid = "5e87cc92-571a-4d8d-8d98-d2d4147f9f90";
+      name = "File Transformation";
+      overview = "Change jellyfin-web content by intercepting the served files";
+      description = "Adds support for plugins to change jellyfin-web content without actually modifying the files directly but intercepts the requests for the served data.";
+      owner = "IAmParadox27";
+      category = "General";
+      targetAbi = "12.2.0.0";
+    };
+  };
+
   # Everything that belongs in the plugins directory when Jellyfin is on the
   # 12.x line.
   all12 = [
@@ -211,6 +264,8 @@ rec {
     tvdb
     intro-skipper
     jellyfin-enhanced
+    file-transformation
+    javascript-injector
   ];
 
   # Shell that materialises one plugin into a writable directory under `dir`.
