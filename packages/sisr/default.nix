@@ -20,11 +20,11 @@
 
 stdenv.mkDerivation rec {
   pname = "sisr";
-  version = "0.6.0";
+  version = "0.6.2";
 
   src = fetchurl {
     url = "https://github.com/Alia5/SISR/releases/download/v${version}/SISR-linux_x64-Release.tar.gz";
-    hash = "sha256-N9e8VQ0RJqxZ4fxI1+DVOC5ykjSdMV8LSVpVLYY45/U=";
+    hash = "sha256-OT+WYvF2/msU2iNgWww6hwM+iBGcDDhYps8GUMXb4js=";
   };
 
   icon = fetchurl {

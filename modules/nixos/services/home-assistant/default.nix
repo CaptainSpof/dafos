@@ -300,7 +300,9 @@ in
           bubble-card
           button-card
           card-mod
+          custom-brand-icons
           decluttering-card
+          fold-entity-row
           hourly-weather
           light-entity-card
           mini-graph-card
@@ -308,9 +310,7 @@ in
           multiple-entity-row
           mushroom
           navbar-card
-          pkgs.dafos.custom-brand-icons
           pkgs.dafos.lovelace-auto-entities
-          pkgs.dafos.lovelace-fold-entity-row
           pkgs.dafos.lovelace-idf-mobilite
           pkgs.dafos.lovelace-layout-card
           pkgs.dafos.lovelace-origami

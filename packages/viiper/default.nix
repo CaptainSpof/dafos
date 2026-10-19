@@ -7,14 +7,15 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "viiper";
-  version = "0.7.0";
+  version = "0.9.0";
 
   src = fetchurl {
-    url = "https://github.com/Alia5/VIIPER/releases/download/v${version}/viiper-linux-amd64.tar.gz";
-    hash = "sha256-0NcyoA6mNvgr1oHg4gXK3Yj5WiFiDpWjSTp6JU0kENo=";
+    url = "https://github.com/Alia5/VIIPER/releases/download/v${version}/viiper-linux-amd64";
+    hash = "sha256-kiH4QNpGApZBcS7nxR1OM9H2BETGgU+gE7hZtLkcXwc=";
   };
 
-  sourceRoot = ".";
+  # Since 0.9.0 the release asset is the bare binary, not a tarball.
+  dontUnpack = true;
 
   # Static Go binary — nothing to patch, just install.
   dontConfigure = true;
@@ -23,8 +24,7 @@ stdenvNoCC.mkDerivation rec {
   installPhase = ''
     runHook preInstall
 
-    install -Dm755 viiper $out/bin/viiper
-    install -Dm644 licenses.txt $out/share/doc/viiper/licenses.txt
+    install -Dm755 $src $out/bin/viiper
 
     runHook postInstall
   '';

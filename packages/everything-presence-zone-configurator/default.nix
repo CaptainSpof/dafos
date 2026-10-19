@@ -22,13 +22,13 @@
 # as a belt-and-braces second candidate path.
 buildNpmPackage rec {
   pname = "everything-presence-zone-configurator";
-  version = "2.2.4";
+  version = "2.2.5";
 
   src = fetchFromGitHub {
     owner = "EverythingSmartHome";
     repo = "everything-presence-addons";
     rev = "refs/tags/v${version}";
-    hash = "sha256-V5Bl8h+YtxcPyQApNzWTqPt44LsWpmyYPpu/a17u59o=";
+    hash = "sha256-0KGXBVbNinJHd2pcQITSu/3PD+eHw/m80DiUDzIyf2U=";
   };
 
   sourceRoot = "${src.name}/everything-presence-mmwave-configurator";

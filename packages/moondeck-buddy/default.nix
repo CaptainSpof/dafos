@@ -11,7 +11,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "moondeck-buddy";
-  version = "1.9.2";
+  version = "1.10.0";
 
   src = fetchFromGitHub {
     owner = "FrogTheFrog";
@@ -19,8 +19,22 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     # resources/ssl submodule carries the TLS keys shared with the MoonDeck plugin.
     fetchSubmodules = true;
-    hash = "sha256-GhZlmdI+oa5BjEzr9bkR2sY/nVpd1nuJlT2hYYv6zGU=";
+    hash = "sha256-kuU6bE/I3oyLUq2qFvMOzrqu5DceqxDDwP34iTLpIgI=";
   };
+
+  # src/lib/json pulls glaze through FetchContent (git clone at configure time,
+  # which the sandbox forbids). Hand it the exact tag upstream pins — nixpkgs'
+  # glaze is a newer major.
+  glaze = fetchFromGitHub {
+    owner = "stephenberry";
+    repo = "glaze";
+    tag = "v7.7.1";
+    hash = "sha256-CfN2mv1s+yv2HvRLBZhHUHBNfsgRzTT7USNYkkahh8M=";
+  };
+
+  cmakeFlags = [
+    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_GLAZE" "${finalAttrs.glaze}")
+  ];
 
   nativeBuildInputs = [
     cmake

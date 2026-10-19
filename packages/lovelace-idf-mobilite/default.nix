@@ -6,13 +6,13 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "lovelace-idf-mobilite";
-  version = "0.4.5";
+  version = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "yyrkoon94";
     repo = "lovelace-idf-mobilite";
     rev = "v${version}";
-    hash = "sha256-zoH4ZD/vFtL0anFKt6GiSSWaI5FEL+qXpc/eKaCHvNg=";
+    hash = "sha256-+vak8dUtgBlIT/kb9KDeqHPDBixQkXj12GKaC4rUiL8=";
   };
 
   dontBuild = true;

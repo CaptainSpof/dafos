@@ -17,7 +17,7 @@ the fleet needs it as a plain service or derivation. Two rules learned from
   wrapper passes `--chdir`; the matching NixOS module lives in
   [../modules/nixos/services/everything-presence-zone-configurator](../modules/nixos/services/everything-presence-zone-configurator).
 
-Home Assistant frontend cards (`lovelace-*`, `custom-brand-icons`) are plain
+Home Assistant frontend cards (`lovelace-*`) are plain
 derivations copying built assets into `$out`, with `passthru.entrypoint`; follow
 the existing ones. A card that loads sibling files by relative URL goes in its
 own subdirectory (`lovelace-idf-mobilite`, `lovelace-origami-weather`). Prefer

@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation {
   src = fetchFromGitHub {
     owner = "qewer33";
     repo = "leaf-kde";
-    rev = "cea63298cfe1a0d3163ca7a58fc51d6bb3a15331";
-    sha256 = "sha256-/0fxxr3ACczJ6/vC7tYLe+Je7z6X4Q4ukYln5sOigu8";
+    rev = "8308d1583dcebca666938d9ea9668d73e48d265c";
+    sha256 = "sha256-5KY9JmIfwqWd/i2EW4su4v/f7PO/dFyu097Pxn6liWA=";
   };
 
   # TODO: install with repo's ruby script

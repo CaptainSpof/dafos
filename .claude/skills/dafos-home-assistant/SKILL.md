@@ -50,7 +50,7 @@ storage and will not appear in this repo — check both before concluding
 something is not configured.
 
 Frontend cards come from nixpkgs (`home-assistant-custom-lovelace-modules`)
-when it has them, otherwise from `packages/` (`lovelace-*`, `custom-brand-icons`),
+when it has them, otherwise from `packages/` (`lovelace-*`),
 all listed in `customLovelaceModules`. The dashboard is in storage mode, so a
 new card also needs its resource registered (`lovelace/resources/create`).
 
