@@ -129,7 +129,14 @@ in
       zigbee2mqtt = {
         enable = true;
         settings = {
-          homeassistant.enabled = config.services.home-assistant.enable;
+          homeassistant = {
+            enabled = config.services.home-assistant.enable;
+            # An action sensor (sensor.<name>_action) per remote: the
+            # lsismeiro controller blueprints read it for Zigbee2MQTT remotes
+            # (ZHA → Z2M migration). Remotes wired before keep their MQTT
+            # triggers, which ignore the empty action sent after each press.
+            legacy_action_sensor = true;
+          };
           availability = true;
           advanced.transmit_power = 20;
           mqtt = {
