@@ -1039,14 +1039,17 @@ in
             size = "small";
             widgets = [
               {
-                type = "reddit";
+                # Reddit now refuses anonymous JSON from this IP (www/api 403,
+                # old.reddit redirects to /login) and new API apps need approval
+                # under its Responsible Builder Policy, so the reddit widget is
+                # dead. The RSS feed still answers, but rate-limits bursts with
+                # 429: keep the long cache so it is fetched a few times a day.
+                type = "rss";
                 title = "r/selfhosted";
-                subreddit = "selfhosted";
+                title-url = "https://www.reddit.com/r/selfhosted/";
+                feeds = [ { url = "https://www.reddit.com/r/selfhosted/hot.rss"; } ];
+                limit = 15;
                 collapse-after = 5;
-                # Reddit resets glance's connections when it refreshes its loid
-                # cookie, and the refresh is synchronous, so whichever page load
-                # hits an expired cache stalls for ~1s. Default TTL made that
-                # roughly every 40 minutes.
                 cache = "6h";
               }
             ];
