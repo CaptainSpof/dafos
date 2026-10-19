@@ -598,6 +598,12 @@ in
           "slider"
           "speaker"
           "tiles"
-        ];
+        ]
+    # lsismeiro's light hook, patched for HA 2026.10's colour temperature in
+    # kelvins (see the file's header). Linked over the UI-imported copy, so a
+    # re-import from the UI cannot bring the broken version back.
+    ++ [
+      "L+ /var/lib/hass/blueprints/automation/lsismeiro/light.yaml - - - - ${./blueprints/lsismeiro/light.yaml}"
+    ];
   };
 }
