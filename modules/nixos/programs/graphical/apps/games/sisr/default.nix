@@ -100,6 +100,13 @@ in
       cat > ${wrapperPath} <<'WRAPPER_EOF'
       #!/bin/sh
       export APPIMAGE="$0"
+      # SISR pins Steam Input to its own layout with xdg-open steam://forceinputappid/…;
+      # without it Steam falls back to the Desktop layout whenever another window
+      # (the emulator) has focus, and the emulated pad goes silent. Steam's runtime
+      # container has no xdg-open, and the host's steam:// handler can't run in
+      # there, so ship ours and route it through the portal.
+      export PATH="$PATH:${pkgs.xdg-utils}/bin"
+      export NIXOS_XDG_OPEN_USE_PORTAL=1
       export SISR_FULLSCREEN=${boolToString cfg.fullscreen}
       export SISR_SHOW_WINDOW=${boolToString cfg.showWindow}
       ${optionalString (
