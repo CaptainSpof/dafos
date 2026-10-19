@@ -21,3 +21,6 @@ options.json
 *.bak
 /.pre-commit-config.yaml
 /.direnv/
+
+# Personal notes, kept out of the repo.
+/notes/
