@@ -46,6 +46,9 @@ let
   # Trigger sensors for the sensor-light automations.
   lightTriggers = import ./light_triggers.nix { };
 
+  # Veranda TV start-up script.
+  tv = import ./tv.nix { };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -418,6 +421,7 @@ in
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
           "script origami" = origami.scripts;
+          "script tv" = tv.scripts;
 
           "template" = [
             # Template binary sensors + sensors migrated from the legacy
