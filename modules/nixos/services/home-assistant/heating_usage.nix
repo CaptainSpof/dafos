@@ -166,7 +166,25 @@ in
   ]
   ++ map lastRun heaters;
 
-  platformSensors = concatMap stats heaters;
+  platformSensors = concatMap stats heaters ++ [
+    # The stove's power, highest over the last 10 min: maybe_burning (UI
+    # template) and the heating controller read it, since a burning stove
+    # oscillates between 18 and 140 W. It was a UI statistics helper tied to
+    # the plug's ZHA device, and went with it when the plug moved to
+    # Zigbee2MQTT (2026-10-20); here it no longer depends on any device.
+    {
+      platform = "statistics";
+      name = "Living Room · Stove Power Max 10 min";
+      unique_id = "dafos.sensor.living_room_stove_power_max_10_min";
+      entity_id = "sensor.living_room_stove_power";
+      state_characteristic = "value_max";
+      max_age.minutes = 10;
+      sampling_size = 1000;
+      # The plug only reports on change: keep the last reading as a sample so
+      # a steady draw does not age out to "unknown".
+      keep_last_sample = true;
+    }
+  ];
 
   # A phone notification when the stove lights or the boiler starts heating,
   # replaced in silence by the run's length when it stops (same tag).
