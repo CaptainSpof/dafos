@@ -33,7 +33,9 @@ in
       with pkgs;
       [
         mangohud
-        pince
+        # nixpkgs' pince passes each makeWrapperArgs flag as one spaced string,
+        # which only word-splits with structured attrs off.
+        (pince.overrideAttrs { __structuredAttrs = false; })
         protontricks
         protonup-ng
         protonup-qt
