@@ -14,6 +14,7 @@ in
       home
       locale
       matter-server
+      openthread-border-router
       networking
       nix
       openssh
@@ -53,6 +54,14 @@ in
         # IPv6, which Matter needs): the websocket is open to dafoltop only.
         matter-server = {
           enable = true;
+          interface = "end0";
+          clients = [ "192.168.0.10" ];
+        };
+        # Thread radio for Home Assistant: the SONOFF ZBDongle-E freed by the
+        # ZHA → Zigbee2MQTT migration, reflashed with OpenThread RCP.
+        openthread-border-router = {
+          enable = true;
+          device = "/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20230803143100-if00";
           interface = "end0";
           clients = [ "192.168.0.10" ];
         };
