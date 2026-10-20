@@ -24,7 +24,9 @@ in
     home.packages =
       with pkgs;
       [
-        amberol
+        # nixpkgs' reuse (amberol build tool) drops its man output with
+        # structured attrs on.
+        (amberol.override { reuse = reuse.overrideAttrs { __structuredAttrs = false; }; })
       ]
       ++ lib.optionals cfg.mixing.enable [
         ardour
