@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   namespace,
   ...
 }:
@@ -150,6 +151,10 @@ in
       }
     ];
   };
+
+  # Vial remaps the Binepad BNR1 knob; the package's udev rule grants hidraw access.
+  environment.systemPackages = [ pkgs.vial ];
+  services.udev.packages = [ pkgs.vial ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
