@@ -20,6 +20,11 @@ let
   shotToSatty =
     action:
     shell ''f=$(mktemp --suffix=.png); niri msg action ${action} -p false --path "$f"; for i in $(seq 100); do [ -s "$f" ] && break; sleep 0.05; done; [ -s "$f" ] && satty -f "$f"; rm -f "$f"'';
+  # Binepad BNR1 knob (Vial: CW = F15, CCW = F14): its detents are too light, so
+  # only every second detent in the same direction (within 1s) changes the volume.
+  knobVolume =
+    dir:
+    shell ''f="$XDG_RUNTIME_DIR/niri-knob"; exec 9>"$f.lock"; flock 9; now=$(date +%s%N); read -r d n t 2>/dev/null < "$f"; if [ "$d" = ${dir} ] && [ "$n" = 1 ] && [ $((now - ''${t:-0})) -lt 1000000000 ]; then : > "$f"; dms ipc audio ${dir} 5; else echo "${dir} 1 $now" > "$f"; fi'';
 in
 lib.mkForce {
   "Mod+Q" = {
@@ -188,6 +193,14 @@ lib.mkForce {
     allow-when-locked = true;
     action = dms-ipc "audio" "mute";
   };
+  "XF86Launch6" = {
+    allow-when-locked = true;
+    action = knobVolume "increment";
+  };
+  "XF86Launch5" = {
+    allow-when-locked = true;
+    action = knobVolume "decrement";
+  };
   "XF86AudioMicMute" = {
     allow-when-locked = true;
     action = dms-ipc "audio" "micmute";
@@ -195,14 +208,20 @@ lib.mkForce {
 
   "XF86AudioPlay" = {
     allow-when-locked = true;
-    action = spawn "playerctl" "play-pause";
+    action = dms-ipc "mpris" "playPause";
+  };
+  # Bluetooth headsets send separate Play/Pause keys (AVRCP), picked from what
+  # they believe the player state is; toggle on both so a stale guess still works.
+  "XF86AudioPause" = {
+    allow-when-locked = true;
+    action = dms-ipc "mpris" "playPause";
   };
   "XF86AudioPrev" = {
     allow-when-locked = true;
-    action = spawn "playerctl" "previous";
+    action = dms-ipc "mpris" "previous";
   };
   "XF86AudioNext" = {
     allow-when-locked = true;
-    action = spawn "playerctl" "next";
+    action = dms-ipc "mpris" "next";
   };
 }
