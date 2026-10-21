@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Renders minuteur-automation.yaml once per timer slot and pushes the three
+# UI automations to Home Assistant through the config API, so they never
+# drift from the file. Slot 1 keeps the automation id, entity names, tag and
+# phone action it had before the device had slots.
+#
+#   esphome/push-automations
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+repo=$(dirname "$here")
+server=https://home.daftdaf.dev
+token=$(sops -d --extract '["ha-admin-token"]' "$repo/secrets/dafoltop/home-assistant.yaml")
+
+push() { # slot automation-id entity-suffix tag action
+  local json
+  json=$(sed -e "s/__N__/$1/g" -e "s/__SFX__/$3/g" -e "s/__TAG__/$4/g" -e "s/__ACTION__/$5/g" \
+    "$here/minuteur-automation.yaml" |
+    nix shell --inputs-from "$repo" nixpkgs#yq-go -c yq -o json ". + {\"id\": \"$2\"}")
+  printf 'slot %s (%s): ' "$1" "$2"
+  curl -sS -X POST -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
+    -d "$json" "$server/api/config/automation/config/$2"
+  echo
+}
+
+push 1 1792096000000 "" minuteur MINUTEUR_STOP
+push 2 1792096000002 _2 minuteur_2 MINUTEUR_STOP_2
+push 3 1792096000003 _3 minuteur_3 MINUTEUR_STOP_3

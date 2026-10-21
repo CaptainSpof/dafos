@@ -1,6 +1,7 @@
 # Kitchen countdown timer on a Waveshare ESP32-S3-Knob-Touch-LCD-1.8
-# (Guition JC3636K518C). The knob sets the duration, a tap starts / pauses /
-# resumes, a long press cancels. The device owns the countdown, so it keeps
+# (Guition JC3636K518C), with three independent timers (slots). A swipe picks
+# the slot, the knob sets its duration, a tap starts / pauses / resumes, a long
+# press cancels; a slot that finishes takes over the screen. The device owns the countdown, so it keeps
 # working without Wi-Fi; Home Assistant only mirrors it to the phone (see
 # minuteur-automation.yaml). Build and flash with ./run, see AGENTS.md.
 substitutions:
@@ -8,11 +9,13 @@ substitutions:
   # Ignore the touch or turn that wakes a dark screen, so waking it never
   # starts or stops anything.
   wake_guard_ms: "600"
+  # Horizontal travel (raw panel pixels) that makes a touch a swipe.
+  swipe_px: "60"
   # Deep sleep after this long idle with nothing running; the knob or a touch
   # wakes it (a reboot, ~3 s to the screen, longer to Home Assistant).
   sleep_after: 60s
   # An unacknowledged alarm gives up and goes back to idle (then to sleep).
-  finished_timeout: 10min
+  finished_timeout_ms: "600000"
 esphome:
   name: minuteur
   friendly_name: Minuteur
@@ -43,7 +46,7 @@ esphome:
         - script.execute: haptic_init
         - script.execute: wake
         - script.execute: paint
-        - script.execute: publish
+        - script.execute: publish_all
 esp32:
   board: esp32-s3-devkitc-1
   flash_size: 16MB
@@ -64,8 +67,12 @@ api:
     # Phone notification button "Arrêter": cancels a running timer or
     # silences a finished one.
     - action: stop
+      variables:
+        slot: int
       then:
-        - script.execute: stop
+        - script.execute:
+            id: stop
+            slot: !lambda "return slot - 1;"
 ota:
   - platform: esphome
     password: !secret minuteur_ota_password
@@ -106,7 +113,7 @@ time:
     # remaining, which the dashboard and the phone read as a dead timer.
     # Publish again once the clock is set.
     on_time_sync:
-      - script.execute: publish
+      - script.execute: publish_all
 # --- Hardware (pinout from tomereli/coffee-knob and KrX3D/WaveShare-Knob-Esp32S3)
 spi:
   id: display_qspi
@@ -141,7 +148,15 @@ touchscreen:
       allow_other_uses: true
     reset_pin: GPIO10
     on_touch:
+      - lambda: "id(touch_dx) = 0;"
       - script.execute: wake
+    # Horizontal travel of the finger since it landed, for swipes (see tap).
+    on_update:
+      - lambda: |-
+          for (auto &t : touches) {
+            id(touch_dx) = (int) t.x - (int) t.x_org;
+            break;
+          }
 output:
   - platform: ledc
     pin: GPIO47
@@ -208,17 +223,47 @@ sensor:
     accuracy_decimals: 0
     update_interval: 60s
     lambda: "return wifi::global_wifi_component->get_wifi_channel();"
+  # Per slot. Slot 1 keeps the original names (sensor.minuteur_etat, ...)
+  # so its entity ids, and what reads them, stay as they were.
   # Seconds left, published on every state change (not every second).
   - platform: template
-    id: remaining_sensor
+    id: remaining_0
     name: Restant
     unit_of_measurement: s
     device_class: duration
     accuracy_decimals: 0
     update_interval: never
   - platform: template
-    id: total_sensor
+    id: total_0
     name: Durée
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: never
+  - platform: template
+    id: remaining_1
+    name: Restant 2
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: never
+  - platform: template
+    id: total_1
+    name: Durée 2
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: never
+  - platform: template
+    id: remaining_2
+    name: Restant 3
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: never
+  - platform: template
+    id: total_2
+    name: Durée 3
     unit_of_measurement: s
     device_class: duration
     accuracy_decimals: 0
@@ -226,14 +271,30 @@ sensor:
 text_sensor:
   # idle | running | paused | finished
   - platform: template
-    id: state_sensor
+    id: state_0
     name: État
+    update_interval: never
+  - platform: template
+    id: state_1
+    name: État 2
+    update_interval: never
+  - platform: template
+    id: state_2
+    name: État 3
     update_interval: never
   # UTC ISO 8601 end time while running, empty otherwise. Plain text rather
   # than a timestamp entity, so the empty value is not an invalid datetime.
   - platform: template
-    id: end_sensor
+    id: end_0
     name: Fin
+    update_interval: never
+  - platform: template
+    id: end_1
+    name: Fin 2
+    update_interval: never
+  - platform: template
+    id: end_2
+    name: Fin 3
     update_interval: never
 switch:
   # Off keeps the device awake (for OTA from the desk, or debugging).
@@ -249,26 +310,52 @@ button:
   - platform: template
     name: Arrêter
     on_press:
-      - script.execute: stop
+      - script.execute:
+          id: stop
+          slot: 0
+  - platform: template
+    name: Arrêter 2
+    on_press:
+      - script.execute:
+          id: stop
+          slot: 1
+  - platform: template
+    name: Arrêter 3
+    on_press:
+      - script.execute:
+          id: stop
+          slot: 2
 # --- State
 globals:
-  # Duration chosen with the knob, kept across reboots.
+  # One entry per slot. Duration chosen with the knob, kept across reboots.
   - id: set_s
-    type: int
+    type: std::array<int, 3>
     restore_value: true
-    initial_value: "300"
+    initial_value: "{300, 600, 900}"
   # 0 idle, 1 running, 2 paused, 3 finished
   - id: state
-    type: int
-    initial_value: "0"
+    type: std::array<int, 3>
+    initial_value: "{0, 0, 0}"
   - id: total_s
+    type: std::array<int, 3>
+    initial_value: "{0, 0, 0}"
+  - id: end_ms
+    type: std::array<uint32_t, 3>
+    initial_value: "{0, 0, 0}"
+  - id: left_ms
+    type: std::array<uint32_t, 3>
+    initial_value: "{0, 0, 0}"
+  # When each slot finished (for finished_timeout).
+  - id: done_ms
+    type: std::array<uint32_t, 3>
+    initial_value: "{0, 0, 0}"
+  # Horizontal travel of the current/last touch, in raw panel pixels.
+  - id: touch_dx
     type: int
     initial_value: "0"
-  - id: end_ms
-    type: uint32_t
-    initial_value: "0"
-  - id: left_ms
-    type: uint32_t
+  # The slot on screen.
+  - id: sel
+    type: int
     initial_value: "0"
   - id: shown_s
     type: int
@@ -320,25 +407,31 @@ interval:
                 hidden: false
   - interval: 200ms
     then:
-      - if:
-          condition:
-            lambda: "return id(state) == 1;"
-          then:
-            - lambda: |-
-                int32_t left = (int32_t) (id(end_ms) - millis());
-                if (left <= 0) {
-                  id(state) = 3;
-                  id(left_ms) = 0;
-                  return;
-                }
-                id(left_ms) = left;
-            - if:
-                condition:
-                  lambda: "return id(state) == 3;"
-                then:
-                  - script.execute: ring
-                else:
-                  - script.execute: paint
+      - lambda: |-
+          int finished = -1;
+          for (int i = 0; i < 3; i++) {
+            if (id(state)[i] == 1) {
+              int32_t left = (int32_t) (id(end_ms)[i] - millis());
+              if (left <= 0) {
+                id(state)[i] = 3;
+                id(left_ms)[i] = 0;
+                id(done_ms)[i] = millis();
+                finished = i;
+              } else {
+                id(left_ms)[i] = left;
+              }
+            } else if (id(state)[i] == 3 &&
+                       millis() - id(done_ms)[i] > ${finished_timeout_ms}) {
+              // Unacknowledged: give up so the device can sleep again.
+              id(stop)->execute(i);
+            }
+          }
+          if (finished >= 0) {
+            id(sel) = finished;  // the finished slot takes over the screen
+            id(publish)->execute(finished);
+            id(ring)->execute();
+          }
+          if (id(state)[id(sel)] == 1 || finished >= 0) id(paint)->execute();
 # --- Behaviour
 script:
   - id: haptic_init
@@ -394,7 +487,9 @@ script:
       - delay: $sleep_after
       - if:
           condition:
-            lambda: "return id(state) == 0 && id(auto_sleep).state;"
+            lambda: |-
+              for (int st : id(state)) if (st != 0) return false;
+              return id(auto_sleep).state;
           then:
             - if:
                 condition:
@@ -457,22 +552,43 @@ script:
       - delay: $screen_timeout
       - if:
           condition:
-            lambda: "return id(state) == 3;"
+            lambda: |-
+              for (int st : id(state)) if (st == 3) return true;
+              return false;
           then:
             # A finished timer keeps the screen lit until acknowledged.
             - script.execute: screen_timer
           else:
             - if:
                 condition:
-                  lambda: "return id(state) == 1;"
+                  lambda: |-
+                    for (int st : id(state)) if (st == 1) return true;
+                    return false;
                 then:
-                  # Running: stay readable, dimmed.
+                  # Something running: stay readable, dimmed.
                   - light.turn_on:
                       id: backlight
                       brightness: 15%
                 else:
                   - lambda: "id(screen_on) = false;"
                   - light.turn_off: backlight
+  # Swipes move between the three slots, wrapping around.
+  - id: select_slot
+    parameters:
+      delta: int
+    then:
+      - if:
+          condition:
+            lambda: "return !id(screen_on) || millis() - id(wake_ms) < ${wake_guard_ms};"
+          then:
+            - script.execute: wake
+          else:
+            - script.execute: wake
+            - lambda: "id(sel) = (id(sel) + delta + 3) % 3;"
+            - script.execute:
+                id: haptic
+                effect: 7
+            - script.execute: paint
   - id: turn
     parameters:
       dir: int
@@ -487,13 +603,15 @@ script:
             - script.execute: wake
             - if:
                 condition:
-                  lambda: "return id(state) == 3;"
+                  lambda: "return id(state)[id(sel)] == 3;"
                 then:
-                  - script.execute: stop
+                  - script.execute:
+                      id: stop
+                      slot: !lambda "return id(sel);"
                 else:
                   - if:
                       condition:
-                        lambda: "return id(state) == 0;"
+                        lambda: "return id(state)[id(sel)] == 0;"
                       then:
                         # Finer steps for short durations: 10 s below 1 min, 30 s
                         # below 10 min, 1 min below 1 h, then 5 min up to 3 h.
@@ -519,7 +637,7 @@ script:
                             float a = id(turn_avg_ms);
                             int mult = a < 30 ? 10 : a < 50 ? 6 : a < 80 ? 3 : a < 130 ? 2 : 1;
 
-                            int s = id(set_s);
+                            int s = id(set_s)[id(sel)];
                             for (int i = 0; i < count; i++) {
                               int ref = dir > 0 ? s : s - 1;
                               int step = ref < 60 ? 10 : ref < 600 ? 30 : ref < 3600 ? 60 : 300;
@@ -530,110 +648,143 @@ script:
                               s = dir > 0 ? s / grid * grid : (s + grid - 1) / grid * grid;
                               if (s < 10) s = 10;
                             }
-                            id(set_s) = s;
+                            id(set_s)[id(sel)] = s;
                         - script.execute:
                             id: haptic
                             effect: 7
                         - script.execute: paint
+  # LVGL's own swipe detection never fired on this panel (the CST816 reports
+  # too few points mid-swipe), and the release still arrived as a click that
+  # paused the timer. So a touch that travelled more than swipe_px
+  # horizontally is a swipe here, never a tap. The panel is turned 180° by
+  # LVGL, so raw travel to the right is a swipe to the left on screen.
   - id: tap
     then:
       - if:
           condition:
-            lambda: "return millis() - id(wake_ms) >= ${wake_guard_ms};"
+            lambda: "return abs(id(touch_dx)) > ${swipe_px};"
           then:
-            - lambda: |-
-                switch (id(state)) {
-                  case 0:  // start
-                    id(total_s) = id(set_s);
-                    id(left_ms) = (uint32_t) id(set_s) * 1000;
-                    id(end_ms) = millis() + id(left_ms);
-                    id(state) = 1;
-                    break;
-                  case 1:  // pause
-                    id(left_ms) = id(end_ms) - millis();
-                    id(state) = 2;
-                    break;
-                  case 2:  // resume
-                    id(end_ms) = millis() + id(left_ms);
-                    id(state) = 1;
-                    break;
-                }
+            # touch_dx stays as is until the next touch: the check below
+            # reads it again, and a reset here made every swipe also tap.
+            - script.execute:
+                id: select_slot
+                delta: !lambda "return id(touch_dx) > 0 ? 1 : -1;"
+      - if:
+          condition:
+            lambda: "return abs(id(touch_dx)) <= ${swipe_px} && millis() - id(wake_ms) >= ${wake_guard_ms};"
+          then:
             - if:
                 condition:
-                  lambda: "return id(state) == 3;"
+                  lambda: "return id(state)[id(sel)] == 3;"
                 then:
-                  - script.execute: stop
+                  - script.execute:
+                      id: stop
+                      slot: !lambda "return id(sel);"
                 else:
+                  - lambda: |-
+                      int i = id(sel);
+                      switch (id(state)[i]) {
+                        case 0:  // start
+                          id(total_s)[i] = id(set_s)[i];
+                          id(left_ms)[i] = (uint32_t) id(set_s)[i] * 1000;
+                          id(end_ms)[i] = millis() + id(left_ms)[i];
+                          id(state)[i] = 1;
+                          break;
+                        case 1:  // pause
+                          id(left_ms)[i] = id(end_ms)[i] - millis();
+                          id(state)[i] = 2;
+                          break;
+                        case 2:  // resume
+                          id(end_ms)[i] = millis() + id(left_ms)[i];
+                          id(state)[i] = 1;
+                          break;
+                      }
                   - script.execute:
                       id: haptic
                       effect: 1
                   - script.execute: paint
-                  - script.execute: publish
+                  - script.execute:
+                      id: publish
+                      slot: !lambda "return id(sel);"
   - id: long_press
     then:
       - if:
           condition:
-            lambda: "return id(state) == 1 || id(state) == 2;"
+            # A slow swipe outlasts the long-press time: not a cancel.
+            lambda: "return abs(id(touch_dx)) <= ${swipe_px} && (id(state)[id(sel)] == 1 || id(state)[id(sel)] == 2);"
           then:
-            - script.execute: stop
-  # Back to idle from any state: cancels a countdown or silences an alarm.
+            - script.execute:
+                id: stop
+                slot: !lambda "return id(sel);"
+  # Back to idle: cancels a slot's countdown or silences its alarm.
   - id: stop
+    mode: queued
+    parameters:
+      slot: int
     then:
       - lambda: |-
-          id(state) = 0;
-          id(left_ms) = 0;
-      - script.stop: ring
+          if (slot < 0 || slot > 2) return;
+          id(state)[slot] = 0;
+          id(left_ms)[slot] = 0;
       - script.execute:
           id: haptic
           effect: 10
       - script.execute: wake
       - script.execute: paint
-      - script.execute: publish
-  # Vibrates for up to two minutes. The "finished" state outlives it, so the
-  # phone alarm keeps ringing until someone acknowledges either end, or until
-  # finished_timeout gives up so the device can sleep again.
+      - script.execute:
+          id: publish
+          slot: !lambda "return slot;"
+  # Vibrates while any slot is finished, for up to two minutes. The
+  # "finished" state outlives it, so the phone alarm keeps ringing until
+  # someone acknowledges either end, or until finished_timeout gives up.
+  # A new finish restarts it.
   - id: ring
-    mode: single
+    mode: restart
     then:
-      - script.execute: publish
       - script.execute: wake
-      - script.execute: paint
       - repeat:
           count: 60
           then:
             - if:
                 condition:
-                  lambda: "return id(state) == 3;"
+                  lambda: |-
+                    for (int st : id(state)) if (st == 3) return true;
+                    return false;
                 then:
                   - script.execute:
                       id: haptic
                       effect: 16
             - delay: 2s
-      - delay: $finished_timeout
-      - if:
-          condition:
-            lambda: "return id(state) == 3;"
-          then:
-            - script.execute: stop
   - id: publish
+    mode: queued
+    parameters:
+      slot: int
     then:
       - lambda: |-
           static const char *const names[] = {"idle", "running", "paused", "finished"};
-          id(state_sensor).publish_state(names[id(state)]);
-          id(total_sensor).publish_state(id(state) == 0 ? 0 : id(total_s));
-          id(remaining_sensor).publish_state((id(left_ms) + 999) / 1000);
+          text_sensor::TextSensor *st[] = {id(state_0), id(state_1), id(state_2)};
+          text_sensor::TextSensor *en[] = {id(end_0), id(end_1), id(end_2)};
+          sensor::Sensor *tot[] = {id(total_0), id(total_1), id(total_2)};
+          sensor::Sensor *rem[] = {id(remaining_0), id(remaining_1), id(remaining_2)};
+          int i = slot;
+          st[i]->publish_state(names[id(state)[i]]);
+          tot[i]->publish_state(id(state)[i] == 0 ? 0 : id(total_s)[i]);
+          rem[i]->publish_state((id(left_ms)[i] + 999) / 1000);
           std::string end = "";
           auto now = id(ha_time).now();
-          if (id(state) == 1 && now.is_valid()) {
-            ESPTime t = ESPTime::from_epoch_utc(now.timestamp + (id(left_ms) + 500) / 1000);
+          if (id(state)[i] == 1 && now.is_valid()) {
+            ESPTime t = ESPTime::from_epoch_utc(now.timestamp + (id(left_ms)[i] + 500) / 1000);
             end = t.strftime("%Y-%m-%dT%H:%M:%SZ");
           }
-          id(end_sensor).publish_state(end);
+          en[i]->publish_state(end);
+  - id: publish_all
+    then:
+      - lambda: "for (int i = 0; i < 3; i++) id(publish)->execute(i);"
   - id: paint
     then:
       - lambda: |-
-          int s = id(state) == 0 ? id(set_s) : (int) ((id(left_ms) + 999) / 1000);
-          if (s == id(shown_s) && id(state) == 1) return;
+          int i = id(sel);
+          int s = id(state)[i] == 0 ? id(set_s)[i] : (int) ((id(left_ms)[i] + 999) / 1000);
           id(shown_s) = s;
       - lvgl.label.update:
           id: lbl_time
@@ -646,30 +797,52 @@ script:
       - lvgl.label.update:
           id: lbl_state
           text: !lambda |-
-            static const char *const t[] = {"Minuteur", "En cours", "En pause", "Terminé !"};
-            return t[id(state)];
+            static const char *const t[] = {"", " · en cours", " · en pause", " · terminé !"};
+            static char b[40];
+            snprintf(b, sizeof(b), "Minuteur %d%s", id(sel) + 1, t[id(state)[id(sel)]]);
+            return b;
       - lvgl.label.update:
           id: lbl_hint
           text: !lambda |-
             static const char *const t[] = {
-              "Toucher pour lancer",
+              "Toucher pour lancer\nGlisser : autre minuteur",
               "Toucher : pause\nAppui long : annuler",
               "Toucher : reprendre\nAppui long : annuler",
               "Toucher pour arrêter",
             };
-            return t[id(state)];
+            return t[id(state)[id(sel)]];
       - lvgl.arc.update:
           id: ring_arc
           value: !lambda |-
+            int i = id(sel);
             int v;
-            if (id(state) == 0) v = id(set_s) >= 3600 ? 1000 : id(set_s) * 1000 / 3600;
-            else if (id(state) == 3) v = 1000;
-            else v = id(total_s) > 0 ? (int) (id(left_ms) / id(total_s)) : 0;
+            if (id(state)[i] == 0) v = id(set_s)[i] >= 3600 ? 1000 : id(set_s)[i] * 1000 / 3600;
+            else if (id(state)[i] == 3) v = 1000;
+            else v = id(total_s)[i] > 0 ? (int) (id(left_ms)[i] / id(total_s)[i]) : 0;
             return v;
           indicator:
             arc_color: !lambda |-
               static const uint32_t c[] = {0x4FA3FF, 0xF5A623, 0x8A8A8A, 0xE53935};
-              return lv_color_hex(c[id(state)]);
+              return lv_color_hex(c[id(state)[id(sel)]]);
+      # One dot per slot: colour = its state, ring = the slot on screen.
+      - lvgl.widget.update:
+          id: dot_0
+          bg_color: !lambda |-
+            static const uint32_t c[] = {0x3A3A3A, 0xF5A623, 0x8A8A8A, 0xE53935};
+            return lv_color_hex(c[id(state)[0]]);
+          border_width: !lambda "return id(sel) == 0 ? 2 : 0;"
+      - lvgl.widget.update:
+          id: dot_1
+          bg_color: !lambda |-
+            static const uint32_t c[] = {0x3A3A3A, 0xF5A623, 0x8A8A8A, 0xE53935};
+            return lv_color_hex(c[id(state)[1]]);
+          border_width: !lambda "return id(sel) == 1 ? 2 : 0;"
+      - lvgl.widget.update:
+          id: dot_2
+          bg_color: !lambda |-
+            static const uint32_t c[] = {0x3A3A3A, 0xF5A623, 0x8A8A8A, 0xE53935};
+            return lv_color_hex(c[id(state)[2]]);
+          border_width: !lambda "return id(sel) == 2 ? 2 : 0;"
 # --- Screen
 font:
   - file: "gfonts://Roboto Mono@500"
@@ -679,7 +852,7 @@ font:
   - file: "gfonts://Roboto@400"
     id: font_text
     size: 22
-    glyphs: " !:'-.,0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzàâçéèêëîïôùûü"
+    glyphs: " !:'-.,·0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzàâçéèêëîïôùûü"
 lvgl:
   displays: [main_display]
   touchscreens:
@@ -720,7 +893,7 @@ lvgl:
             id: lbl_state
             align: CENTER
             y: -78
-            text: "Minuteur"
+            text: "Minuteur 1"
             text_font: font_text
             text_color: 0x9A9A9A
         - label:
@@ -742,7 +915,7 @@ lvgl:
         - obj:
             id: link_dot
             align: CENTER
-            y: 118
+            y: -118
             width: 12
             height: 12
             radius: 6
@@ -750,8 +923,45 @@ lvgl:
             border_width: 0
             clickable: false
             hidden: false
+        # Slot dots (see paint).
+        - obj:
+            id: dot_0
+            align: CENTER
+            x: -28
+            y: 124
+            width: 14
+            height: 14
+            radius: 7
+            bg_color: 0x3A3A3A
+            border_color: 0xFFFFFF
+            border_width: 2
+            clickable: false
+        - obj:
+            id: dot_1
+            align: CENTER
+            x: 0
+            y: 124
+            width: 14
+            height: 14
+            radius: 7
+            bg_color: 0x3A3A3A
+            border_color: 0xFFFFFF
+            border_width: 0
+            clickable: false
+        - obj:
+            id: dot_2
+            align: CENTER
+            x: 28
+            y: 124
+            width: 14
+            height: 14
+            radius: 7
+            bg_color: 0x3A3A3A
+            border_color: 0xFFFFFF
+            border_width: 0
+            clickable: false
         # Transparent full-screen hit area, declared last so it sits on top
-        # and receives every tap.
+        # and receives every tap and swipe.
         - obj:
             align: CENTER
             width: 360

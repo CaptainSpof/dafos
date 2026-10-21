@@ -27,9 +27,16 @@ build time.
 
 Kitchen countdown timer. The device owns the countdown; Home Assistant only
 mirrors it to dafphone through `minuteur-automation.yaml`, a UI automation whose
-source of truth is this file (push it with the config API, as with the other UI
-automations). `minuteur-battery-automation.yaml` is the low-battery alert, kept
-separate because the timer automation runs in `mode: restart`.
+Kitchen countdown timer with three independent slots: a swipe picks the slot,
+the knob sets it, tap / long press as before, and a finishing slot takes over
+the screen. The device owns the countdowns; Home Assistant only mirrors them to
+dafphone. `minuteur-automation.yaml` is a template rendered once per slot by
+`esphome/push-automations` (three UI automations, one Live Update per slot);
+`minuteur-battery-automation.yaml` is the low-battery alert, kept separate
+because the timer automations run in `mode: restart`. `sensor.kitchen_timer_end`
+(Maison dashboard, `origami/helpers.nix`) is the earliest running slot's end.
+`minuteur-battery-automation.yaml` is the low-battery alert, kept separate
+because the timer automation runs in `mode: restart`.
 
 - **The first flash is over USB** (16 MB layout differs from stock, OTA can't
   change it). The port is `root:dialout`, so flash the factory image with
@@ -99,6 +106,18 @@ separate because the timer automation runs in `mode: restart`.
 - **Battery**: GPIO1 behind a 2:1 divider; on USB it reads ~4.3 V (charging), so
   100 % there means "plugged in". The board's second chip (the auxiliary ESP32,
   still on stock firmware) draws power that no setting here reaches.
+- **Slot entities**: slot 1 keeps the pre-slot names (`sensor.minuteur_etat`,
+  `_fin`, `_restant`, `_duree`, `button.minuteur_arreter`); slots 2 and 3 are
+  `…_2` / `…_3`. HA created the new ones as `sensor.cuisine_minuteur_…_2`
+  (device prefix) and they were renamed in the entity registry; rename any new
+  entity the same way or the automations watch nothing.
+- **Swipes are measured by hand**: LVGL's `on_swipe_*` never fired on this panel
+  and the release still came through as a click (it paused the timer). `tap`
+  reads the finger's horizontal travel (`touch_dx`, from the touchscreen's
+  `on_update`) and treats more than `swipe_px` as a swipe.
+- **nixpkgs esphome 2026.9.1** ships a wrapper exporting
+  `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'` with the quotes; `./run`
+  runs a fixed copy until upstream fixes it.
 
 Pinout and the board quirks come from
 [tomereli/coffee-knob](https://github.com/tomereli/coffee-knob) and

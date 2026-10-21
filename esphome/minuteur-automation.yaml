@@ -1,45 +1,48 @@
-# UI automation mirroring the knob timer (minuteur.yaml) on dafphone. Not
-# loaded by Nix: like the other UI automations, it is pushed through the
-# config API once the device is adopted (see AGENTS.md), and this file is its
-# source of truth.
+# UI automation mirroring one of the knob timer's three slots (minuteur.yaml)
+# on dafphone. A TEMPLATE: esphome/push-automations renders it once per slot,
+# replacing __N__ (1..3), __SFX__ (entity suffix: "" for slot 1, "_2", "_3"),
+# __TAG__ (notification tag) and __ACTION__ (phone button action), then pushes
+# it through the config API. Slot 1 keeps the names it had before there were
+# slots. Not loaded by Nix; this file is the source of truth.
 #
 # Running  -> Android 16 Live Update: countdown in the status bar chip,
 #             progress bar refreshed every 30 s, "Annuler" button. Same
 #             payload shape as the appliance Live Updates (icon, colour,
 #             progress, critical_text), which the phone does promote.
 # Paused   -> the same Live Update, grey, chip "Pause", time left.
-# Finished -> alarm notification plus "Minuteur terminé" spoken on the alarm
+# Finished -> alarm notification plus "Minuteur N terminé" spoken on the alarm
 #             stream (through silent mode), every 30 s for 3 min, until
 #             "Arrêter" is pressed on the phone or the device.
 # Idle     -> notification cleared. Coming from "finished" (acknowledged on
 #             the device or the phone), the phrase being spoken is cut too.
 #
 # mode: restart, so any state change (including the acknowledgement) cuts
-# the refresh and ringing loops short.
+# the refresh and ringing loops short; one automation per slot keeps the
+# slots from cutting each other's loops.
 #
 # The Live Update title is fixed when it starts (Android ignores later
 # changes), so running and paused share it. Templates stay on one quoted line:
 # the YAML formatter breaks folded scalars apart.
-alias: Cuisine · Minuteur
-description: Relaie le minuteur à molette (ESPHome) sur dafphone.
+alias: Cuisine · Minuteur __N__
+description: Relaie le minuteur __N__ du bouton à molette (ESPHome) sur dafphone.
 mode: restart
 triggers:
   - trigger: state
-    entity_id: [sensor.minuteur_etat, sensor.minuteur_fin]
+    entity_id: [sensor.minuteur_etat__SFX__, sensor.minuteur_fin__SFX__]
     not_to: [unavailable, unknown]
     id: state
   - trigger: event
     event_type: mobile_app_notification_action
     event_data:
-      action: MINUTEUR_STOP
+      action: __ACTION__
     id: stop
 variables:
-  etat: "{{ states('sensor.minuteur_etat') }}"
-  fin: "{{ states('sensor.minuteur_fin') }}"
-  tot: "{{ states('sensor.minuteur_duree') | int(0) }}"
+  etat: "{{ states('sensor.minuteur_etat__SFX__') }}"
+  fin: "{{ states('sensor.minuteur_fin__SFX__') }}"
+  tot: "{{ states('sensor.minuteur_duree__SFX__') | int(0) }}"
   # 754 -> "12:34", 4000 -> "1:06:40"
   total: "{% set s = tot | int %}{{ '%d:%02d:%02d' % (s // 3600, s // 60 % 60, s % 60) if s >= 3600 else '%02d:%02d' % (s // 60, s % 60) }}"
-  reste: "{% set s = states('sensor.minuteur_restant') | int(0) %}{{ '%d:%02d:%02d' % (s // 3600, s // 60 % 60, s % 60) if s >= 3600 else '%02d:%02d' % (s // 60, s % 60) }}"
+  reste: "{% set s = states('sensor.minuteur_restant__SFX__') | int(0) %}{{ '%d:%02d:%02d' % (s // 3600, s // 60 % 60, s % 60) if s >= 3600 else '%02d:%02d' % (s // 60, s % 60) }}"
 actions:
   - choose:
       - conditions:
@@ -48,7 +51,7 @@ actions:
         sequence:
           - action: button.press
             target:
-              entity_id: button.minuteur_arreter
+              entity_id: button.minuteur_arreter__SFX__
       - conditions:
           - condition: template
             value_template: "{{ etat == 'running' and fin is match('\\d{4}-\\d{2}-\\d{2}T') }}"
@@ -58,16 +61,16 @@ actions:
           - repeat:
               while:
                 - condition: template
-                  value_template: "{{ states('sensor.minuteur_etat') == 'running' and as_timestamp(fin) > as_timestamp(now()) }}"
+                  value_template: "{{ states('sensor.minuteur_etat__SFX__') == 'running' and as_timestamp(fin) > as_timestamp(now()) }}"
               sequence:
                 - variables:
                     left: "{{ [(as_timestamp(fin) - as_timestamp(now())) | round(0, 'ceil') | int, 0] | max }}"
                 - action: notify.mobile_app_dafphone
                   data:
-                    title: Minuteur · {{ total }}
+                    title: Minuteur __N__ · {{ total }}
                     message: Fin à {{ as_local(as_datetime(fin)).strftime('%H:%M') }}
                     data:
-                      tag: minuteur
+                      tag: __TAG__
                       group: Tâches
                       channel: Minuteur
                       live_update: true
@@ -81,7 +84,7 @@ actions:
                       progress_max: "{{ tot }}"
                       critical_text: "{{ (left / 60) | round(0, 'ceil') | int }} min"
                       actions:
-                        - action: MINUTEUR_STOP
+                        - action: __ACTION__
                           title: Annuler
                 - delay: "00:00:30"
       - conditions:
@@ -90,10 +93,10 @@ actions:
         sequence:
           - action: notify.mobile_app_dafphone
             data:
-              title: Minuteur · {{ total }}
+              title: Minuteur __N__ · {{ total }}
               message: En pause · {{ reste }} restantes
               data:
-                tag: minuteur
+                tag: __TAG__
                 group: Tâches
                 channel: Minuteur
                 live_update: true
@@ -101,11 +104,11 @@ actions:
                 sticky: true
                 notification_icon: mdi:timer-pause-outline
                 color: "#8A8A8A"
-                progress: "{{ tot - (states('sensor.minuteur_restant') | int(0)) }}"
+                progress: "{{ tot - (states('sensor.minuteur_restant__SFX__') | int(0)) }}"
                 progress_max: "{{ tot }}"
                 critical_text: Pause
                 actions:
-                  - action: MINUTEUR_STOP
+                  - action: __ACTION__
                     title: Annuler
       - conditions:
           - condition: template
@@ -116,17 +119,17 @@ actions:
               sequence:
                 - action: notify.mobile_app_dafphone
                   data:
-                    title: Minuteur terminé
+                    title: Minuteur __N__ terminé
                     message: "{{ total }} écoulées"
                     data:
-                      tag: minuteur
+                      tag: __TAG__
                       group: Tâches
                       channel: alarm_stream
                       priority: high
                       ttl: 0
                       sticky: "true"
                       actions:
-                        - action: MINUTEUR_STOP
+                        - action: __ACTION__
                           title: Arrêter
                 # The notification sound alone is not an alarm: Android 15+
                 # "notification cooldown" mutes it after a burst of HA
@@ -136,7 +139,7 @@ actions:
                   data:
                     message: TTS
                     data:
-                      tts_text: Minuteur terminé
+                      tts_text: Minuteur __N__ terminé
                       media_stream: alarm_stream
                       priority: high
                       ttl: 0
@@ -158,4 +161,4 @@ actions:
             data:
               message: clear_notification
               data:
-                tag: minuteur
+                tag: __TAG__

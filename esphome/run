@@ -32,4 +32,14 @@ trap 'rm -f "$work/secrets.yaml"' EXIT
 (umask 077 && sops -d "$repo/secrets/dafoltop/esphome.yaml" >"$work/secrets.yaml")
 
 # esphome from the flake's own nixpkgs pin.
-nix shell --inputs-from "$repo" nixpkgs#esphome -c esphome "$cmd" "$work/$device.yaml" "$@"
+esphome=$(nix build --no-link --print-out-paths --inputs-from "$repo" nixpkgs#esphome)/bin/esphome
+# nixpkgs' esphome 2026.9.1 wrapper exports PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+# with its quotes kept ('python'), which protobuf 7 rejects at import. Run a
+# copy with that line fixed; drop this once the wrapper is fixed upstream.
+if grep -q "^export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=''" "$esphome"; then
+  sed '/^export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=/c export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python' \
+    "$esphome" >"$work/esphome"
+  chmod +x "$work/esphome"
+  esphome=$work/esphome
+fi
+"$esphome" "$cmd" "$work/$device.yaml" "$@"

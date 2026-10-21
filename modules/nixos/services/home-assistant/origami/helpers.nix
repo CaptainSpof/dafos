@@ -239,17 +239,26 @@ in
         '';
       }
       {
-        # The kitchen timer's end (esphome/minuteur.yaml) as a timestamp, which
-        # the notifications card shows as a countdown. The device publishes it
-        # as text, empty when the timer is not running.
+        # The kitchen timer's next end (esphome/minuteur.yaml) as a timestamp,
+        # which the notifications card shows as a countdown: the earliest of
+        # its three slots that is running. The device publishes each end as
+        # text, empty when that slot is not running; slot 1 has no suffix.
         name = "Minuteur · Fin";
         unique_id = "dafos.sensor.kitchen_timer_end";
         default_entity_id = "sensor.kitchen_timer_end";
         device_class = "timestamp";
         icon = "mdi:timer-sand";
         state = ''
-          {{ states('sensor.minuteur_fin') | as_datetime(none)
-             if is_state('sensor.minuteur_etat', 'running') else none }}
+          {% set ns = namespace(t=none) %}
+          {% for sfx in ["", "_2", "_3"] %}
+            {% if is_state('sensor.minuteur_etat' ~ sfx, 'running') %}
+              {% set d = states('sensor.minuteur_fin' ~ sfx) | as_datetime(none) %}
+              {% if d is not none and (ns.t is none or d < ns.t) %}
+                {% set ns.t = d %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.t }}
         '';
       }
     ];
