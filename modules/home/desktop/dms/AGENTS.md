@@ -138,3 +138,13 @@ host file: `islandStyle` is an overlay a host merges over a bar
 carries no id, geometry or widgets of its own, and lists only the island keys
 that differ from DMS's `islandDefaults` (`Common/SettingsData.qml`). daftop's
 top bar is built this way; dafbox's is not.
+
+## The sidebar widget lives in its own repo
+
+The tabbed side panel (Home Assistant dashboard) is
+[CaptainSpof/dms-sidebar](https://github.com/CaptainSpof/dms-sidebar) (checkout
+in `~/Projects/dms-sidebar`), consumed as the `dms-sidebar` flake input; hosts
+turn it on with `programs.dms-sidebar.enable`. Its gotchas live in that repo's
+`AGENTS.md`. `Mod+A` toggles it (bound in `niri/default.nix` only where it is
+enabled). HA is reached by its LAN address: the `dafoltop` hostname resolves to
+the Tailscale address, which HA refuses with a 401.

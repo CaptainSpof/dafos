@@ -451,6 +451,7 @@ let
     dank-material-shell.homeModules.niri
     dank-calendar.homeModules.dank-calendar
     dms-proofreader.homeModules.default
+    dms-sidebar.homeModules.default
   ];
 
   # homes/<system>/<user>@<host>

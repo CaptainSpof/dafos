@@ -216,6 +216,35 @@ in
   # by the local LanguageTool (dafos.services.languagetool on this host).
   programs.dms-proofreader.enable = true;
 
+  # Tabbed side panel with the Home Assistant dashboard (github:CaptainSpof/dms-sidebar).
+  # HA is reached by LAN address: the dafoltop hostname resolves to its
+  # Tailscale address, which HA refuses (401).
+  programs.dms-sidebar = {
+    enable = true;
+    url = "http://192.168.0.10:8123";
+    # The HA "Maison" dashboard rendered natively (its bubble-card pop-ups are
+    # the room pages), plus the generated per-area list.
+    tabs = [
+      {
+        id = "maison";
+        text = "Maison";
+        icon = "home";
+        type = "lovelace";
+        dashboard = "dashboard-maison";
+        # Section 0 is the greeting, date and weather row: noise in a sidebar.
+        skipSections = [ 0 ];
+        hideUnsupported = true;
+      }
+      {
+        id = "pieces";
+        text = "Pièces";
+        icon = "grid_view";
+        type = "home";
+        sections = [ { byArea = true; } ];
+      }
+    ];
+  };
+
   programs.niri.settings.input = {
     tablet = {
       map-to-output = "DP-2";
