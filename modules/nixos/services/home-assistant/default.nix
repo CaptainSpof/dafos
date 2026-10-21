@@ -49,6 +49,9 @@ let
   # Veranda TV start-up script.
   tv = import ./tv.nix { };
 
+  # The desk's Aqara cube, read from its MQTT payload.
+  deskCube = import ./desk_cube.nix { };
+
   # Pellet tank estimate and refill alert.
   pellets = import ./pellets.nix { };
 
@@ -424,7 +427,8 @@ in
             ++ heatingUsage.automations
             ++ netatmoWatchdog.automations
             ++ colorPanels.automations
-            ++ pellets.automations;
+            ++ pellets.automations
+            ++ deskCube.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
