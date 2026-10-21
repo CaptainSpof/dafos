@@ -61,7 +61,7 @@ archetype/suite chain — never just the host file.
 ```bash
 nix fmt path/to/changed.nix                        # treefmt; changed paths only, never the repo
 sudo nixos-rebuild switch --flake .#<host>         # local
-deploy -s .#<host>                                 # remote (deploy-rs CLI; -s: checks.pre-commit-hooks is broken)
+deploy -s .#<host> --interactive-sudo true         # remote (deploy-rs CLI; -s: checks.pre-commit-hooks is broken)
 ```
 
 **Never push without the user's explicit go for that push.** Committing locally

@@ -82,12 +82,14 @@ cleanup".
 
 ```bash
 sudo nixos-rebuild switch --flake .#<host>          # local
-deploy -s .#<host>                                  # remote, deploy-rs CLI; -s skips `nix flake check`, whose pre-commit check fails repo-wide
+deploy -s .#<host> --interactive-sudo true          # remote, deploy-rs CLI; -s skips `nix flake check`, whose pre-commit check fails repo-wide
 ```
 
 `lib/deploy` switches to `doas -u` instead of sudo on hosts where
-`dafos.security.doas.enable` is set. Deploying to `dafoltop` needs an
-interactive sudo prompt; it will stall if run unattended.
+`dafos.security.doas.enable` is set. daf has no passwordless sudo, so remote
+deploys need `--interactive-sudo true`: without it activation cannot prompt,
+sudo fails and deploy-rs rolls back. The prompt also means a deploy stalls if
+run unattended.
 
 Prefer `nixos-rebuild test` when the change is risky and a reboot would recover
 it, and `nixos-rebuild build-vm` when the change touches boot or display
