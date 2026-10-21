@@ -83,10 +83,21 @@ in
           screenshot-path = "~/Pictures/Screenshots/%Y-%m-%dT%H:%M:%S.png";
           hotkey-overlay.skip-at-startup = true;
 
-          binds = import ./binds.nix {
-            inherit config lib firefox-pkg;
-            proofreader = config.programs.dms-proofreader.enable;
-          };
+          binds = lib.mkMerge [
+            (import ./binds.nix {
+              inherit config lib firefox-pkg;
+              proofreader = config.programs.dms-proofreader.enable;
+            })
+            # Mod+A toggles the DMS sidebar where it is enabled.
+            (lib.mkIf config.programs.dms-sidebar.enable (
+              lib.mkForce {
+                "Mod+A" = {
+                  action = config.lib.niri.actions.spawn "dms" "ipc" "dafSidebar" "toggle";
+                  hotkey-overlay.title = "Toggle Sidebar";
+                };
+              }
+            ))
+          ];
 
           layer-rules = import ./layer-rules.nix;
 

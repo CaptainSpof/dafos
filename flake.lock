@@ -219,6 +219,26 @@
         "type": "github"
       }
     },
+    "dms-sidebar": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792602595,
+        "narHash": "sha256-4h8nMK5bhSygabVxy4A85jGje8tOMchzviY9u2X27s0=",
+        "owner": "CaptainSpof",
+        "repo": "dms-sidebar",
+        "rev": "b62c78982abcfabd1a113643f039fbc90b8b3c71",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CaptainSpof",
+        "repo": "dms-sidebar",
+        "type": "github"
+      }
+    },
     "donetick-hass": {
       "flake": false,
       "locked": {
@@ -1171,6 +1191,7 @@
         "dgop": "dgop",
         "disko": "disko",
         "dms-proofreader": "dms-proofreader",
+        "dms-sidebar": "dms-sidebar",
         "donetick-hass": "donetick-hass",
         "emacs-overlay": "emacs-overlay",
         "firefox": "firefox",

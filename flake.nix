@@ -168,6 +168,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Our own DMS plugin: tabbed side panel (Home Assistant dashboard).
+    # Developed in ~/Projects/dms-sidebar.
+    dms-sidebar = {
+      url = "github:CaptainSpof/dms-sidebar";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     vicinae = {
       url = "github:vicinaehq/vicinae";
       inputs.nixpkgs.follows = "nixpkgs";
