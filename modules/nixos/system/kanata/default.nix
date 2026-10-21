@@ -41,6 +41,11 @@ in
       "LogiOps Virtual Input"
       "Espanso virtual device"
       "WH-1000XM3 (AVRCP)"
+      # Binepad BNR1 knob: its keymap lives in the Vial firmware.
+      "Binepad BNR1"
+      "Binepad BNR1 Keyboard"
+      "Binepad BNR1 Consumer Control"
+      "Binepad BNR1 System Control"
     ] "The devices to be excluded.";
     tapTimeout =
       mkOpt types.number 250
