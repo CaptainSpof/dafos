@@ -258,7 +258,27 @@ in
           spook
           # tuya_local
           # localtuya
-          # pkgs.dafos.hass-divoom
+          # Divoom Timebox-Evo display over Bluetooth Classic (RFCOMM, which
+          # nixpkgs' python already supports). Config-flow setup; the speaker
+          # must be paired and trusted with bluetoothctl on the host first.
+          (pkgs.buildHomeAssistantComponent rec {
+            owner = "d03n3rfr1tz3";
+            domain = "divoom";
+            version = "1.5.1";
+            src = pkgs.fetchFromGitHub {
+              inherit owner;
+              repo = "hass-divoom";
+              rev = "v${version}";
+              hash = "sha256-Gt8OQtEi2bidALCz6sQ8Z0Tcc7Aqww3sa1PSbUoR1JU=";
+            };
+            dontConfigure = true;
+            dontBuild = true;
+            doCheck = false;
+            propagatedBuildInputs = [
+              hassPythonPkgs.pillow
+              hassPythonPkgs.zstandard
+            ];
+          })
           (pkgs.buildHomeAssistantComponent {
             owner = "JurajNyiri";
             domain = "tapo_control";
