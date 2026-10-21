@@ -103,6 +103,10 @@ in
           inherit command;
           scan_interval = 3600;
           command_timeout = 90;
+          # A sleeping or unreachable printer leaves `value` without the ink
+          # report; rendering `none` then gives the string "None", which made
+          # HA refuse to add the numeric sensors at all (2026-10-21).
+          availability = "{{ value is defined and 'inktank' in (value | string) }}";
         };
       })
       (
