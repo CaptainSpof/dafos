@@ -49,6 +49,9 @@ let
   # Veranda TV start-up script.
   tv = import ./tv.nix { };
 
+  # Pellet tank estimate and refill alert.
+  pellets = import ./pellets.nix { };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -416,7 +419,8 @@ in
             ++ vacuumProgress.automations
             ++ heatingUsage.automations
             ++ netatmoWatchdog.automations
-            ++ colorPanels.automations;
+            ++ colorPanels.automations
+            ++ pellets.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
@@ -438,12 +442,15 @@ in
               sensor = airQuality.sensors;
             }
           ]
-          ++ heatingUsage.templates;
+          ++ heatingUsage.templates
+          ++ pellets.templates;
 
           input_boolean =
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
-          input_datetime = import ./sensors/input_datetimes.nix // netatmoWatchdog.input_datetime;
-          input_number = import ./sensors/input_numbers.nix;
+          input_datetime =
+            import ./sensors/input_datetimes.nix // netatmoWatchdog.input_datetime // pellets.input_datetime;
+          inherit (pellets) input_button;
+          input_number = import ./sensors/input_numbers.nix // pellets.input_number;
           input_text = import ./sensors/input_texts.nix // appliancePrograms.input_text;
           sensor = [
             {
@@ -461,7 +468,8 @@ in
           ]
           ++ (import ./sensors/sensors.nix)
           ++ origami.platformSensors
-          ++ heatingUsage.platformSensors;
+          ++ heatingUsage.platformSensors
+          ++ pellets.platformSensors;
 
           # No `zha:` block: ZHA is config-flow only. It reads the coordinator
           # from the config entry and `create_zha_config` overwrites whatever
