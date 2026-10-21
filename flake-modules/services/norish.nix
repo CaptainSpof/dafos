@@ -57,6 +57,7 @@
               (secret "master-key")
               (secret "db-password")
               (secret "authelia/client-secret")
+              (secret "cdp-token")
             ];
 
             # nps has no AI options, so the AI_* env is set on the container directly.
@@ -82,6 +83,7 @@
               enable = true;
 
               masterKeyFile = config.sops.secrets."norish/master-key".path;
+              cdpTokenFile = config.sops.secrets."norish/cdp-token".path;
               db.passwordFile = config.sops.secrets."norish/db-password".path;
 
               oidc = {
@@ -118,6 +120,7 @@
                   MASTER_KEY.fromFile = stack.masterKeyFile;
                   REDIS_URL = "redis://norish-redis:6379";
                   OBSCURA_ENDPOINT = "ws://norish-browser:9222";
+                  OBSCURA_CDP_TOKEN.fromFile = stack.cdpTokenFile;
 
                   OIDC_NAME = "Authelia";
                   OIDC_ISSUER = "https://auth.${config.nps.stacks.traefik.domain}";
