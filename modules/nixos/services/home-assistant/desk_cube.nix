@@ -10,6 +10,8 @@ _:
 
 let
   topic = "zigbee2mqtt/Desk · Cube";
+  # Ceiling and desk lamp; not the colour panel, which mirrors the veranda's
+  # (color_panels.nix) and sits in the same area.
   lights = "light.desk_all_lights";
 
   # A gesture, on a given face when `side` is set: Z2M reports the face as
@@ -65,7 +67,7 @@ in
               sequence = [
                 {
                   action = "light.toggle";
-                  target.area_id = "desk";
+                  target.entity_id = lights;
                 }
               ];
             })
@@ -76,7 +78,7 @@ in
               sequence = [
                 {
                   action = "light.toggle";
-                  target.area_id = "desk";
+                  target.entity_id = lights;
                   data = {
                     color_temp_kelvin = 2440;
                     brightness_pct = 60;
