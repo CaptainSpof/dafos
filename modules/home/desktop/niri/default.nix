@@ -25,7 +25,16 @@ in
 
   config = mkIf cfg.enable {
 
-    services.mpris-proxy.enable = true;
+    # BlueZ sends a headset's play/pause/next to the first player mpris-proxy
+    # registers, never the active one (e.g. a paused Firefox tab over Sonora).
+    # Register only playerctld, which forwards to the most recently active player.
+    services.mpris-proxy = {
+      enable = true;
+      package = pkgs.bluez.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ./mpris-proxy-playerctld-only.patch ];
+      });
+    };
+    services.playerctld.enable = true;
 
     dafos.system.gtkHmGuard = enabled;
 

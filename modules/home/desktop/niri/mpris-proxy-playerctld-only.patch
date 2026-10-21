@@ -1,0 +1,14 @@
+--- a/tools/mpris-proxy.c	2026-10-21 20:27:14.829052945 +0200
++++ b/tools/mpris-proxy.c	2026-10-21 20:27:14.832052935 +0200
+@@ -449,6 +449,11 @@
+ 	if (!adapter)
+ 		return;
+ 
++	/* dafos: BlueZ sends AVRCP passthrough to the first registered player
++	 * forever, so only register playerctld, which follows the active one. */
++	if (strcmp(name, MPRIS_BUS_NAME "playerctld"))
++		return;
++
+ 	player = find_player_by_bus_name(name);
+ 	if (player == NULL) {
+ 		reply = get_all(conn, name);
