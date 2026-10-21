@@ -251,7 +251,7 @@ in
 
       ${backendName} = {
         # renovate: versioning=semver
-        image = "ghcr.io/securo-finance/securo-backend:0.16.4";
+        image = "ghcr.io/securo-finance/securo-backend:0.16.5";
         exec = ''sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"'';
 
         volumeMap = backendVolumes;
@@ -272,7 +272,7 @@ in
 
       ${workerName} = {
         # renovate: versioning=semver
-        image = "ghcr.io/securo-finance/securo-backend:0.16.4";
+        image = "ghcr.io/securo-finance/securo-backend:0.16.5";
         exec = "celery -A app.worker worker --loglevel=info --concurrency=2";
 
         volumeMap = backendVolumes;
@@ -296,7 +296,7 @@ in
 
       ${beatName} = {
         # renovate: versioning=semver
-        image = "ghcr.io/securo-finance/securo-backend:0.16.4";
+        image = "ghcr.io/securo-finance/securo-backend:0.16.5";
         exec = "celery -A app.worker beat --loglevel=info";
 
         extraEnv = backendEnv;
