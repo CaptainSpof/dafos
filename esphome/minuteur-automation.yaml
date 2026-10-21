@@ -150,6 +150,9 @@ actions:
         sequence:
           # mode: restart already stops the ringing loop; this stops what is
           # still playing. Clearing the notification ends its alarm sound.
+          # High priority with ttl 0, like the alarm itself: at normal
+          # priority a dozing phone held these back, so tapping the device
+          # did not silence a phone that had been asleep for a while.
           - if:
               - condition: template
                 value_template: "{{ trigger.from_state is not none and trigger.from_state.state == 'finished' }}"
@@ -157,8 +160,13 @@ actions:
               - action: notify.mobile_app_dafphone
                 data:
                   message: command_stop_tts
+                  data:
+                    priority: high
+                    ttl: 0
           - action: notify.mobile_app_dafphone
             data:
               message: clear_notification
               data:
                 tag: __TAG__
+                priority: high
+                ttl: 0
