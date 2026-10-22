@@ -113,6 +113,17 @@ in
           availability = "{{ has_value('${autonomy}') and has_value('${burned}') }}";
           attributes.percent = "{{ ([1 - states('${burned}') | float(0) / [states('${autonomy}') | float(0), 1] | max, 0] | max * 100) | round(0) | int }}";
         }
+        {
+          # The same as a percentage, for display
+          name = "Poêle · Granulés restants %";
+          unique_id = "dafos.sensor.stove_pellets_remaining_percent";
+          default_entity_id = "sensor.stove_pellets_remaining_percent";
+          icon = "mdi:sack-percent";
+          unit_of_measurement = "%";
+          state_class = "measurement";
+          state = "{{ ([1 - states('${burned}') | float(0) / [states('${autonomy}') | float(0), 1] | max, 0] | max * 100) | round(0) | int }}";
+          availability = "{{ has_value('${autonomy}') and has_value('${burned}') }}";
+        }
       ];
     }
   ];
