@@ -185,11 +185,18 @@ in
             running = "{% set ns = namespace(t=none) %}${forSlots}{% if is_state('sensor.minuteur_etat' ~ sfx, 'running') %}{% set d = states('sensor.minuteur_fin' ~ sfx) | as_datetime(none) %}{% if d is not none and (ns.t is none or d < ns.t) %}{% set ns.t = d %}{% endif %}{% endif %}{% endfor %}{{ -1 if ns.t is none else [(as_timestamp(ns.t) - as_timestamp(now())) | round(0, 'ceil') | int, 0] | max }}";
             # Seconds left on the shortest paused slot, -1 if none is paused
             paused = "{% set ns = namespace(s=none) %}${forSlots}{% if is_state('sensor.minuteur_etat' ~ sfx, 'paused') %}{% set r = states('sensor.minuteur_restant' ~ sfx) | int(0) %}{% if ns.s is none or r < ns.s %}{% set ns.s = r %}{% endif %}{% endif %}{% endfor %}{{ -1 if ns.s is none else ns.s }}";
-            t = "{{ now().strftime('%H:%M:%S') }}";
-            is_night = "{{ trigger.id != 'morning' and (t >= '22:45:00' or t < '06:00:00') }}";
-            top = "{{ none if is_night else (statuses | selectattr('entity', 'is_state', 'on') | list | first) | default(none) }}";
-            fresh = "{{ trigger.id == 'status' and trigger.to_state.state == 'on' and top is not none and top.entity == trigger.entity_id }}";
           };
+        }
+        # Nix sorts attribute names, so variables that read each other get a
+        # block each, in order.
+        {
+          variables.is_night = "{% set t = now().strftime('%H:%M:%S') %}{{ trigger.id != 'morning' and (t >= '22:45:00' or t < '06:00:00') }}";
+        }
+        {
+          variables.top = "{{ none if is_night else (statuses | selectattr('entity', 'is_state', 'on') | list | first) | default(none) }}";
+        }
+        {
+          variables.fresh = "{{ trigger.id == 'status' and trigger.to_state.state == 'on' and top is not none and top.entity == trigger.entity_id }}";
         }
         {
           choose = [
