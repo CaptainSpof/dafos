@@ -7,15 +7,10 @@
 #                slot change (start, pause, knob turned, another slot ending
 #                first) sets it again;
 #    paused   -> "Pause mm:ss" when no slot is running.
-# 2. The top household status of the veranda colour panel, as its icon in the
-#    panel's colour (./icons.nix). A status that just came on first scrolls
-#    its name, like the panel's breathe effect. Hidden from 22:45 to 06:00,
-#    like the panel.
+# 2. The top household status (finished appliance, mail in the box), as its
+#    icon in its colour (./icons.nix). A status that just came on first
+#    scrolls its name. Hidden from 22:45 to 06:00.
 # 3. The clock, in blue at full brightness.
-#
-# The statuses, their order and colours copy `statuses` in the UI automation
-# automation.veranda_color_panel_status (Véranda · Color Panel Status), the
-# panel's only writer; keep the two in step.
 #
 # The countdown tool only takes minutes:seconds (devices/divoom.py drops the
 # hours), so anything longer shows 99:59 until it gets under it, at the next
@@ -133,7 +128,7 @@ in
     {
       id = "dafos_divoom_display";
       alias = "Divoom · Display";
-      description = "Shows the kitchen knob timers, then the veranda colour panel's top status (icon in its colour), then the clock on the Divoom Timebox-Evo. Managed in Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
+      description = "Shows the kitchen knob timers, then the top household status (icon in its colour), then the clock on the Divoom Timebox-Evo. Managed in Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
       mode = "restart";
       variables = {
         statuses = map (s: {

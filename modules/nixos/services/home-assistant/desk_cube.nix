@@ -10,8 +10,7 @@ _:
 
 let
   topic = "zigbee2mqtt/Desk · Cube";
-  # Ceiling and desk lamp; not the colour panel, which mirrors the veranda's
-  # (color_panels.nix) and sits in the same area.
+  # Ceiling and desk lamp; not the colour panel, which sits in the same area.
   lights = "light.desk_all_lights";
 
   # A gesture, on a given face when `side` is set: Z2M reports the face as

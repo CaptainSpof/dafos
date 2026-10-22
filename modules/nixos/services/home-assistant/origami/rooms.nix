@@ -87,10 +87,6 @@
           entity = "light.veranda_tv_light";
           name = "Lampe télé";
         }
-        {
-          entity = "light.veranda_color_panel";
-          name = "Panneau couleur";
-        }
       ];
       temperature = "sensor.veranda_temperature_sensor_temperature";
       humidity = "sensor.veranda_temperature_sensor_humidity";

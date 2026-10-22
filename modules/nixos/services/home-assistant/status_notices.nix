@@ -1,14 +1,13 @@
-# Household statuses that light the veranda colour panel (finished appliances,
-# mail in the box) as Home Assistant notifications, so that dismissing one
-# clears its status and the panel follows:
+# Household statuses (finished appliances, mail in the box) as Home Assistant
+# notifications, so that dismissing one clears its status and the Divoom
+# (divoom/display.nix) follows:
 # - status on: a persistent notification appears (the Maison dashboard's
 #   notifications card lists them);
 # - that notification dismissed, from the dashboard or HA's own list, or the
 #   phone notification with the same tag swiped away: the status goes off;
 # - status off by any other path (the phone's "Vidé" button, a new cycle): the
 #   persistent notification goes away.
-# The panel itself is driven only by automation.veranda_color_panel_status,
-# which watches these booleans.
+# The Divoom reads these booleans directly.
 { lib }:
 
 let

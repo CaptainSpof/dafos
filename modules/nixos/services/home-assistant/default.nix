@@ -41,9 +41,6 @@ let
   netatmoWatchdog = import ./netatmo_watchdog.nix { };
   divoom = import ./divoom/display.nix { inherit pkgs; };
 
-  # The desk and veranda colour panels mirror each other.
-  colorPanels = import ./color_panels.nix { };
-
   # Trigger sensors for the sensor-light automations.
   lightTriggers = import ./light_triggers.nix { };
 
@@ -453,7 +450,6 @@ in
             ++ vacuumProgress.automations
             ++ heatingUsage.automations
             ++ netatmoWatchdog.automations
-            ++ colorPanels.automations
             ++ pellets.automations
             ++ deskCube.automations
             ++ deskSideButton.automations
