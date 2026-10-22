@@ -30,7 +30,7 @@ mirrors it to dafphone through `minuteur-automation.yaml`, a UI automation whose
 Kitchen countdown timer with three independent slots: a swipe picks the slot,
 the knob sets it, tap / long press as before, and a finishing slot takes over
 the screen. The device owns the countdowns; Home Assistant only mirrors them to
-dafphone and, through `divoom_timer.nix` in the HA module, the Divoom
+dafphone and, through `divoom/display.nix` in the HA module, the Divoom
 Timebox-Evo. `minuteur-automation.yaml` is a template rendered once per slot by
 `esphome/push-automations` (three UI automations, one Live Update per slot);
 `minuteur-battery-automation.yaml` is the low-battery alert, kept separate

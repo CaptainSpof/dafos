@@ -39,7 +39,7 @@ let
 
   # Reload, then restart HA when the Netatmo integration stays down.
   netatmoWatchdog = import ./netatmo_watchdog.nix { };
-  divoomTimer = import ./divoom_timer.nix { };
+  divoom = import ./divoom/display.nix { inherit pkgs; };
 
   # The desk and veranda colour panels mirror each other.
   colorPanels = import ./color_panels.nix { };
@@ -450,7 +450,7 @@ in
             ++ colorPanels.automations
             ++ pellets.automations
             ++ deskCube.automations
-            ++ divoomTimer.automations;
+            ++ divoom.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
@@ -656,6 +656,7 @@ in
     # re-import from the UI cannot bring the broken version back.
     ++ [
       "L+ /var/lib/hass/blueprints/automation/lsismeiro/light.yaml - - - - ${./blueprints/lsismeiro/light.yaml}"
-    ];
+    ]
+    ++ divoom.tmpfiles;
   };
 }
