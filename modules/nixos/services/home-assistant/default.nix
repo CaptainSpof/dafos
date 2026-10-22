@@ -39,6 +39,7 @@ let
 
   # Reload, then restart HA when the Netatmo integration stays down.
   netatmoWatchdog = import ./netatmo_watchdog.nix { };
+  divoomTimer = import ./divoom_timer.nix { };
 
   # The desk and veranda colour panels mirror each other.
   colorPanels = import ./color_panels.nix { };
@@ -448,7 +449,8 @@ in
             ++ netatmoWatchdog.automations
             ++ colorPanels.automations
             ++ pellets.automations
-            ++ deskCube.automations;
+            ++ deskCube.automations
+            ++ divoomTimer.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
