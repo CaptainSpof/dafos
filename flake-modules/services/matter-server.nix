@@ -47,6 +47,43 @@ _: {
             ${lib.escapeShellArg skipUnreadable}
         '';
       });
+
+      # The OTA provider the server spawns to push firmware updates to devices.
+      # Upstream's container image downloads this prebuilt CHIP example from
+      # home-assistant-libs (see python-matter-server's Dockerfile); nixpkgs
+      # does not package it, so update/install failed with "No such file or
+      # directory: 'chip-ota-provider-app'" (2026-10-22).
+      otaProvider =
+        let
+          arch =
+            {
+              aarch64-linux = {
+                name = "aarch64";
+                hash = "sha256-4GirbEBQ4j6qbM2pv37M3Et5KiUU4QmMvBK0FM1kqn4=";
+              };
+              x86_64-linux = {
+                name = "x86-64";
+                hash = "sha256-RVDfevZSnkYgRj0cASf4MOwkBMgXrUxjQ7KeMs7AFE4=";
+              };
+            }
+            .${pkgs.stdenv.hostPlatform.system};
+        in
+        pkgs.stdenv.mkDerivation rec {
+          pname = "chip-ota-provider-app";
+          version = "2025.9.0";
+          src = pkgs.fetchurl {
+            url = "https://github.com/home-assistant-libs/matter-linux-ota-provider/releases/download/${version}/chip-ota-provider-app-${arch.name}";
+            inherit (arch) hash;
+          };
+          dontUnpack = true;
+          nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+          buildInputs = [
+            pkgs.libnl
+            pkgs.stdenv.cc.cc.lib
+          ];
+          installPhase = "install -Dm755 $src $out/bin/chip-ota-provider-app";
+          meta.mainProgram = "chip-ota-provider-app";
+        };
     in
     {
       options.dafos.services.matter-server = {
@@ -71,8 +108,23 @@ _: {
           extraArgs.primary-interface = cfg.interface;
         };
 
+        # The server runs it from PATH
+        systemd.services.matter-server.path = [ otaProvider ];
+
         # Matter's operational port, for the devices on the LAN (IPv4 and IPv6).
         networking.firewall.allowedUDPPorts = [ 5540 ];
+
+        # The OTA provider listens on a random port (`--secured-device-port 0`)
+        # that a Thread device must reach to fetch its image; Thread traffic
+        # arrives on the border router's interface.
+        networking.firewall.interfaces = mkIf config.services.openthread-border-router.enable {
+          ${config.services.openthread-border-router.interfaceName}.allowedUDPPortRanges = [
+            {
+              from = 1024;
+              to = 65535;
+            }
+          ];
+        };
 
         # The websocket: Home Assistant only.
         networking.firewall.extraCommands = concatMapStrings (ip: ''
