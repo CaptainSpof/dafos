@@ -232,8 +232,8 @@
           name = "Panneau couleur";
         }
       ];
-      temperature = "sensor.desk_current_temperature";
-      humidity = null;
+      temperature = "sensor.desk_air_quality_monitor_temperature";
+      humidity = "sensor.desk_air_quality_monitor_humidity";
       opening = "binary_sensor.desk_door_sensor_contact";
       climate = "climate.desk_radiator_thermostat";
       presence = null;

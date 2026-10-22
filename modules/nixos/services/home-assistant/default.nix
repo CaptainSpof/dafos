@@ -56,6 +56,9 @@ let
   # The desk's BILRESA Matter side button.
   deskSideButton = import ./desk_side_button.nix { };
 
+  # Room thermometers driving the radiator valves.
+  trvExternalSensors = import ./trv_external_sensors.nix { };
+
   # Pellet tank estimate and refill alert.
   pellets = import ./pellets.nix { };
 
@@ -454,6 +457,7 @@ in
             ++ pellets.automations
             ++ deskCube.automations
             ++ deskSideButton.automations
+            ++ trvExternalSensors.automations
             ++ divoom.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
