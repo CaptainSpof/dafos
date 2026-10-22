@@ -11,7 +11,7 @@
 #    panel's colour (./icons.nix). A status that just came on first scrolls
 #    its name, like the panel's breathe effect. Hidden from 22:45 to 06:00,
 #    like the panel.
-# 3. The clock.
+# 3. The clock, in blue at full brightness.
 #
 # The statuses, their order and colours copy `statuses` in the UI automation
 # automation.veranda_color_panel_status (Véranda · Color Panel Status), the
@@ -114,6 +114,13 @@ let
     // data;
     continue_on_error = true;
   };
+
+  # The clock, in blue at full brightness, whatever a status or timer left
+  clockColour = [
+    0
+    0
+    255
+  ];
 
   # Seconds -> "mm:ss", capped at 99:59
   mmss = s: "{% set s = [${s}, 5999] | min %}{{ '%02d:%02d' % (s // 60, s % 60) }}";
@@ -256,7 +263,13 @@ in
               ];
             }
           ];
-          default = [ (divoom "clock" { clock = 0; }) ];
+          default = [
+            (divoom "clock" {
+              clock = 0;
+              color = clockColour;
+            })
+            (divoom "brightness" { brightness = 100; })
+          ];
         }
       ];
     }
