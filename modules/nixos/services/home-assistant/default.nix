@@ -53,6 +53,9 @@ let
   # The desk's Aqara cube, read from its MQTT payload.
   deskCube = import ./desk_cube.nix { };
 
+  # The desk's BILRESA Matter side button.
+  deskSideButton = import ./desk_side_button.nix { };
+
   # Pellet tank estimate and refill alert.
   pellets = import ./pellets.nix { };
 
@@ -450,6 +453,7 @@ in
             ++ colorPanels.automations
             ++ pellets.automations
             ++ deskCube.automations
+            ++ deskSideButton.automations
             ++ divoom.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
