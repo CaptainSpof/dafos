@@ -53,6 +53,9 @@ let
   # BILRESA Matter buttons (desk, veranda).
   bilresa = import ./bilresa.nix { };
 
+  # Double presses of the RODRET switches.
+  rodret = import ./rodret.nix { };
+
   # Room thermometers driving the radiator valves.
   trvExternalSensors = import ./trv_external_sensors.nix { };
 
@@ -463,6 +466,7 @@ in
             ++ pellets.automations
             ++ deskCube.automations
             ++ bilresa.automations
+            ++ rodret.automations
             ++ trvExternalSensors.automations
             ++ co2.automations
             ++ divoom.automations;
