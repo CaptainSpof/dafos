@@ -242,8 +242,30 @@ in
         type = "home";
         sections = [ { byArea = true; } ];
       }
+      {
+        id = "rer";
+        text = "RER";
+        icon = "train";
+        type = "rer";
+        title = "RER A → Paris";
+        # Same stop and direction as the dashboard's widget
+        # (modules/home/services/glance/default.nix).
+        stopArea = 43171;
+        excludeDestinations = [
+          "Saint-Germain-en-Laye"
+          "Le Vésinet-Le Pecq"
+          "Le Vésinet-Centre"
+          "Chatou-Croissy"
+          "Rueil-Malmaison"
+        ];
+        keyFile = config.sops.secrets."prim/api-key".path;
+      }
     ];
   };
+
+  # The dashboard's PRIM token, for the sidebar's RER tab. The file is already
+  # readable by this host's user key; the 1000 requests a day are shared.
+  sops.secrets."prim/api-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance.yaml";
 
   programs.niri.settings.input = {
     tablet = {
