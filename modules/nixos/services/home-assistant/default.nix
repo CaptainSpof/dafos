@@ -50,8 +50,8 @@ let
   # The desk's Aqara cube, read from its MQTT payload.
   deskCube = import ./desk_cube.nix { };
 
-  # The desk's BILRESA Matter side button.
-  deskSideButton = import ./desk_side_button.nix { };
+  # BILRESA Matter buttons (desk, veranda).
+  bilresa = import ./bilresa.nix { };
 
   # Room thermometers driving the radiator valves.
   trvExternalSensors = import ./trv_external_sensors.nix { };
@@ -455,7 +455,7 @@ in
             ++ netatmoWatchdog.automations
             ++ pellets.automations
             ++ deskCube.automations
-            ++ deskSideButton.automations
+            ++ bilresa.automations
             ++ trvExternalSensors.automations
             ++ co2.automations
             ++ divoom.automations;
