@@ -56,6 +56,9 @@ let
   # Double presses of the RODRET switches.
   rodret = import ./rodret.nix { };
 
+  # The single owner of the heating (valves, stove, Netatmo, boiler boosts).
+  heatingController = import ./heating_controller.nix { };
+
   # Room thermometers driving the radiator valves.
   trvExternalSensors = import ./trv_external_sensors.nix { };
 
@@ -467,6 +470,7 @@ in
             ++ deskCube.automations
             ++ bilresa.automations
             ++ rodret.automations
+            ++ heatingController.automations
             ++ trvExternalSensors.automations
             ++ co2.automations
             ++ divoom.automations;
