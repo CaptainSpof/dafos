@@ -56,6 +56,9 @@ let
   # Room thermometers driving the radiator valves.
   trvExternalSensors = import ./trv_external_sensors.nix { };
 
+  # CO2 alerts (desk ALPSTUGA).
+  co2 = import ./co2.nix { inherit lib; };
+
   # Pellet tank estimate and refill alert.
   pellets = import ./pellets.nix { };
 
@@ -454,6 +457,7 @@ in
             ++ deskCube.automations
             ++ deskSideButton.automations
             ++ trvExternalSensors.automations
+            ++ co2.automations
             ++ divoom.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
