@@ -154,7 +154,14 @@ in
             legacy_action_sensor = true;
           };
           availability = true;
-          advanced.transmit_power = 20;
+          advanced = {
+            transmit_power = 20;
+            # At "info" every MQTT publish is logged (~1200 lines an hour),
+            # and the journal's size cap kept only the last few hours, so
+            # coordinator stalls (SRSP timeouts) and failed commands could not
+            # be counted over days. Errors and warnings still get through.
+            log_level = "warning";
+          };
           mqtt = {
             server = "mqtt://127.0.0.1:1883";
             base_topic = "zigbee2mqtt";

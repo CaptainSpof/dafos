@@ -17,6 +17,17 @@ let
       valve = "desk_radiator";
       sensor = "sensor.desk_air_quality_monitor_temperature";
     }
+    {
+      # Bedroom: the bedside Aqara (its valve read ~24 °C next to the radiator
+      # while the room was cold), since 2026-10-23
+      valve = "bedroom_radiator";
+      sensor = "sensor.bedroom_bed_side_temperature_sensor_temperature";
+    }
+    {
+      # Kitchen: the Aqara temperature sensor, since 2026-10-23
+      valve = "kitchen_radiator";
+      sensor = "sensor.kitchen_temperature_sensor_temperature_2";
+    }
   ];
 
   automation =
