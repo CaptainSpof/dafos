@@ -259,6 +259,19 @@ in
           "Rueil-Malmaison"
         ];
         keyFile = config.sops.secrets."prim/api-key".path;
+        # Under the departures: both ends of the trip (Open-Meteo, no key).
+        weather = [
+          {
+            name = "Nanterre";
+            latitude = 48.8924;
+            longitude = 2.2069;
+          }
+          {
+            name = "Paris";
+            latitude = 48.8566;
+            longitude = 2.3522;
+          }
+        ];
       }
     ];
   };
