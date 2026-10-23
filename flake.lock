@@ -226,11 +226,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792602595,
-        "narHash": "sha256-4h8nMK5bhSygabVxy4A85jGje8tOMchzviY9u2X27s0=",
+        "lastModified": 1792758838,
+        "narHash": "sha256-Pm30LhhC5vSC7M+iLZoFrpS29mRNIlwIDGidEoDncms=",
         "owner": "CaptainSpof",
         "repo": "dms-sidebar",
-        "rev": "b62c78982abcfabd1a113643f039fbc90b8b3c71",
+        "rev": "f3a3803da3f2d9434fd3b78ca3567ac2bad1d7c8",
         "type": "github"
       },
       "original": {
