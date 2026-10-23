@@ -95,3 +95,16 @@
     }
   ]
 )
+++ [
+  {
+    # Entry door open, or closed less than an hour ago: shows the Maison
+    # dashboard's "Entrée" favourite tile.
+    name = "Entry · Door Recently Opened";
+    unique_id = "dafos.binary_sensor.entry_door_recently_opened";
+    default_entity_id = "binary_sensor.entry_door_recently_opened";
+    device_class = "door";
+    icon = "mdi:door-open";
+    state = "{{ is_state('binary_sensor.entry_door_sensor_opening', 'on') }}";
+    delay_off.minutes = 60;
+  }
+]
