@@ -9,9 +9,9 @@
 # (remote.living_room_universal_remote, device poele, command power, long
 # press = 15 repeats), only on events (06:00 at the earliest, or one hour
 # before a dafphone alarm set between 06:00 and 10:00, back home, season →
-# Hiver; 22:45, heating away, heating_stove_off event from the bedroom NFC
-# tag; input_button.heating_stove_on_off on the dashboard: off if burning,
-# else on), so a manual change sticks. Automatic starts only happen below 19
+# Hiver; 22:45, heating away, nobody home for 30 min, heating_stove_off event
+# from the bedroom NFC tag; input_button.heating_stove_on_off on the
+# dashboard: off if burning, else on), so a manual change sticks. Automatic starts only happen below 19
 # °C in the living room (sensor.living_room_current_temperature, Netatmo);
 # once it has burned 1 h, the stove is stopped when the living room has been ≥
 # 20 °C for 10 min (stove-warm). During the day it is relit when the living
@@ -22,8 +22,8 @@
 # min before an IR start; it is never cut while burning. Out of season valves
 # sit at 7°C; heating away (input_boolean.heating_away, set by the "Heating
 # Off" notification button) puts every valve at its eco target and Netatmo on
-# away. Nobody home for 30 min does the same, the stove aside (only the
-# toggle stops it); Netatmo goes back to its schedule when someone is back. Boiler boost:
+# away. Nobody home for 30 min does the same and stops the stove; Netatmo goes
+# back to its schedule when someone is back. Boiler boost:
 # a valve has been heating at least 0.5 °C below its target for 10 min while
 # the Netatmo is idle -> Netatmo +2°C for 30 min, at most once an hour. It
 # superseded the per-room Radiator Controllers, Living Room · Stove Controller
@@ -568,7 +568,7 @@ in
               variables = {
                 hm = "{{ now().strftime('%H:%M') }}";
                 stove = ''
-                  {% set t = trigger.id %} {% if t == 'stove-off' or t == 'stove-warm' or (t == 'stove-toggle' and is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on')) or (t == 'slot' and hm == '22:45') or (t == 'heating-away' and away) %}off {% elif t == 'stove-on' or (t == 'stove-toggle' and not (is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on'))) %}on
+                  {% set t = trigger.id %} {% if t == 'stove-off' or t == 'stove-warm' or (t == 'stove-toggle' and is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on')) or (t == 'slot' and hm == '22:45') or (t == 'heating-away' and away) or t == 'house-empty' %}off {% elif t == 'stove-on' or (t == 'stove-toggle' and not (is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on'))) %}on
                   {% elif season and not away and stove_start <= hm < '21:00'
                        and is_state('binary_sensor.global_home_is_occupied', 'on')
                        and (states('sensor.living_room_current_temperature') | float(none) if has_value('sensor.living_room_current_temperature') else states('sensor.veranda_temperature_sensor_temperature') | float(none)) | float(99) < 19
