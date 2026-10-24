@@ -21,7 +21,9 @@
 # cool for 15 min (or powered 20 min without starting), and switched back on 3
 # min before an IR start; it is never cut while burning. Out of season valves
 # sit at 7°C; heating away (input_boolean.heating_away, set by the "Heating
-# Off" notification button) puts every valve at its eco target. Boiler boost:
+# Off" notification button) puts every valve at its eco target and Netatmo on
+# away. Nobody home for 30 min does the same, the stove aside (only the
+# toggle stops it); Netatmo goes back to its schedule when someone is back. Boiler boost:
 # a valve has been heating at least 0.5 °C below its target for 10 min while
 # the Netatmo is idle -> Netatmo +2°C for 30 min, at most once an hour. It
 # superseded the per-room Radiator Controllers, Living Room · Stove Controller
@@ -216,6 +218,15 @@ in
           trigger = "state";
           id = "heating-away";
           entity_id = "input_boolean.heating_away";
+        }
+        {
+          trigger = "state";
+          id = "house-empty";
+          entity_id = "binary_sensor.global_home_is_occupied";
+          to = "off";
+          for = {
+            minutes = 30;
+          };
         }
         {
           trigger = "state";
@@ -481,11 +492,15 @@ in
           ];
           default = [
             {
-              alias = "Netatmo follows heating away (only when that toggle flips)";
+              alias = "Netatmo follows away (only when the toggle flips, the house has been empty 30 min, or someone is back while Netatmo is on away)";
               "if" = [
                 {
-                  condition = "trigger";
-                  id = "heating-away";
+                  condition = "template";
+                  value_template = ''
+                    {{ trigger.id in ['heating-away', 'house-empty']
+                       or (trigger.id == 'presence' and trigger.entity_id == 'binary_sensor.global_home_is_occupied'
+                           and trigger.to_state.state == 'on' and not away
+                           and is_state_attr('climate.sejour', 'preset_mode', 'away')) }}'';
                 }
               ];
               "then" = [
@@ -793,7 +808,12 @@ in
         off_season_temp = 7;
         inherit rooms;
         season = "{{ is_state('binary_sensor.global_is_cold_season', 'on') }}";
-        away = "{{ is_state('input_boolean.heating_away', 'on') }}";
+        # Heating away, or nobody home for 30 min: dafbox stays `home` all day
+        # and Netatmo kept its schedule, so an empty house still fired the boiler.
+        away = ''
+          {{ is_state('input_boolean.heating_away', 'on')
+             or (is_state('binary_sensor.global_home_is_occupied', 'off')
+                 and now() - states.binary_sensor.global_home_is_occupied.last_changed >= timedelta(minutes=30)) }}'';
         stove_start = "{% set a = states('sensor.dafphone_next_alarm') | as_datetime(none) %}{% set a = a | as_local if a is not none else none %}{% set al = a.strftime('%H:%M') if a is not none and a.date() == now().date() else '' %}{% set start = ['06:00', (a - timedelta(hours=1)).strftime('%H:%M')] | max if '06:00' <= al <= '10:00' else '06:00' %}{{ start }}";
       };
       mode = "queued";
