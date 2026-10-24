@@ -201,6 +201,13 @@ lib.mkForce {
     allow-when-locked = true;
     action = knobVolume "decrement";
   };
+  # BNR1 knob press (Vial: F16): mutes the mic during a Discord call (Vesktop or
+  # the official client), the speakers otherwise. Discord only holds a PipeWire
+  # capture stream while in a voice channel.
+  "XF86Launch7" = {
+    allow-when-locked = true;
+    action = shell ''if pw-dump | jq -e '[.[] | .info.props? // {} | select(."media.class" == "Stream/Input/Audio") | ."application.name" // "" | select(test("vesktop|discord"; "i"))] | length > 0' >/dev/null; then dms ipc audio micmute; else dms ipc audio mute; fi'';
+  };
   "XF86AudioMicMute" = {
     allow-when-locked = true;
     action = dms-ipc "audio" "micmute";
