@@ -499,7 +499,10 @@ in
           ++ pellets.templates;
 
           input_boolean =
-            import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
+            import ./sensors/input_booleans.nix
+            // origami.input_boolean
+            // airQuality.input_boolean
+            // heatingController.input_boolean;
           input_datetime =
             import ./sensors/input_datetimes.nix // netatmoWatchdog.input_datetime // pellets.input_datetime;
           inherit (pellets) input_button;
