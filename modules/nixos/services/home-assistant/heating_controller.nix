@@ -22,13 +22,14 @@
 # min before an IR start; it is never cut while burning. Out of season valves
 # sit at 7°C; heating away (input_boolean.heating_away, set by the "Heating
 # Off" notification button) puts every valve at its eco target. Boiler boost:
-# a valve has been heating for 10 min while the Netatmo is idle -> Netatmo
-# +2°C for 30 min, at most once an hour. It superseded the per-room Radiator
-# Controllers, Living Room · Stove Controller and Global · Notify When
-# Thermostats Demand Heating (deleted 2026-10-20).
+# a valve has been heating at least 0.5 °C below its target for 10 min while
+# the Netatmo is idle -> Netatmo +2°C for 30 min, at most once an hour. It
+# superseded the per-room Radiator Controllers, Living Room · Stove Controller
+# and Global · Notify When Thermostats Demand Heating (deleted 2026-10-20).
 #
 # Room table: valve, presence entities, comfort windows (input_datetime ids or
-# "HH:MM", wrapping past midnight), comfort/eco temperatures. Change heating
+# "HH:MM", wrapping past midnight; an optional third element overrides comfort
+# for that window, first match wins), comfort/eco temperatures. Change heating
 # behaviour here, not with per-room automations.
 _:
 
@@ -43,6 +44,15 @@ let
       windows = [
         [
           "input_datetime.early_evening"
+          "input_datetime.night"
+        ]
+        [
+          "input_datetime.night"
+          "input_datetime.early_morning"
+          17
+        ]
+        [
+          "input_datetime.early_morning"
           "input_datetime.late_morning"
         ]
       ];
@@ -142,6 +152,14 @@ let
   ];
 
   valves = map (r: r.climate) rooms;
+
+  # A valve wants heat when it is heating and its room is at least 0.5 °C below
+  # the valve's target: TRVs report `heating` 0.1 °C short, which alone would
+  # fire the whole Netatmo loop for one room all night.
+  wantsHeat =
+    c:
+    "(is_state_attr(${c}, 'hvac_action', 'heating') and state_attr(${c}, 'temperature') | float(0) - state_attr(${c}, 'current_temperature') | float(99) >= 0.5)";
+  valvesWantingHeat = "{% set ns = namespace(n=0) %}{% for c in ${builtins.toJSON valves} %}{% if ${wantsHeat "c"} %}{% set ns.n = ns.n + 1 %}{% endif %}{% endfor %}";
 in
 {
   automations = [
@@ -219,12 +237,10 @@ in
           trigger = "template";
           id = "boost";
           value_template = ''
+            ${valvesWantingHeat}
             {{ is_state('binary_sensor.global_is_cold_season', 'on')
                and state_attr('climate.sejour', 'hvac_action') == 'idle'
-               and ['climate.bedroom_radiator_thermostat', 'climate.bathroom_radiator',
-                    'climate.kitchen_radiator_thermostat', 'climate.veranda_radiator',
-                    'climate.parents_bedroom_radiator', 'climate.desk_radiator_thermostat']
-                   | select('is_state_attr', 'hvac_action', 'heating') | list | count > 0 }}'';
+               and ns.n > 0 }}'';
           for = {
             minutes = 10;
           };
@@ -356,11 +372,11 @@ in
                   alias = "Still true now (the time_pattern retry does not imply it)";
                   condition = "template";
                   value_template = ''
+                    ${valvesWantingHeat}
                     {{ season and not away
                        and state_attr('climate.sejour', 'hvac_action') == 'idle'
                        and state_attr('climate.sejour', 'preset_mode') == 'schedule'
-                       and rooms | map(attribute='climate')
-                           | select('is_state_attr', 'hvac_action', 'heating') | list | count > 0 }}'';
+                       and ns.n > 0 }}'';
                 }
                 {
                   alias = "At most one boost per hour";
@@ -372,8 +388,8 @@ in
                 {
                   variables = {
                     cold_rooms = ''
-                      {{ rooms | selectattr('climate', 'is_state_attr', 'hvac_action', 'heating')
-                         | map(attribute='name') | list }}'';
+                      {% set ns = namespace(n=[]) %}{% for r in rooms %}{% set c = r.climate %}{% if ${wantsHeat "c"} %}{% set ns.n = ns.n + [r.name] %}{% endif %}{% endfor %}
+                      {{ ns.n }}'';
                     boost_temp = "{{ [ (state_attr('climate.sejour', 'current_temperature') | float(18)) + 2, 30 ] | min }}";
                   };
                 }
@@ -492,17 +508,17 @@ in
                   {
                     variables = {
                       hm = "{{ now().strftime('%H:%M') }}";
-                      in_window = ''
-                        {% set ns = namespace(on=false) %} {% for w in repeat.item.windows %}
+                      window_temp = ''
+                        {% set ns = namespace(t=0) %} {% for w in repeat.item.windows %}
                           {% set s = states(w[0])[:5] if w[0].startswith('input_datetime.') else w[0] %}
                           {% set e = states(w[1])[:5] if w[1].startswith('input_datetime.') else w[1] %}
-                          {% if (s <= e and s <= hm < e) or (s > e and (hm >= s or hm < e)) %}{% set ns.on = true %}{% endif %}
-                        {% endfor %} {{ ns.on }}'';
+                          {% if ns.t == 0 and ((s <= e and s <= hm < e) or (s > e and (hm >= s or hm < e))) %}{% set ns.t = w[2] if w | count > 2 else repeat.item.comfort %}{% endif %}
+                        {% endfor %} {{ ns.t }}'';
                       present = "{{ repeat.item.presence | select('is_state', ['home', 'on']) | list | count > 0 }}";
                       arrival = ''
                         {% set p = repeat.item.get('arrival_comfort') %} {{ p is not none and is_state(p, 'home')
                            and now() - states[p].last_changed < timedelta(hours=3) }}'';
-                      target = "{% if not season %}{{ off_season_temp }} {% elif away %}{{ repeat.item.eco }} {% elif (present | bool and in_window | bool) or arrival | bool %}{{ repeat.item.comfort }} {% else %}{{ repeat.item.eco }}{% endif %}";
+                      target = "{% if not season %}{{ off_season_temp }} {% elif away %}{{ repeat.item.eco }} {% elif present | bool and window_temp | float(0) > 0 %}{{ window_temp }} {% elif arrival | bool %}{{ repeat.item.comfort }} {% else %}{{ repeat.item.eco }}{% endif %}";
                     };
                   }
                   {
