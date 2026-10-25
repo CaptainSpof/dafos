@@ -142,6 +142,8 @@ in
         enable = true;
         clients.dafpi.sopsFile = ../../../secrets/dafpi/restic.yaml;
       };
+      # Both repositories summed up for Glance's Monitoring page.
+      backup-status = enabled;
       # Read-only NFS export of the media pool for dafbox. LAN first (works without
       # tailscale), tailnet as a second path. See modules/nixos/services/media-export.
       media-export = {

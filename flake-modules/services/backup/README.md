@@ -49,6 +49,20 @@ sudo restic-local snapshots         # wrapper with the repository and password s
 sudo restic-local check
 ```
 
+## Dashboard
+
+[backup-status.nix](backup-status.nix) sums up both repositories on dafoltop
+(newest snapshot, what it added, count, size, last unit result, dump age) into
+`/var/lib/backup-status/status.json`, served on `:8097` (firewall closed) for
+Glance's « Sauvegardes » widget on the Monitoring page. It refreshes when
+`restic-backups-local` or `backup-server-maintain-*` stops, at boot and at noon;
+`--no-lock` keeps it from ever blocking a prune.
+
+```bash
+sudo systemctl start backup-status
+curl -s localhost:8097/status.json | jq
+```
+
 ## Restore
 
 ```bash
