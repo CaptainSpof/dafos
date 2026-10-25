@@ -20,14 +20,14 @@
 # work. To save the idle draw the plug is cut once the stove has been off and
 # cool for 15 min (or powered 20 min without starting), and switched back on 3
 # min before an IR start; it is never cut while burning. Out of season valves
-# sit at 7°C; heating away (input_boolean.heating_away, set by the "Heating
-# Off" notification button) puts every valve at its eco target and Netatmo on
-# away. Nobody home for 1 h does the same and stops the stove; Netatmo goes
-# back to its schedule when someone is back. Return soon
-# (input_boolean.heating_return_soon, "Retour imminent" in the heating pop-up)
-# overrides away to preheat: Netatmo on its schedule, every room heated as if
-# occupied, stove left alone. It switches itself off once someone is home, or
-# after 3 h. Boiler boost:
+# sit at 7°C. The heating pop-up's "Mode chauffage" (input_select.heating_mode)
+# has three states: Auto, Absent (set by the "Heating Off" notification
+# button) and Retour imminent. Absent puts every valve at its eco target and
+# Netatmo on away. So does Auto once nobody has been home for 1 h, and it also
+# stops the stove; Netatmo goes back to its schedule when someone is back.
+# Retour imminent overrides away to preheat: Netatmo on its schedule, every
+# room heated as if occupied, stove left alone. It goes back to Auto once
+# someone is home, or after 3 h. Boiler boost:
 # a valve has been heating at least 0.5 °C below its target for 10 min while
 # the Netatmo is idle -> Netatmo +2°C for 30 min, at most once an hour. It
 # superseded the per-room Radiator Controllers, Living Room · Stove Controller
@@ -168,9 +168,14 @@ let
   valvesWantingHeat = "{% set ns = namespace(n=0) %}{% for c in ${builtins.toJSON valves} %}{% if ${wantsHeat "c"} %}{% set ns.n = ns.n + 1 %}{% endif %}{% endfor %}";
 in
 {
-  input_boolean.heating_return_soon = {
-    name = "Heating · Return Soon";
-    icon = "mdi:home-import-outline";
+  input_select.heating_mode = {
+    name = "Heating · Mode";
+    icon = "mdi:home-switch-outline";
+    options = [
+      "Auto"
+      "Absent"
+      "Retour imminent"
+    ];
   };
 
   automations = [
@@ -225,8 +230,12 @@ in
         }
         {
           trigger = "state";
-          id = "heating-away";
-          entity_id = "input_boolean.heating_away";
+          id = "mode";
+          entity_id = "input_select.heating_mode";
+          not_to = [
+            "unavailable"
+            "unknown"
+          ];
         }
         {
           trigger = "state";
@@ -239,18 +248,9 @@ in
         }
         {
           trigger = "state";
-          id = "return-soon";
-          entity_id = "input_boolean.heating_return_soon";
-          not_to = [
-            "unavailable"
-            "unknown"
-          ];
-        }
-        {
-          trigger = "state";
           id = "return-soon-timeout";
-          entity_id = "input_boolean.heating_return_soon";
-          to = "on";
+          entity_id = "input_select.heating_mode";
+          to = "Retour imminent";
           for = {
             hours = 3;
           };
@@ -500,7 +500,7 @@ in
               ];
             }
             {
-              alias = "Return soon, nobody back after 3 h: switch it off (that change re-runs the controller, which goes back to away)";
+              alias = "Return soon, nobody back after 3 h: back to Auto (that change re-runs the controller, which goes back to away)";
               conditions = [
                 {
                   condition = "trigger";
@@ -509,9 +509,12 @@ in
               ];
               sequence = [
                 {
-                  action = "input_boolean.turn_off";
+                  action = "input_select.select_option";
                   target = {
-                    entity_id = "input_boolean.heating_return_soon";
+                    entity_id = "input_select.heating_mode";
+                  };
+                  data = {
+                    option = "Auto";
                   };
                 }
                 {
@@ -543,8 +546,8 @@ in
               "if" = [
                 {
                   condition = "state";
-                  entity_id = "input_boolean.heating_return_soon";
-                  state = "on";
+                  entity_id = "input_select.heating_mode";
+                  state = "Retour imminent";
                 }
                 {
                   condition = "state";
@@ -554,20 +557,23 @@ in
               ];
               "then" = [
                 {
-                  action = "input_boolean.turn_off";
+                  action = "input_select.select_option";
                   target = {
-                    entity_id = "input_boolean.heating_return_soon";
+                    entity_id = "input_select.heating_mode";
+                  };
+                  data = {
+                    option = "Auto";
                   };
                 }
               ];
             }
             {
-              alias = "Netatmo follows away (only when the toggle flips, the house has been empty 1 h, return soon flips, or someone is back while Netatmo is on away)";
+              alias = "Netatmo follows away (only when the mode changes, the house has been empty 1 h, or someone is back while Netatmo is on away)";
               "if" = [
                 {
                   condition = "template";
                   value_template = ''
-                    {{ trigger.id in ['heating-away', 'house-empty', 'return-soon']
+                    {{ trigger.id in ['mode', 'house-empty']
                        or (trigger.id == 'presence' and trigger.entity_id == 'binary_sensor.global_home_is_occupied'
                            and trigger.to_state.state == 'on' and not away
                            and is_state_attr('climate.sejour', 'preset_mode', 'away')) }}'';
@@ -638,12 +644,12 @@ in
               variables = {
                 hm = "{{ now().strftime('%H:%M') }}";
                 stove = ''
-                  {% set t = trigger.id %} {% if t == 'stove-off' or t == 'stove-warm' or (t == 'stove-toggle' and is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on')) or (t == 'slot' and hm == '22:45') or (t == 'heating-away' and away) or (t == 'house-empty' and away) %}off {% elif t == 'stove-on' or (t == 'stove-toggle' and not (is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on'))) %}on
+                  {% set t = trigger.id %} {% if t == 'stove-off' or t == 'stove-warm' or (t == 'stove-toggle' and is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on')) or (t == 'slot' and hm == '22:45') or (t == 'mode' and away) or (t == 'house-empty' and away) %}off {% elif t == 'stove-on' or (t == 'stove-toggle' and not (is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on'))) %}on
                   {% elif season and not away and stove_start <= hm < '21:00'
                        and is_state('binary_sensor.global_home_is_occupied', 'on')
                        and (states('sensor.living_room_current_temperature') | float(none) if has_value('sensor.living_room_current_temperature') else states('sensor.veranda_temperature_sensor_temperature') | float(none)) | float(99) < 19
                        and (t == 'stove-morning'
-                            or (t == 'heating-away' and not away)
+                            or (t == 'mode' and not away)
                             or (t == 'season' and season)
                             or t == 'stove-cold'
                             or (t == 'presence' and trigger.entity_id == 'binary_sensor.global_home_is_occupied'
@@ -878,13 +884,13 @@ in
         off_season_temp = 7;
         inherit rooms;
         season = "{{ is_state('binary_sensor.global_is_cold_season', 'on') }}";
-        # Heating away, or nobody home for 1 h: dafbox stays `home` all day
+        # Mode Absent, or nobody home for 1 h: dafbox stays `home` all day
         # and Netatmo kept its schedule, so an empty house still fired the boiler.
-        # Return soon overrides both and heats every room as if occupied.
-        returning = "{{ is_state('input_boolean.heating_return_soon', 'on') }}";
+        # Retour imminent overrides both and heats every room as if occupied.
+        returning = "{{ is_state('input_select.heating_mode', 'Retour imminent') }}";
         away = ''
-          {{ not is_state('input_boolean.heating_return_soon', 'on')
-             and (is_state('input_boolean.heating_away', 'on')
+          {{ not is_state('input_select.heating_mode', 'Retour imminent')
+             and (is_state('input_select.heating_mode', 'Absent')
                   or (is_state('binary_sensor.global_home_is_occupied', 'off')
                       and now() - states.binary_sensor.global_home_is_occupied.last_changed >= timedelta(hours=1))) }}'';
         stove_start = "{% set a = states('sensor.dafphone_next_alarm') | as_datetime(none) %}{% set a = a | as_local if a is not none else none %}{% set al = a.strftime('%H:%M') if a is not none and a.date() == now().date() else '' %}{% set start = ['06:00', (a - timedelta(hours=1)).strftime('%H:%M')] | max if '06:00' <= al <= '10:00' else '06:00' %}{{ start }}";
