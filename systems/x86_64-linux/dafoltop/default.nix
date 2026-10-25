@@ -105,6 +105,12 @@ in
         hostAddress = "192.168.0.10";
         # Services hosted on dafpi resolve there (derived from its config).
         peers = [ "dafpi" ];
+        # Tailnet clients away from home, through the Tailscale split DNS
+        # entry `daftdaf.dev` -> 100.70.68.47 (admin console).
+        tailnet = {
+          address = "100.70.68.47";
+          peerAddresses.dafpi = "100.68.21.74";
+        };
       };
       home-assistant = enabled;
       # Disk and failed-unit alerts, relayed to the phones by home-assistant.

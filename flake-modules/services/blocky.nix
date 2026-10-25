@@ -4,6 +4,12 @@
 # Freebox DHCP hands out both as the LAN's only DNS servers (2026-10-06).
 # Rollback: set the Freebox DHCP DNS back to the Freebox itself,
 # 192.168.0.254 (also the default gateway: `ip route | grep default`).
+#
+# `tailnet.address` adds a second, domain-only resolver on the host's
+# Tailscale address, for tailnet clients away from the LAN: public DNS sends
+# them through the Freebox, Traefik sees an internet address and the
+# `private` chain answers 403. A Tailscale split DNS entry (admin console,
+# DNS: `daftdaf.dev` -> that address) sends them here instead.
 { inputs, ... }:
 {
   flake.modules.nixos.blocky =
@@ -25,6 +31,40 @@
         ;
 
       cfg = config.dafos.services.blocky;
+
+      # Every hostname a peer's Traefik routes, aliases included.
+      peerHosts =
+        peer:
+        lib.attrNames
+          inputs.self.nixosConfigurations.${peer}.config.home-manager.users.daf.dafos.services.traefik.routedHosts;
+
+      # dnsmasq rather than blocky: one blocky gives every listener the same
+      # answers. Not services.dnsmasq either, which the resolved module forces
+      # off. `local=` keeps the domain here, so what has no address (AAAA, MX…)
+      # gets NODATA instead of REFUSED. `bind-dynamic` binds the address
+      # whenever tailscaled brings it up.
+      tailnetConf = pkgs.writeText "blocky-tailnet.conf" (
+        lib.concatLines (
+          [
+            "listen-address=${cfg.tailnet.address}"
+            "bind-dynamic"
+            "no-resolv"
+            "no-hosts"
+            "user="
+            "pid-file="
+            "local-ttl=300"
+            "local=/${cfg.domain}/"
+            "address=/${cfg.domain}/${cfg.tailnet.address}"
+          ]
+          ++ lib.concatMap (
+            peer: map (host: "address=/${host}/${cfg.tailnet.peerAddresses.${peer}}") (peerHosts peer)
+          ) cfg.peers
+          # Their CNAMEs live in blocky's zone.
+          ++ mapAttrsToList (
+            name: _: "server=/${name}.${cfg.domain}/${cfg.hostAddress}"
+          ) cfg.externalSubdomains
+        )
+      );
 
       # blocky binds `hostAddress` itself, and that address comes from DHCP a moment
       # after the unit would otherwise start. Run by its own oneshot unit, see below.
@@ -120,6 +160,29 @@
           '';
         };
 
+        tailnet = {
+          address = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            example = "100.70.68.47";
+            description = ''
+              This host's Tailscale address. When set, a second resolver listens
+              there and answers `domain` with tailnet addresses: this one, or a
+              peer's `peerAddresses` entry for the hostnames it routes. Reached
+              over tailscale0 only (a trusted interface, no firewall rule).
+            '';
+          };
+
+          peerAddresses = mkOption {
+            type = types.attrsOf types.str;
+            default = { };
+            example = {
+              dafpi = "100.68.21.74";
+            };
+            description = "Tailscale address of each of `peers`, for the tailnet resolver.";
+          };
+        };
+
         openFirewall = mkOption {
           type = types.bool;
           default = true;
@@ -132,6 +195,11 @@
           {
             assertion = cfg.hostAddress != "";
             message = "dafos.services.blocky.hostAddress must be set to this host's LAN address.";
+          }
+          {
+            assertion =
+              cfg.tailnet.address != null -> lib.all (peer: cfg.tailnet.peerAddresses ? ${peer}) cfg.peers;
+            message = "dafos.services.blocky.tailnet.peerAddresses needs an entry for every peer.";
           }
         ];
 
@@ -169,12 +237,9 @@
               lib.concatMap (
                 peer:
                 let
-                  peerConfig = inputs.self.nixosConfigurations.${peer}.config;
-                  address = peerConfig.dafos.services.blocky.hostAddress;
-                  # Every hostname the peer's Traefik routes, aliases included.
-                  hosts = lib.attrNames peerConfig.home-manager.users.daf.dafos.services.traefik.routedHosts;
+                  address = inputs.self.nixosConfigurations.${peer}.config.dafos.services.blocky.hostAddress;
                 in
-                map (host: lib.nameValuePair host address) hosts
+                map (host: lib.nameValuePair host address) (peerHosts peer)
               ) cfg.peers
             );
 
@@ -244,6 +309,43 @@
           after = [ "blocky-wait-for-address.service" ];
           unitConfig.StartLimitIntervalSec = 0;
           serviceConfig.RestartSec = "2s";
+        };
+
+        systemd.services.blocky-tailnet = mkIf (cfg.tailnet.address != null) {
+          description = "Tailnet resolver for ${cfg.domain}";
+          wantedBy = [ "multi-user.target" ];
+          after = [
+            "network.target"
+            "tailscaled.service"
+          ];
+          serviceConfig = {
+            ExecStart = "${pkgs.dnsmasq}/bin/dnsmasq --keep-in-foreground --log-facility=- --conf-file=${tailnetConf}";
+            Restart = "on-failure";
+            RestartSec = "2s";
+            DynamicUser = true;
+            AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+            CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+            # Netlink: bind-dynamic watches for the address to appear.
+            RestrictAddressFamilies = [
+              "AF_INET"
+              "AF_INET6"
+              "AF_NETLINK"
+              "AF_UNIX"
+            ];
+            NoNewPrivileges = true;
+            ProtectSystem = "strict";
+            ProtectHome = true;
+            PrivateTmp = true;
+            PrivateDevices = true;
+            ProtectKernelTunables = true;
+            ProtectKernelModules = true;
+            ProtectControlGroups = true;
+            LockPersonality = true;
+            MemoryDenyWriteExecute = true;
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            SystemCallArchitectures = "native";
+          };
         };
       };
     };
