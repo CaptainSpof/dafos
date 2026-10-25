@@ -216,69 +216,12 @@ in
   # by the local LanguageTool (dafos.services.languagetool on this host).
   programs.dms-proofreader.enable = true;
 
-  # Tabbed side panel with the Home Assistant dashboard (github:CaptainSpof/dms-sidebar).
-  # HA is reached by LAN address: the dafoltop hostname resolves to its
-  # Tailscale address, which HA refuses (401).
-  programs.dms-sidebar = {
+  # The DMS sidebar, RER tab included: this host's user key opens the PRIM
+  # token.
+  dafos.desktop.dms.sidebar = {
     enable = true;
-    url = "http://192.168.0.10:8123";
-    # The HA "Maison" dashboard rendered natively (its bubble-card pop-ups are
-    # the room pages), plus the generated per-area list.
-    tabs = [
-      {
-        id = "maison";
-        text = "Maison";
-        icon = "home";
-        type = "lovelace";
-        dashboard = "dashboard-maison";
-        # Section 0 is the greeting, date and weather row: noise in a sidebar.
-        skipSections = [ 0 ];
-        hideUnsupported = true;
-      }
-      {
-        id = "pieces";
-        text = "Pièces";
-        icon = "grid_view";
-        type = "home";
-        sections = [ { byArea = true; } ];
-      }
-      {
-        id = "rer";
-        text = "RER";
-        icon = "train";
-        type = "rer";
-        title = "RER A → Paris";
-        # Same stop and direction as the dashboard's widget
-        # (modules/home/services/glance/default.nix).
-        stopArea = 43171;
-        excludeDestinations = [
-          "Saint-Germain-en-Laye"
-          "Le Vésinet-Le Pecq"
-          "Le Vésinet-Centre"
-          "Chatou-Croissy"
-          "Rueil-Malmaison"
-        ];
-        keyFile = config.sops.secrets."prim/api-key".path;
-        # Under the departures: both ends of the trip (Open-Meteo, no key).
-        weather = [
-          {
-            name = "Nanterre";
-            latitude = 48.8924;
-            longitude = 2.2069;
-          }
-          {
-            name = "Paris";
-            latitude = 48.8566;
-            longitude = 2.3522;
-          }
-        ];
-      }
-    ];
+    rer = true;
   };
-
-  # The dashboard's PRIM token, for the sidebar's RER tab. The file is already
-  # readable by this host's user key; the 1000 requests a day are shared.
-  sops.secrets."prim/api-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance.yaml";
 
   programs.niri.settings.input = {
     tablet = {

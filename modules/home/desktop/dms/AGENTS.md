@@ -143,8 +143,13 @@ top bar is built this way; dafbox's is not.
 
 The tabbed side panel (Home Assistant dashboard) is
 [CaptainSpof/dms-sidebar](https://github.com/CaptainSpof/dms-sidebar) (checkout
-in `~/Projects/dms-sidebar`), consumed as the `dms-sidebar` flake input; hosts
-turn it on with `programs.dms-sidebar.enable`. Its gotchas live in that repo's
-`AGENTS.md`. `Mod+A` toggles it (bound in `niri/default.nix` only where it is
-enabled). HA is reached by its LAN address: the `dafoltop` hostname resolves to
-the Tailscale address, which HA refuses with a 401.
+in `~/Projects/dms-sidebar`), consumed as the `dms-sidebar` flake input. The
+fleet's tab set is in [sidebar.nix](sidebar.nix); hosts turn it on with
+`dafos.desktop.dms.sidebar.enable`. The RER tab is behind `sidebar.rer`: its
+PRIM token is a `secrets/dafoltop/` secret, which laptop keys cannot open. Its
+gotchas live in that repo's `AGENTS.md`. `Mod+A` toggles it (bound in
+`niri/default.nix` only where it is enabled). `sidebar.url` defaults to HA's LAN
+address, which only answers at home; daftop uses `http://dafoltop:8123`
+(Tailscale). HA answers a Tailscale (CGNAT) address with a 401 only when the
+token's HA user is restricted to local access; a token from an unrestricted user
+works there.

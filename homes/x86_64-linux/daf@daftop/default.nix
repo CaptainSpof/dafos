@@ -326,6 +326,14 @@ in
   # by the local LanguageTool (dafos.services.languagetool on this host).
   programs.dms-proofreader.enable = true;
 
+  # The DMS sidebar, without the RER tab: its PRIM token sits in a dafoltop
+  # secret this laptop's key cannot open. HA over Tailscale, so it works away
+  # from home; this laptop's HA token is not local-only, so HA accepts it.
+  dafos.desktop.dms.sidebar = {
+    enable = true;
+    url = "http://dafoltop:8123";
+  };
+
   # daftop's display layout, pinned so it doesn't auto-reset each boot.
   programs.niri.settings.outputs = {
     "eDP-1".enable = false;

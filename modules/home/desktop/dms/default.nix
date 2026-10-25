@@ -143,6 +143,7 @@ in
   imports = [
     (import ./games.nix { inherit namespace; })
     (import ./widget-positions.nix { inherit namespace; })
+    (import ./sidebar.nix { inherit namespace; })
   ];
 
   options.${namespace}.desktop.dms = {
