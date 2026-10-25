@@ -175,6 +175,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # The NixOS MCP server for the Claude clients. Its own nixpkgs on purpose:
+    # nixpkgs' mcp-nixos depends on fastmcp-slim, which is marked broken
+    # whenever nixpkgs' `mcp` is >= 2; upstream packages its own fastmcp.
+    mcp-nixos.url = "github:utensils/mcp-nixos";
+
     vicinae = {
       url = "github:vicinaehq/vicinae";
       inputs.nixpkgs.follows = "nixpkgs";

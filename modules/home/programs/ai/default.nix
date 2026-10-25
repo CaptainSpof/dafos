@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   namespace,
   ...
 }:
@@ -21,7 +22,9 @@ let
   anyClaude = cfg.claude.code.enable || cfg.claude.desktop.enable;
 
   jq = getExe pkgs.jq;
-  mcpNixos = getExe' pkgs.mcp-nixos "mcp-nixos";
+  # From its own flake (see flake.nix): nixpkgs' build is broken.
+  mcpNixosPkg = inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  mcpNixos = getExe' mcpNixosPkg "mcp-nixos";
 
   # The stdio MCP server entry, shared by every Claude client.
   nixosServer = {
@@ -72,7 +75,7 @@ in
       # which only the fhs wrapper provides. Host must also load vhost_vsock.
       (mkIf cfg.claude.desktop.enable [ pkgs.claude-desktop-fhs ])
       (mkIf cfg.antigravity.cli.enable [ pkgs.antigravity-cli ])
-      (mkIf anyClaude [ pkgs.mcp-nixos ])
+      (mkIf anyClaude [ mcpNixosPkg ])
     ];
 
     # Register the nixos MCP server with each enabled Claude client. The config
