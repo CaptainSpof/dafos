@@ -21,10 +21,7 @@ in
 
   config = mkIf cfg.enable {
 
-    services.emacs = {
-      enable = true;
-      inherit (cfg) package;
-    };
+    services.emacs.enable = true;
 
     programs.emacs = {
       enable = true;
