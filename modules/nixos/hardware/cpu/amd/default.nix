@@ -11,14 +11,6 @@ let
   inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.hardware.cpu.amd;
-
-  # nixpkgs' module aggregator now expects a kmodigest `.ko.cer` next to every
-  # external module, but zenpower installs its `.ko` by hand and skips signing.
-  zenpower = config.boot.kernelPackages.zenpower.overrideAttrs (old: {
-    postFixup = (old.postFixup or "") + ''
-      ${lib.getExe pkgs.buildPackages.kmodigest} "$out"/lib/modules/*/kernel/drivers/hwmon/zenpower/zenpower.ko
-    '';
-  });
 in
 {
   options.${namespace}.hardware.cpu.amd = {
@@ -27,7 +19,7 @@ in
 
   config = mkIf cfg.enable {
     boot = {
-      extraModulePackages = [ zenpower ];
+      extraModulePackages = [ config.boot.kernelPackages.zenpower ];
 
       kernelModules = [
         "kvm-amd" # amd virtualization
