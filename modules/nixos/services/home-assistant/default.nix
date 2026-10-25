@@ -523,6 +523,7 @@ in
           ++ (import ./sensors/sensors.nix)
           ++ origami.platformSensors
           ++ heatingUsage.platformSensors
+          ++ heatingController.platformSensors
           ++ pellets.platformSensors;
 
           # No `zha:` block: ZHA is config-flow only. It reads the coordinator

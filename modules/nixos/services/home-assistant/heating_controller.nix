@@ -178,6 +178,21 @@ in
     ];
   };
 
+  # Hours somebody was home over the last hour; 0 means the house has been
+  # empty for an hour. Entity id: sensor.heating_home_occupied_last_hour.
+  platformSensors = [
+    {
+      platform = "history_stats";
+      name = "Heating home occupied last hour";
+      unique_id = "dafos.sensor.heating_home_occupied_last_hour";
+      entity_id = "binary_sensor.global_home_is_occupied";
+      state = "on";
+      type = "time";
+      start = "{{ now() - timedelta(hours=1) }}";
+      end = "{{ now() }}";
+    }
+  ];
+
   automations = [
     {
       id = "dafos_heating_controller";
@@ -238,13 +253,10 @@ in
           ];
         }
         {
-          trigger = "state";
+          alias = "Nobody has been home for an hour (read from the recorder, so a restart does not reset the count)";
+          trigger = "template";
           id = "house-empty";
-          entity_id = "binary_sensor.global_home_is_occupied";
-          to = "off";
-          for = {
-            hours = 1;
-          };
+          value_template = "{{ is_state('binary_sensor.global_home_is_occupied', 'off') and states('sensor.heating_home_occupied_last_hour') | float(1) < 0.02 }}";
         }
         {
           trigger = "state";
@@ -374,6 +386,45 @@ in
       ];
       conditions = [ ];
       actions = [
+        {
+          alias = "After a restart, wait for the occupancy history before deciding anything (until then the house would count as occupied)";
+          "if" = [
+            {
+              condition = "trigger";
+              id = "start";
+            }
+          ];
+          "then" = [
+            {
+              wait_template = "{{ has_value('sensor.heating_home_occupied_last_hour') }}";
+              timeout = {
+                minutes = 3;
+              };
+              continue_on_timeout = true;
+            }
+          ];
+        }
+        {
+          alias = "Netatmo follows away: whenever it disagrees with the controller (a restart or a missed trigger must not leave the boiler on the schedule in an empty house). Only the away preset is touched, a manual Netatmo setting is left alone";
+          "if" = [
+            {
+              condition = "template";
+              value_template = "{{ trigger.id in ['mode', 'house-empty'] or (away and not is_state_attr('climate.sejour', 'preset_mode', 'away')) or (not away and is_state_attr('climate.sejour', 'preset_mode', 'away')) }}";
+            }
+          ];
+          "then" = [
+            {
+              action = "climate.set_preset_mode";
+              continue_on_error = true;
+              target = {
+                entity_id = "climate.sejour";
+              };
+              data = {
+                preset_mode = "{{ 'away' if away else 'schedule' }}";
+              };
+            }
+          ];
+        }
         {
           choose = [
             {
@@ -563,30 +614,6 @@ in
                   };
                   data = {
                     option = "Auto";
-                  };
-                }
-              ];
-            }
-            {
-              alias = "Netatmo follows away (only when the mode changes, the house has been empty 1 h, or someone is back while Netatmo is on away)";
-              "if" = [
-                {
-                  condition = "template";
-                  value_template = ''
-                    {{ trigger.id in ['mode', 'house-empty']
-                       or (trigger.id == 'presence' and trigger.entity_id == 'binary_sensor.global_home_is_occupied'
-                           and trigger.to_state.state == 'on' and not away
-                           and is_state_attr('climate.sejour', 'preset_mode', 'away')) }}'';
-                }
-              ];
-              "then" = [
-                {
-                  action = "climate.set_preset_mode";
-                  target = {
-                    entity_id = "climate.sejour";
-                  };
-                  data = {
-                    preset_mode = "{{ 'away' if away else 'schedule' }}";
                   };
                 }
               ];
@@ -884,15 +911,16 @@ in
         off_season_temp = 7;
         inherit rooms;
         season = "{{ is_state('binary_sensor.global_is_cold_season', 'on') }}";
-        # Mode Absent, or nobody home for 1 h: dafbox stays `home` all day
-        # and Netatmo kept its schedule, so an empty house still fired the boiler.
+        # Mode Absent, or nobody home for 1 h (dafbox stays `home` all day, so
+        # an empty house still got heated). The hour comes from the recorder: a
+        # state's last_changed restarts at every HA restart.
         # Retour imminent overrides both and heats every room as if occupied.
         returning = "{{ is_state('input_select.heating_mode', 'Retour imminent') }}";
         away = ''
           {{ not is_state('input_select.heating_mode', 'Retour imminent')
              and (is_state('input_select.heating_mode', 'Absent')
                   or (is_state('binary_sensor.global_home_is_occupied', 'off')
-                      and now() - states.binary_sensor.global_home_is_occupied.last_changed >= timedelta(hours=1))) }}'';
+                      and states('sensor.heating_home_occupied_last_hour') | float(1) < 0.02)) }}'';
         stove_start = "{% set a = states('sensor.dafphone_next_alarm') | as_datetime(none) %}{% set a = a | as_local if a is not none else none %}{% set al = a.strftime('%H:%M') if a is not none and a.date() == now().date() else '' %}{% set start = ['06:00', (a - timedelta(hours=1)).strftime('%H:%M')] | max if '06:00' <= al <= '10:00' else '06:00' %}{{ start }}";
       };
       mode = "queued";
