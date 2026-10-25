@@ -1106,7 +1106,15 @@ in
                     }) agentPeers;
                 }
               ))
-            ];
+            ]
+            # Served on the host by the backup-status aspect.
+            ++ lib.optional (osConfig.dafos.services.backup-status.enable or false) (
+              liveWidget (
+                import ./backups.nix {
+                  url = "http://host.containers.internal:${toString osConfig.dafos.services.backup-status.port}/status.json";
+                }
+              )
+            );
           };
           columns.main = {
             rank = 1000;

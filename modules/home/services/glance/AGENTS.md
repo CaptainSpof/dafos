@@ -15,9 +15,13 @@
   État des hôtes »: temperatures plus nearly full disks) read the Glance agents
   (dafoltop's own too, fed the same `hostDisks` as server-stats), `gatus.nix`
   sums up gatus on dafpi (`pageSize=1` keeps the latest result per endpoint),
-  then the Supervision and Infra categories. In a custom-api widget with
-  subrequests, a failing main request errors the whole widget. A category whose
-  containers all moved away keeps its title on its monitor widget.
+  then the Supervision and Infra categories. `backups.nix` (« Sauvegardes »)
+  reads the `status.json` the backup-status aspect serves on the host
+  (`flake-modules/services/backup/backup-status.nix`); the widget ages the
+  snapshots itself, so a run that never happened still turns red. In a
+  custom-api widget with subrequests, a failing main request errors the whole
+  widget. A category whose containers all moved away keeps its title on its
+  monitor widget.
 - **A docker-containers widget needs `category`.** Glance lists every container
   on the socket and filters on it; without it each widget shows the whole host,
   databases included. The per-container overrides must carry the same category.
