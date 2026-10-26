@@ -68,6 +68,9 @@ let
   # Pellet tank estimate and refill alert.
   pellets = import ./pellets.nix { };
 
+  # Zigbee/Matter devices that dropped off, with a phone alert.
+  deviceWatch = import ./device_watch.nix { };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -467,6 +470,7 @@ in
             ++ heatingUsage.automations
             ++ netatmoWatchdog.automations
             ++ pellets.automations
+            ++ deviceWatch.automations
             ++ deskCube.automations
             ++ bilresa.automations
             ++ rodret.automations
@@ -496,7 +500,8 @@ in
             }
           ]
           ++ heatingUsage.templates
-          ++ pellets.templates;
+          ++ pellets.templates
+          ++ deviceWatch.templates;
 
           input_boolean =
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
