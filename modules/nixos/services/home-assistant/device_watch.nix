@@ -43,15 +43,13 @@ in
   templates = [
     {
       # Polled: re-rendering on every state change of a few hundred entities
-      # is not worth it for an alert that waits 30 minutes anyway.
+      # is not worth it for an alert that waits 30 minutes anyway. No
+      # homeassistant-start trigger: at start the MQTT entities are not
+      # published yet and every Zigbee device reads offline (82 of them).
       triggers = [
         {
           trigger = "time_pattern";
           minutes = "/5";
-        }
-        {
-          trigger = "homeassistant";
-          event = "start";
         }
       ];
       sensor = [
