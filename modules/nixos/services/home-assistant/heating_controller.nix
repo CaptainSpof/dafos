@@ -22,9 +22,11 @@
 # min before an IR start; it is never cut while burning. Out of season valves
 # sit at 7°C. The heating pop-up's "Mode chauffage" (input_select.heating_mode)
 # has three states: Auto, Absent (set by the "Heating Off" notification
-# button) and Retour imminent. Absent puts every valve at its eco target and
-# Netatmo on away. So does Auto once nobody has been home for 1 h, and it also
-# stops the stove; Netatmo goes back to its schedule when someone is back.
+# button) and Retour imminent. Absent, the long-absence setting, is only ever
+# chosen by hand: every valve at 12 °C (away_temp), Netatmo on away, stove
+# off. Auto once nobody has been home for 1 h puts every valve at its eco
+# target, Netatmo on away and stops the stove; Netatmo goes back to its
+# schedule when someone is back.
 # Retour imminent overrides away to preheat: Netatmo on its schedule, every
 # room heated as if occupied, stove left alone. It goes back to Auto once
 # someone is home, or after 3 h. Boiler boost:
@@ -636,7 +638,7 @@ in
                       arrival = ''
                         {% set p = repeat.item.get('arrival_comfort') %} {{ p is not none and is_state(p, 'home')
                            and now() - states[p].last_changed < timedelta(hours=3) }}'';
-                      target = "{% if not season %}{{ off_season_temp }} {% elif away %}{{ repeat.item.eco }} {% elif present | bool and window_temp | float(0) > 0 %}{{ window_temp }} {% elif arrival | bool %}{{ repeat.item.comfort }} {% else %}{{ repeat.item.eco }}{% endif %}";
+                      target = "{% if not season %}{{ off_season_temp }} {% elif absent %}{{ away_temp }} {% elif away %}{{ repeat.item.eco }} {% elif present | bool and window_temp | float(0) > 0 %}{{ window_temp }} {% elif arrival | bool %}{{ repeat.item.comfort }} {% else %}{{ repeat.item.eco }}{% endif %}";
                     };
                   }
                   {
@@ -909,6 +911,11 @@ in
       ];
       variables = {
         off_season_temp = 7;
+        # Every valve in mode Absent (long absence, chosen by hand), the same
+        # as the Netatmo away temperature. An empty house in Auto keeps each
+        # room's eco target.
+        away_temp = 12;
+        absent = "{{ is_state('input_select.heating_mode', 'Absent') }}";
         inherit rooms;
         season = "{{ is_state('binary_sensor.global_is_cold_season', 'on') }}";
         # Mode Absent, or nobody home for 1 h (dafbox stays `home` all day, so
