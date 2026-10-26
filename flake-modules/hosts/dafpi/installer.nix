@@ -89,11 +89,13 @@ let
           services.avahi = {
             enable = true;
             nssmdns4 = true;
-            ipv6 = false;
             openFirewall = true;
-            publish = {
-              enable = true;
-              addresses = true;
+            settings = {
+              server.use-ipv6 = false;
+              publish = {
+                disable-publishing = false;
+                publish-addresses = true;
+              };
             };
           };
 

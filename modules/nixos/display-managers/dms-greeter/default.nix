@@ -25,7 +25,7 @@ in
     # Only one display manager may own the seat.
     services.xserver.displayManager.lightdm.enable = false;
 
-    services.displayManager.dms-greeter = {
+    services.displayManager.dux-greeter = {
       enable = true;
       compositor.name = "niri";
 

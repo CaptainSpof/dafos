@@ -44,18 +44,18 @@
           # think its own hostname is taken — endless "Host name conflict,
           # retrying with <host>-N" renames that also withdraw every published
           # service (e.g. Sunshine's _nvstream) faster than clients can see it.
-          ipv6 = false;
+          settings.server.use-ipv6 = false;
 
           # pass avahi port(s) to the firewall
           openFirewall = true;
 
-          publish = {
-            enable = true;
-            addresses = true;
-            domain = true;
-            hinfo = true;
-            userServices = true;
-            workstation = true;
+          settings.publish = {
+            disable-publishing = false;
+            disable-user-service-publishing = false;
+            publish-addresses = true;
+            publish-domain = true;
+            publish-hinfo = true;
+            publish-workstation = true;
           };
         };
       };
