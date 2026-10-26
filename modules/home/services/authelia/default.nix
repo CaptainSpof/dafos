@@ -139,8 +139,27 @@ in
       };
 
       settings = {
-        access_control.default_policy = "one_factor";
+        access_control = {
+          default_policy = "one_factor";
+
+          # The wall-mounted iPad runs Immich Kiosk unattended and sits on
+          # another network than the LAN, but is on the tailnet. A session
+          # that expires leaves it stuck on the login page, so it skips the
+          # login, pinned to its own tailnet address rather than the whole
+          # tailnet. Without Tailscale it falls back to the login.
+          rules = [
+            {
+              domain = "kiosk.daftdaf.dev";
+              policy = "bypass";
+              networks = [ "100.66.200.80/32" ];
+            }
+          ];
+        };
         log.level = "info";
+
+        # nps sets a month without mkDefault; fewer re-logins for the devices
+        # that do tick "remember me".
+        session.remember_me = lib.mkForce "1y";
 
         # Ban by source IP rather than by account: usernames here are easy to
         # guess, and account bans would let anyone lock the family out.
