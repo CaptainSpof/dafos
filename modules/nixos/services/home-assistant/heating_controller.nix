@@ -625,9 +625,13 @@ in
               repeat = {
                 for_each = "{{ rooms }}";
                 sequence = [
+                  # One variables step per dependency level: Nix emits attrset
+                  # keys sorted, and HA renders a block in that order, so a
+                  # variable can only use those sorting before it (target ran
+                  # before window_temp and failed on every run).
+                  { variables.hm = "{{ now().strftime('%H:%M') }}"; }
                   {
                     variables = {
-                      hm = "{{ now().strftime('%H:%M') }}";
                       window_temp = ''
                         {% set ns = namespace(t=0) %} {% for w in repeat.item.windows %}
                           {% set s = states(w[0])[:5] if w[0].startswith('input_datetime.') else w[0] %}
@@ -638,8 +642,10 @@ in
                       arrival = ''
                         {% set p = repeat.item.get('arrival_comfort') %} {{ p is not none and is_state(p, 'home')
                            and now() - states[p].last_changed < timedelta(hours=3) }}'';
-                      target = "{% if not season %}{{ off_season_temp }} {% elif absent %}{{ away_temp }} {% elif away %}{{ repeat.item.eco }} {% elif present | bool and window_temp | float(0) > 0 %}{{ window_temp }} {% elif arrival | bool %}{{ repeat.item.comfort }} {% else %}{{ repeat.item.eco }}{% endif %}";
                     };
+                  }
+                  {
+                    variables.target = "{% if not season %}{{ off_season_temp }} {% elif absent %}{{ away_temp }} {% elif away %}{{ repeat.item.eco }} {% elif present | bool and window_temp | float(0) > 0 %}{{ window_temp }} {% elif arrival | bool %}{{ repeat.item.comfort }} {% else %}{{ repeat.item.eco }}{% endif %}";
                   }
                   {
                     "if" = [
