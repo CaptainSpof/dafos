@@ -77,7 +77,28 @@
             systemctl --failed --no-legend --plain
             systemctl --user --failed --no-legend --plain
           } | awk '{ printf "%s%s", sep, $1; sep = " " }' || true)
-          report services "''${failed:+en échec : $failed}"
+
+          # Crash loops: a unit with Restart=always and a RestartSec beyond its
+          # start-limit window never ends up failed (otbr-agent restarted
+          # 26 000 times over two days unnoticed). Its restart counter growing
+          # between two runs gives it away; a counter that went down was reset
+          # by a deploy or a manual restart.
+          restarts() {
+            local scope=$1
+            # shellcheck disable=SC2046
+            systemctl "$scope" show -p Id -p NRestarts $(systemctl "$scope" list-units --type=service --all --no-legend --plain | awk '{ print $1 }') |
+              awk -v scope="$scope" -F= '$1 == "Id" { id = $2 } $1 == "NRestarts" { print scope, id, $2 }'
+          }
+          { restarts --system; restarts --user; } >"$STATE_DIRECTORY/restarts.new" || true
+          looping=$(awk -v min=${toString cfg.restartThreshold} '
+            NR == FNR { prev[$1 " " $2] = $3; next }
+            ($1 " " $2) in prev && $3 - prev[$1 " " $2] >= min { printf "%s%s (%d redémarrages)", sep, $2, $3 - prev[$1 " " $2]; sep = ", " }
+          ' "$STATE_DIRECTORY/restarts" "$STATE_DIRECTORY/restarts.new" 2>/dev/null || true)
+          mv "$STATE_DIRECTORY/restarts.new" "$STATE_DIRECTORY/restarts"
+
+          services="''${failed:+en échec : $failed}"
+          [ -n "$looping" ] && services="''${services:+$services ; }redémarre en boucle : $looping"
+          report services "$services"
         '';
       };
     in
@@ -110,6 +131,11 @@
           default = 90;
           description = "Usage (%) from which a disk is reported full.";
         };
+        restartThreshold = mkOption {
+          type = types.ints.positive;
+          default = 3;
+          description = "Restarts of one unit between two pushes (5 minutes) from which it is reported as crash-looping.";
+        };
       };
 
       config = mkIf cfg.enable {
@@ -123,6 +149,8 @@
           Service = {
             Type = "oneshot";
             ExecStart = lib.getExe push;
+            # Restart counters of the previous run, for the crash-loop check.
+            StateDirectory = "health-push";
             # Rootless podman needs the setuid newuidmap/newgidmap wrappers.
             Environment = "PATH=/run/wrappers/bin";
           };

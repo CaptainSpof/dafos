@@ -130,7 +130,7 @@
               {
                 conteneurs = "un conteneur attendu ne tourne pas";
                 stockage = "disque plein ou dock USB non monté";
-                services = "un service systemd est en échec";
+                services = "un service systemd est en échec ou redémarre en boucle";
               }
           ) healthHosts;
 
