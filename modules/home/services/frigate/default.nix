@@ -65,19 +65,23 @@ in
         };
 
         # Object detection on the i7-8550U's UHD 620; renderD128 is the Intel
-        # GPU (renderD129 is the NVIDIA one, on nouveau). The model ships in
-        # the image.
+        # GPU (renderD129 is the NVIDIA one, on nouveau).
         detectors.ov = {
           type = "openvino";
           device = "GPU";
         };
+        # YOLOv9-s rather than the SSDLite model shipped in the image, which
+        # missed the cat in the night-time infrared picture. The model is not
+        # in the image: export it with yolov9.Containerfile, then copy it to
+        # ~/stacks/frigate/config/model_cache/ (the /config mount).
         model = {
-          width = 300;
-          height = 300;
-          input_tensor = "nhwc";
-          input_pixel_format = "bgr";
-          path = "/openvino-model/ssdlite_mobilenet_v2.xml";
-          labelmap_path = "/openvino-model/coco_91cl_bkgr.txt";
+          model_type = "yolo-generic";
+          width = 320;
+          height = 320;
+          input_tensor = "nchw";
+          input_dtype = "float";
+          path = "/config/model_cache/yolov9-s-320.onnx";
+          labelmap_path = "/labelmap/coco-80.txt";
         };
 
         ffmpeg.hwaccel_args = "preset-vaapi";
