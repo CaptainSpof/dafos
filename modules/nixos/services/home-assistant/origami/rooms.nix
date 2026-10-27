@@ -141,7 +141,10 @@
         bypass = "input_boolean.kitchen_lights_bypass_toggle";
         minutes = 60;
       };
-      extras = [ "switch.kitchen_dishwasher_plug_switch" ];
+      extras = [
+        "switch.kitchen_dishwasher_plug_switch"
+        "switch.kitchen_coffee_machine_plug"
+      ];
     }
     {
       id = "entry";
