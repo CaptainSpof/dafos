@@ -17,6 +17,7 @@ let
   origami = import ./origami/helpers.nix { inherit lib; };
   # Which of the dashboard's entities are unavailable.
   offline = import ./origami/offline.nix { inherit lib; };
+  activity = import ./origami/activity.nix { inherit lib; };
 
   # Kitchen and veranda air quality: detectors, level sensors and the airing
   # notifications.
@@ -501,7 +502,8 @@ in
           ]
           ++ heatingUsage.templates
           ++ pellets.templates
-          ++ deviceWatch.templates;
+          ++ deviceWatch.templates
+          ++ activity.templates;
 
           input_boolean =
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;

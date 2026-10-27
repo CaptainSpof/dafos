@@ -22,6 +22,9 @@
 #   their `_motion` entity (a few seconds per detection); their `_occupancy`
 #   holds 10 min after the last motion. The mmWave rooms keep occupancy, and
 #   outdoor has no `_motion`.
+# - activity: remotes and switches (their `_action` sensors) whose presses,
+#   with the door (`opening`) and lights switched from the app, prove someone
+#   is there, unlike `presence`, which the cat sets off too (./activity.nix).
 # - extras: plugs and devices for the pop-up. Never the fridges, the server
 #   plug or the stove switch: nothing here is turned off by "Tout éteindre".
 {
@@ -55,6 +58,9 @@
       opening = null;
       climate = "climate.sejour";
       presence = "binary_sensor.living_room_combined_presence_sensors";
+      activity = [
+        "sensor.living_room_remote_action"
+      ];
       media = null;
       vacuum = "input_boolean.living_room_vacuum";
       manual = {
@@ -93,6 +99,10 @@
       opening = "binary_sensor.veranda_door_sensor_contact";
       climate = "climate.veranda_radiator";
       presence = "binary_sensor.everything_presence_lite_61659c_occupancy";
+      activity = [
+        "sensor.veranda_switch_action"
+        "sensor.veranda_cube_action"
+      ];
       # The Google TV Streamer (Android TV Remote), which drives daftv over CEC
       media = "media_player.televiseur_living_room_2";
       vacuum = "input_boolean.veranda_vacuum";
@@ -122,6 +132,9 @@
       opening = "binary_sensor.kitchen_door_sensor_contact";
       climate = "climate.kitchen_radiator_thermostat";
       presence = "binary_sensor.kitchen_motion_sensor_motion";
+      activity = [
+        "sensor.kitchen_switch_action"
+      ];
       media = null;
       vacuum = "input_boolean.kitchen_vacuum";
       manual = {
@@ -144,6 +157,9 @@
       opening = "binary_sensor.entry_door_sensor_opening";
       climate = null;
       presence = "binary_sensor.entry_motion_sensor_motion";
+      activity = [
+        "sensor.entry_button_action"
+      ];
       media = null;
       vacuum = "input_boolean.entry_vacuum";
       manual = {
@@ -198,6 +214,10 @@
       opening = "binary_sensor.bedroom_door_sensor_contact";
       climate = "climate.bedroom_radiator_thermostat";
       presence = "binary_sensor.bedroom_presence_sensor_occupancy";
+      activity = [
+        "sensor.bedroom_remote_action"
+        "sensor.bedroom_switch_action"
+      ];
       media = null;
       vacuum = null;
       manual = null;
@@ -233,6 +253,11 @@
       opening = "binary_sensor.desk_door_sensor_contact";
       climate = "climate.desk_radiator_thermostat";
       presence = null;
+      activity = [
+        "sensor.desk_switch_action"
+        "sensor.desk_switch_desk_side_action"
+        "sensor.desk_cube_action"
+      ];
       media = null;
       vacuum = null;
       manual = null;
@@ -294,6 +319,10 @@
       opening = null;
       climate = null;
       presence = "binary_sensor.stairs_motion_sensor_upstairs_motion";
+      activity = [
+        "sensor.stairs_remote_action"
+        "sensor.stairs_switch_action"
+      ];
       media = null;
       vacuum = null;
       manual = {

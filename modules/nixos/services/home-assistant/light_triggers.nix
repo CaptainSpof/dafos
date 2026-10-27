@@ -20,9 +20,12 @@ let
   # out of bed. Cédric is up once his bedroom's presence sensor has seen
   # nobody for 2 min, whether his door is open or not; the door stands in
   # while the sensor is unavailable. The parents are up when their door is
-  # open. Coming down the stairs always lights it, and lets the radar hold it
-  # for 20 min after.
+  # open. Whatever the bedrooms say, a person proven downstairs in the last
+  # 15 min (a door, a remote, a light from the app: origami/activity.nix) is
+  # up too: a parent opening the kitchen door while Cédric sleeps. Coming down
+  # the stairs always lights it, and lets the radar hold it for 20 min after.
   downstairs = "binary_sensor.stairs_going_dowstairs_sensor";
+  downstairsActivity = "binary_sensor.ground_floor_activity";
   livingRadar = "binary_sensor.everything_presence_lite_61659c_occupancy";
   bedroomPresence = "binary_sensor.bedroom_presence_sensor_occupancy";
   bedroomDoor = "binary_sensor.bedroom_door_sensor_contact";
@@ -63,7 +66,8 @@ in
                        if has_value('${bedroomPresence}') else is_state('${bedroomDoor}', 'on') %}
         {% set ups = ([] if not me_home else [me_up])
                      + ([] if not parents_home else [is_state('binary_sensor.parents_bedroom_door_sensor_contact', 'on')]) %}
-        {% set someone_up = not evening or ups | count == 0 or true in ups %}
+        {% set someone_up = not evening or ups | count == 0 or true in ups
+                            or is_state('${downstairsActivity}', 'on') %}
         {% set d = states.${downstairs} %}
         {% set came_down = d is not none
                            and now() - d.last_changed < timedelta(minutes=${toString downstairsHoldMinutes}) %}
