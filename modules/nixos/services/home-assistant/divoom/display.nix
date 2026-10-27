@@ -268,5 +268,30 @@ in
         }
       ];
     }
+    {
+      # The Divoom keeps its own clock and knows nothing of time zones: it
+      # stays an hour off after a summer/winter time change until it is sent
+      # the time again. The change happens at 02:00 or 03:00 local, so at
+      # 03:01 the offset two hours earlier differs only on those nights.
+      id = "dafos_divoom_clock_sync";
+      alias = "Divoom · Clock sync";
+      description = "Sends Home Assistant's time to the Divoom Timebox-Evo after a summer/winter time change, and when Home Assistant starts. Managed in Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
+      mode = "single";
+      triggers = [
+        {
+          trigger = "time";
+          at = "03:01:00";
+          id = "dst";
+        }
+        {
+          trigger = "homeassistant";
+          event = "start";
+        }
+      ];
+      conditions = [
+        "{{ trigger.id != 'dst' or (now() - timedelta(hours=2)).utcoffset() != now().utcoffset() }}"
+      ];
+      actions = [ (divoom "datetime" { }) ];
+    }
   ];
 }
