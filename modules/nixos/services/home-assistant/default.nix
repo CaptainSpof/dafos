@@ -69,6 +69,9 @@ let
   # Pellet tank estimate and refill alert.
   pellets = import ./pellets.nix { };
 
+  # Bedroom lights off once the room is empty.
+  bedroomLights = import ./bedroom_lights.nix { };
+
   # Zigbee/Matter devices that dropped off, with a phone alert.
   deviceWatch = import ./device_watch.nix { };
 
@@ -472,6 +475,7 @@ in
             ++ netatmoWatchdog.automations
             ++ pellets.automations
             ++ deviceWatch.automations
+            ++ bedroomLights.automations
             ++ deskCube.automations
             ++ bilresa.automations
             ++ rodret.automations
