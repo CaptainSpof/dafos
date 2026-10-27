@@ -119,6 +119,16 @@ in
   sensors =
     map climateSensor climateRooms
     ++ map trendSensor climateRooms
+    # Per floor, for the heating usage graph.
+    ++ map (f: {
+      name = "Climate · Temperature average ${f.name}";
+      unique_id = "dafos.sensor.temperature_average_${f.id}";
+      default_entity_id = "sensor.temperature_average_${f.id}";
+      unit_of_measurement = "°C";
+      device_class = "temperature";
+      state_class = "measurement";
+      state = average "temperature" (filter (r: r.floor == f.id) climateRooms) 1;
+    }) (filter (f: builtins.any (r: r.floor == f.id) climateRooms) floors)
     ++ [
       {
         name = "Climate · Temperature peaks";
