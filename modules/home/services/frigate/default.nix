@@ -119,16 +119,17 @@ in
 
         # In privacy mode the camera sends a still "Privacy Mode is on"
         # frame: no motion, so nothing is kept but continuous footage.
+        # Measured at ~420 MB per recorded hour (HD stream).
         record = {
           enabled = true;
           continuous.days = 0;
-          motion.days = 3;
-          alerts.retain.days = 14;
-          detections.retain.days = 14;
+          motion.days = 1;
+          alerts.retain.days = 7;
+          detections.retain.days = 7;
         };
         snapshots = {
           enabled = true;
-          retain.default = 14;
+          retain.default = 7;
         };
       };
 
