@@ -161,7 +161,7 @@ in
       # start, so it must come up after Meilisearch is actually answering.
       ${name} = {
         # renovate: versioning=semver
-        image = "docker.io/barassistant/server:6.9.1";
+        image = "docker.io/barassistant/server:6.10.0";
 
         # The SQLite database (`database.ba3.sqlite`) and the uploads live here.
         volumeMap.data = "${storage}/data:/var/www/cocktails/storage/bar-assistant";
@@ -220,7 +220,7 @@ in
       # the browser, so both of those have to be reachable by the client too.
       ${saltRimName} = {
         # renovate: versioning=semver
-        image = "docker.io/barassistant/salt-rim:5.8.0";
+        image = "docker.io/barassistant/salt-rim:5.9.0";
 
         environment = {
           API_URL = cfg.containers.${name}.traefik.serviceUrl;
