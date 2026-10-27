@@ -47,6 +47,8 @@ let
 
   # Veranda TV start-up script.
   tv = import ./tv.nix { };
+  # Arm/disarm buttons of the Caméra pop-up.
+  cctv = import ./cctv.nix { };
 
   # The desk's Aqara cube, read from its MQTT payload.
   deskCube = import ./desk_cube.nix { };
@@ -507,6 +509,7 @@ in
           "script ui" = "!include_dir_merge_named scripts/";
           "script origami" = origami.scripts;
           "script tv" = tv.scripts;
+          "script cctv" = cctv.scripts;
 
           "template" = [
             # Template binary sensors + sensors migrated from the legacy
