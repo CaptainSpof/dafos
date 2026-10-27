@@ -16,12 +16,17 @@ let
 
   # Living room. The cat set the lights off in the evening through the
   # Everything Presence radar. The radar now lights the room only while someone
-  # is likely up: in the day, or from 22:00 to 06:00 when an occupied bedroom
-  # has its door open (Cédric's if he is home, the parents' if one of them is).
-  # Coming down the stairs always lights it, and lets the radar hold it for
-  # 20 min after.
+  # is likely up: in the day, or from 22:00 to 06:00 when someone at home is
+  # out of bed. Cédric is up once his bedroom's presence sensor has seen
+  # nobody for 2 min, whether his door is open or not; the door stands in
+  # while the sensor is unavailable. The parents are up when their door is
+  # open. Coming down the stairs always lights it, and lets the radar hold it
+  # for 20 min after.
   downstairs = "binary_sensor.stairs_going_dowstairs_sensor";
   livingRadar = "binary_sensor.everything_presence_lite_61659c_occupancy";
+  bedroomPresence = "binary_sensor.bedroom_presence_sensor_occupancy";
+  bedroomDoor = "binary_sensor.bedroom_door_sensor_contact";
+  bedroomEmptyMinutes = 2;
   eveningHour = 22;
   morningHour = 6; # the night state ends at 06:00
   downstairsHoldMinutes = 20;
@@ -53,10 +58,12 @@ in
         {% set me_home = states('person.cedric_da_fonseca') in home %}
         {% set parents_home = states('person.joaquim_da_fonseca') in home
                               or states('person.myriam_da_fonseca') in home %}
-        {% set rooms = ([] if not me_home else ['binary_sensor.bedroom_door_sensor_contact'])
-                       + ([] if not parents_home else ['binary_sensor.parents_bedroom_door_sensor_contact']) %}
-        {% set someone_up = not evening or rooms | count == 0
-                            or rooms | select('is_state', 'on') | list | count > 0 %}
+        {% set bp = states.${bedroomPresence} %}
+        {% set me_up = (bp.state == 'off' and now() - bp.last_changed >= timedelta(minutes=${toString bedroomEmptyMinutes}))
+                       if has_value('${bedroomPresence}') else is_state('${bedroomDoor}', 'on') %}
+        {% set ups = ([] if not me_home else [me_up])
+                     + ([] if not parents_home else [is_state('binary_sensor.parents_bedroom_door_sensor_contact', 'on')]) %}
+        {% set someone_up = not evening or ups | count == 0 or true in ups %}
         {% set d = states.${downstairs} %}
         {% set came_down = d is not none
                            and now() - d.last_changed < timedelta(minutes=${toString downstairsHoldMinutes}) %}
