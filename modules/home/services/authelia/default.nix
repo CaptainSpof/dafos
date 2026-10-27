@@ -153,6 +153,17 @@ in
               policy = "bypass";
               networks = [ "100.66.200.80/32" ];
             }
+            # Frigate (modules/home/services/frigate) has no accounts of its
+            # own and shows the indoor camera: admins only.
+            {
+              domain = "frigate.daftdaf.dev";
+              policy = "one_factor";
+              subject = [ "group:lldap_admin" ];
+            }
+            {
+              domain = "frigate.daftdaf.dev";
+              policy = "deny";
+            }
           ];
         };
         log.level = "info";

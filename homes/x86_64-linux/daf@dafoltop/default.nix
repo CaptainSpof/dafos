@@ -83,6 +83,8 @@ in
       };
       # donetick moved to dafpi (flake-modules/hosts/dafpi).
       espanso = mkForce disabled;
+      # NVR for the indoor camera; events reach HA over MQTT.
+      frigate = enabled;
       # gatus moved to dafpi (flake-modules/services/gatus.nix): it watches
       # this box from outside now.
       glance = {

@@ -124,6 +124,12 @@ in
       restartUnits = [ "zigbee2mqtt.service" ];
     };
 
+    # Shared with Frigate's home-manager stack (modules/home/services/frigate).
+    sops.secrets."frigate/mqtt-password" = {
+      sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/frigate.yaml";
+      restartUnits = [ "mosquitto.service" ];
+    };
+
     systemd.services.zigbee2mqtt = {
       serviceConfig = {
         Restart = mkForce "always";
@@ -149,6 +155,17 @@ in
             acl = [ "pattern readwrite #" ];
             omitPasswordAuth = true;
             settings.allow_anonymous = true;
+          }
+          # Frigate (a rootless container) reaches the host through pasta's
+          # host.containers.internal, which lands on the LAN address, never on
+          # loopback. Port 1884 stays shut in the firewall: only processes on
+          # this host, pasta included, reach it, and it still wants a password.
+          {
+            port = 1884;
+            users.frigate = {
+              acl = [ "readwrite frigate/#" ];
+              passwordFile = config.sops.secrets."frigate/mqtt-password".path;
+            };
           }
         ];
       };
@@ -279,7 +296,9 @@ in
           # stylesheet, which a hand-rolled dontBuild derivation skips.
           auth_oidc
           better_thermostat
-          # frigate
+          # Events, snapshots and sensors from Frigate (modules/home/services/
+          # frigate). Config flow, URL http://127.0.0.1:5000.
+          frigate
           samsungtv-smart
           smartir
           spook
