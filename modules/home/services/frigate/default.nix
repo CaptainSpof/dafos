@@ -48,9 +48,10 @@ in
       };
 
       settings = {
-        # The config is read-only from the store, so Frigate cannot write the
-        # migration it attempts (and logs as an error) on every start when
-        # this is missing. Bump it with the image, after reading its changes.
+        # The config schema this file is written for; bump it with the image,
+        # after reading its changes. Frigate still logs "Config file is
+        # read-only, unable to migrate" on every start: it checks that the
+        # file is writable before comparing versions. Harmless.
         version = "0.18-0";
 
         # The password-protected listener of the host's mosquitto (see the
