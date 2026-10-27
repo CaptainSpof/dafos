@@ -48,6 +48,11 @@ in
       };
 
       settings = {
+        # The config is read-only from the store, so Frigate cannot write the
+        # migration it attempts (and logs as an error) on every start when
+        # this is missing. Bump it with the image, after reading its changes.
+        version = "0.18-0";
+
         # The password-protected listener of the host's mosquitto (see the
         # home-assistant NixOS module): its loopback one is out of reach.
         mqtt = {
@@ -98,6 +103,8 @@ in
             }
           ];
           detect = {
+            # Off by default since 0.18
+            enabled = true;
             width = 640;
             height = 360;
             fps = 5;
