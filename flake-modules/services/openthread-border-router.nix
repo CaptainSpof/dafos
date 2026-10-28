@@ -22,6 +22,7 @@ _: {
         mkIf
         mkOption
         optional
+        optionalString
         types
         ;
 
@@ -84,9 +85,17 @@ _: {
           + " --bootloader-reset ${cfg.resetMethod} --probe-methods spinel:${toString cfg.baudRate} probe"
         );
 
-        networking.firewall.extraCommands = concatMapStrings (ip: ''
-          iptables -w -A nixos-fw -p tcp -s ${ip} --dport ${toString otbr.rest.listenPort} -j nixos-fw-accept
-        '') cfg.clients;
+        networking.firewall.extraCommands =
+          concatMapStrings (ip: ''
+            iptables -w -A nixos-fw -p tcp -s ${ip} --dport ${toString otbr.rest.listenPort} -j nixos-fw-accept
+          '') cfg.clients
+          # otbr-agent hands the host's own multicast (MLE, MLD, mDNS) back
+          # in on the Thread interface. The reverse-path filter drops these
+          # echoes anyway; drop them before its LOG rule, which logged
+          # ~4000 a day.
+          + optionalString (config.networking.firewall.checkReversePath != false) ''
+            ip6tables -w -t mangle -I nixos-fw-rpfilter -i ${otbr.interfaceName} -m addrtype --src-type LOCAL -j DROP
+          '';
       };
     };
 }
