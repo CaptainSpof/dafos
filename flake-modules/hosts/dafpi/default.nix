@@ -62,6 +62,9 @@ in
         openthread-border-router = {
           enable = true;
           device = "/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20230803143100-if00";
+          # The RCP wedges every few days (radio tx timeout, then no answer
+          # at all); the dongle's DTR/RTS auto-bootloader circuit resets it.
+          resetMethod = "rts_dtr";
           interface = "end0";
           clients = [ "192.168.0.10" ];
         };

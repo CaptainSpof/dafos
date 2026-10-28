@@ -7,14 +7,21 @@
 # since whoever reaches it controls the Thread network.
 _: {
   flake.modules.nixos.openthread-border-router =
-    { config, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
 
     let
       inherit (lib)
         concatMapStrings
+        getExe
         mkEnableOption
         mkIf
         mkOption
+        optional
         types
         ;
 
@@ -34,6 +41,18 @@ _: {
           type = types.ints.positive;
           default = 460800;
           description = "The RCP firmware's UART baud rate (NabuCasa's ZBDongle-E builds use 460800).";
+        };
+
+        resetMethod = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "rts_dtr";
+          description = ''
+            universal-silabs-flasher `--bootloader-reset` method used to
+            hardware-reset the RCP before each otbr-agent start. A wedged RCP
+            ignores otbr-agent's spinel reset and only comes back from a pin
+            reset or a power cycle.
+          '';
         };
 
         interface = mkOption {
@@ -57,6 +76,13 @@ _: {
             inherit (cfg) device baudRate;
           };
         };
+
+        # Bootloader reset, then back into the firmware, probed over spinel.
+        # The leading "-" keeps a failed probe from blocking otbr-agent.
+        systemd.services.otbr-agent.serviceConfig.ExecStartPre = optional (cfg.resetMethod != null) (
+          "-${getExe pkgs.python3Packages.universal-silabs-flasher} --device ${cfg.device}"
+          + " --bootloader-reset ${cfg.resetMethod} --probe-methods spinel:${toString cfg.baudRate} probe"
+        );
 
         networking.firewall.extraCommands = concatMapStrings (ip: ''
           iptables -w -A nixos-fw -p tcp -s ${ip} --dport ${toString otbr.rest.listenPort} -j nixos-fw-accept

@@ -9,7 +9,12 @@
     boot = {
       loader = {
         grub.enable = false;
-        generic-extlinux-compatible.enable = true;
+        generic-extlinux-compatible = {
+          enable = true;
+          # /boot is a 1 GB FAT partition (U-Boot reads it); 20 generations
+          # spanning four kernels filled it on 2026-10-28.
+          configurationLimit = 5;
+        };
       };
 
       # The M.2 slot hangs off the PCIe 2.0 combo PHY, which is a module.
@@ -32,7 +37,12 @@
     };
 
     hardware = {
-      deviceTree.name = "rockchip/rk3588s-orangepi-5.dtb";
+      deviceTree = {
+        name = "rockchip/rk3588s-orangepi-5.dtb";
+        # Copy this board's dtbs to /boot, not every arm64 board's (~118 MB
+        # per kernel).
+        filter = "rk3588s-orangepi-5*.dtb";
+      };
       # Mali (panthor) CSF firmware, among others.
       enableRedistributableFirmware = true;
     };
