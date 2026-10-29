@@ -62,6 +62,13 @@ in
           input = {
             focus-follows-mouse.enable = true;
             focus-follows-mouse.max-scroll-amount = "55%";
+
+            # niri-flake leaves the section out unless it is set (it used to
+            # emit these as defaults).
+            touchpad = {
+              tap = true;
+              natural-scroll = true;
+            };
           };
 
           layout = {
