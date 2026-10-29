@@ -1,0 +1,354 @@
+/*
+ * Glove80 keymap: the same keyboard as the kanata config in
+ * modules/nixos/system/kanata (Arsenik thumbs + home-row mods on an Ergo-L
+ * host), done in firmware. The host layout stays fr(ergol): every binding
+ * below is a physical (QWERTY-position) key, exactly like kanata's aliases,
+ * and the OS turns it into Ergo-L. Keep both in sync: each layer names the
+ * .kbd file it mirrors.
+ *
+ * kanata tap-hold-release ~ ZMK "balanced"; its tap_timeout (repeat window)
+ * is quick-tap-ms, its hold timeout tapping-term-ms.
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/rgb.h>
+#include <dt-bindings/zmk/pointing.h>
+
+#define BASE 0
+#define QWERTY 1
+#define PLAIN 2
+#define SYM 3
+#define NUMROW 4
+#define NAV 5
+#define NUMPAD 6
+#define FUN 7
+#define ACCENT 8
+#define SWITCHER 9
+#define MAGIC 10
+
+#define TAP_TIMEOUT 250
+#define HOLD_TIMEOUT 250
+#define LONG_HOLD_TIMEOUT 300
+
+// Two taps in a row, for the accent compositions (dead key, then letter).
+#define TAP2(name, a, b) \
+    ZMK_MACRO(name, wait-ms = <0>; tap-ms = <20>; bindings = <&kp a &kp b>;)
+#define TAP3(name, a, b, c) \
+    ZMK_MACRO(name, wait-ms = <0>; tap-ms = <20>; bindings = <&kp a &kp b &kp c>;)
+
+/ {
+    behaviors {
+        // Thumb mod-tap (Bspc/Shift): modifier when held, key when tapped.
+        th: thumb_hold_tap {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <HOLD_TIMEOUT>;
+            quick-tap-ms = <TAP_TIMEOUT>;
+            bindings = <&kp>, <&kp>;
+        };
+
+        // @ssp: Shift when held, unshifted Space when tapped (fr(ergol) maps
+        // Shift+Space to a narrow no-break space, wanted only via @nbs).
+        ssp: space_shift {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <HOLD_TIMEOUT>;
+            quick-tap-ms = <TAP_TIMEOUT>;
+            bindings = <&kp>, <&spc_noshift>;
+        };
+
+        // @sym, @esw: layer when held, key when tapped.
+        ltb: layer_tap_balanced {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <HOLD_TIMEOUT>;
+            quick-tap-ms = <TAP_TIMEOUT>;
+            bindings = <&mo>, <&kp>;
+        };
+
+        // @nav on the right pinky: slower, it is also a typing key.
+        ltn: layer_tap_nav {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <LONG_HOLD_TIMEOUT>;
+            quick-tap-ms = <TAP_TIMEOUT>;
+            bindings = <&mo>, <&kp>;
+        };
+
+        // Home-row mods. require-prior-idle-ms has no kanata counterpart: a
+        // key pressed mid-word is always a letter, which kanata gets from
+        // tap-hold-release alone but ZMK needs spelled out.
+        hrm: home_row_mod {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <LONG_HOLD_TIMEOUT>;
+            quick-tap-ms = <TAP_TIMEOUT>;
+            require-prior-idle-ms = <150>;
+            bindings = <&kp>, <&kp>;
+        };
+
+        // @met: Super held or in a combo, a clean tap is F23 (niri overview).
+        met: super_f23 {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <HOLD_TIMEOUT>;
+            bindings = <&kp>, <&kp>;
+        };
+
+        spc_noshift: space_noshift {
+            compatible = "zmk,behavior-mod-morph";
+            #binding-cells = <0>;
+            bindings = <&kp SPACE>, <&kp SPACE>;
+            mods = <(MOD_LSFT|MOD_RSFT)>;
+        };
+
+        // One-shot accent layer (kanata: one-shot 500 (layer-while-held accent)).
+        // Held, it stays on for as long as it is held.
+        sl_acc: sticky_accent {
+            compatible = "zmk,behavior-sticky-key";
+            #binding-cells = <1>;
+            release-after-ms = <500>;
+            bindings = <&mo>;
+            quick-release;
+            ignore-modifiers;
+        };
+
+        // ★ (physical 'o'): a bare press arms the accent layer; with Shift
+        // (!) or AltGr (') down the key passes through untouched.
+        // See defalias/ergol_accent.kbd for why ★ is not left to XKB.
+        acc: ergol_star {
+            compatible = "zmk,behavior-mod-morph";
+            #binding-cells = <0>;
+            bindings = <&sl_acc ACCENT>, <&kp O>;
+            mods = <(MOD_LSFT|MOD_RSFT|MOD_RALT)>;
+            keep-mods = <(MOD_LSFT|MOD_RSFT|MOD_RALT)>;
+        };
+
+        // ★+. = middle dot; with Shift the plain key passes through.
+        mdot: middle_dot {
+            compatible = "zmk,behavior-mod-morph";
+            #binding-cells = <0>;
+            bindings = <&mdot_compose>, <&kp DOT>;
+            mods = <(MOD_LSFT|MOD_RSFT)>;
+            keep-mods = <(MOD_LSFT|MOD_RSFT)>;
+        };
+
+        magic: magic_hold_tap {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            bindings = <&mo>, <&rgb_ug_status_macro>;
+        };
+    };
+
+    macros {
+        // Accent compositions, as in defalias/ergol_accent.kbd: AltGr+Shift
+        // on fr(ergol)'s real dead-key carrier, then the physical key that
+        // types the base letter at level 1 (é = dead_acute + e = physical d).
+        TAP2(a_grave, RA(LS(P)), A)
+        TAP2(e_acute, RA(LS(O)), D)
+        TAP2(e_grave, RA(LS(P)), D)
+        TAP2(e_circ, RA(LS(Q)), D)
+        TAP2(n_tilde, RA(LS(Z)), F)
+        TAP2(i_circ, RA(LS(Q)), L)
+        TAP2(u_grave, RA(LS(P)), SEMI)
+        TAP2(a_circ, RA(LS(Q)), A)
+        TAP2(c_ced, RA(LS(COMMA)), W)
+        TAP2(o_circ, RA(LS(Q)), E)
+        TAP2(u_circ, RA(LS(Q)), SEMI)
+        TAP2(deg, RA(LS(Y)), SPACE)
+        TAP2(cent, RA(LS(R)), W)
+        TAP2(mdot_compose, RA(LS(Q)), N)
+        // Pause is Multi_key (xkb option compose:paus).
+        TAP3(oe, PAUSE_BREAK, E, D)
+        TAP3(ae, PAUSE_BREAK, A, D)
+
+        // Numrow layer, bottom row: ★ latch then a digit (@dk1-5).
+        TAP2(dk1, O, N1)
+        TAP2(dk2, O, N2)
+        TAP2(dk3, O, N3)
+        TAP2(dk4, O, N4)
+        TAP2(dk5, O, N5)
+
+        rgb_ug_status_macro: rgb_ug_status_macro_0 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&rgb_ug RGB_STATUS>;
+        };
+        bt_0: bt_profile_macro_0 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&out OUT_BLE>, <&bt BT_SEL 0>;
+        };
+        bt_1: bt_profile_macro_1 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&out OUT_BLE>, <&bt BT_SEL 1>;
+        };
+        bt_2: bt_profile_macro_2 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&out OUT_BLE>, <&bt BT_SEL 2>;
+        };
+        bt_3: bt_profile_macro_3 {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&out OUT_BLE>, <&bt BT_SEL 3>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        // deflayer/base_lt_hrm.kbd. Thumbs, outer to inner (unlike the
+        // laptop, Backspace is Shift on the right thumb, Alt is only on S):
+        //   left  lower: Space/Shift  Tab        F23/Super
+        //   right lower: Bspc/Shift   Enter/Sym  AltGr
+        // Upper thumb rows keep the Glove80 defaults (inner left is Del).
+        // Esc (tap) / layer switcher (hold) sits on the Glove80 Esc key.
+        base_layer {
+            bindings = <
+            &kp F1             &kp F2   &kp F3           &kp F4           &kp F5                                                                                                   &kp F6  &kp F7  &kp F8            &kp F9            &kp F10
+            &kp EQUAL          &kp N1   &kp N2           &kp N3           &kp N4           &kp N5                                                                          &kp N6  &kp N7  &kp N8  &kp N9            &kp N0            &kp MINUS
+            &kp TAB            &kp Q    &kp W            &kp E            &kp R            &kp T                                                                           &kp Y   &kp U   &kp I   &acc              &kp P             &kp BSLH
+            &ltb SWITCHER ESC  &kp A    &hrm LALT S      &hrm LCTRL D     &hrm LGUI F      &kp G                                                                           &kp H   &kp J   &hrm RCTRL K      &hrm RALT L       &ltn NAV SEMI     &kp SQT
+            &kp GRAVE          &kp Z    &kp X            &kp C            &kp V            &kp B   &kp LSHFT      &kp LCTRL     &kp DEL       &kp LGUI  &kp RCTRL      &kp RSHFT       &kp N   &kp M   &kp COMMA         &kp DOT           &kp FSLH          &kp PG_UP
+            &magic MAGIC 0     &kp HOME &kp END          &kp LEFT         &kp RIGHT                &ssp LSHFT 0   &kp TAB       &met LGUI F23 &kp RALT  &ltb SYM RET   &th RSHFT BSPC          &kp UP  &kp DOWN          &kp LBKT          &kp RBKT          &kp PG_DN
+            >;
+        };
+
+        // deflayer/switcher.kbd: QWERTY emulation on an Ergo-L host.
+        qwerty_layer {
+            bindings = <
+            &trans  &trans  &trans  &trans  &trans                                                                          &trans  &trans  &trans  &trans  &trans
+            &trans  &trans  &trans  &trans  &trans  &trans                                                          &trans  &trans  &trans  &trans  &trans  &trans
+            &trans  &kp Q   &kp T   &kp D   &kp J   &kp K                                                           &kp P   &kp SEMI &kp L  &kp E   &kp R   &trans
+            &trans  &kp A   &kp S   &kp I   &kp G   &kp COMMA                                                       &kp M   &kp Y   &kp FSLH &kp H  &kp LS(DOT) &trans
+            &trans  &kp Z   &kp X   &kp W   &kp V   &kp B   &trans   &trans   &trans     &trans   &trans   &trans   &kp F   &kp U   &kp DOT &kp N   &kp RA(L) &trans
+            &trans  &trans  &trans  &trans  &trans          &kp BSPC &kp DEL  &kp LALT   &kp RALT &kp RET  &kp SPACE         &trans  &trans  &trans  &trans  &trans
+            >;
+        };
+
+        // deflayer/switcher.kbd: gaming / ergol-no-mods (plain keys).
+        plain_layer {
+            bindings = <
+            &trans  &trans  &trans  &trans  &trans                                                                          &trans  &trans  &trans  &trans  &trans
+            &trans  &trans  &trans  &trans  &trans  &trans                                                          &trans  &trans  &trans  &trans  &trans  &trans
+            &trans  &kp Q   &kp W   &kp E   &kp R   &kp T                                                           &kp Y   &kp U   &kp I   &kp O   &kp P   &trans
+            &trans  &kp A   &kp S   &kp D   &kp F   &kp G                                                           &kp H   &kp J   &kp K   &kp L   &kp SEMI &trans
+            &trans  &kp Z   &kp X   &kp C   &kp V   &kp B   &trans   &trans   &trans     &trans   &trans   &trans   &kp N   &kp M   &kp COMMA &kp DOT &kp FSLH &trans
+            &trans  &trans  &trans  &trans  &trans          &kp BSPC &kp DEL  &kp LALT   &kp RALT &kp RET  &kp SPACE         &trans  &trans  &trans  &trans  &trans
+            >;
+        };
+
+        // deflayer/symbols_noop_num.kbd: AltGr layer (fr(ergol) has the
+        // symbols on AltGr already); the Tab thumb holds the numrow layer.
+        symbols_layer {
+            bindings = <
+            &trans  &trans      &trans      &trans      &trans                                                                                          &trans      &trans      &trans          &trans        &trans
+            &trans  &kp RA(N1)  &kp RA(N2)  &kp RA(N3)  &kp RA(N4)  &kp RA(N5)                                                             &kp RA(N6)  &kp RA(N7)  &kp RA(N8)  &kp RA(N9)      &kp RA(N0)    &trans
+            &trans  &kp RA(Q)   &kp RA(W)   &kp RA(E)   &kp RA(R)   &kp RA(T)                                                              &kp RA(Y)   &kp RA(U)   &kp RA(I)   &kp RA(O)       &kp RA(P)     &trans
+            &trans  &kp RA(A)   &kp RA(S)   &kp RA(D)   &kp RA(F)   &kp RA(G)                                                              &kp RA(H)   &kp RA(J)   &kp RA(K)   &kp RA(L)       &kp RA(SEMI)  &trans
+            &trans  &kp RA(Z)   &kp RA(X)   &kp RA(C)   &kp RA(V)   &kp RA(B)  &trans         &trans      &trans   &trans  &trans         &trans  &kp RA(N)   &kp RA(M)   &kp RA(COMMA) &kp RA(DOT)   &kp RA(FSLH)  &trans
+            &trans  &trans      &trans      &trans      &trans                 &kp RA(SPACE)  &mo NUMROW  &trans   &trans  &trans         &trans             &trans      &trans        &trans          &trans        &trans
+            >;
+        };
+
+        // deflayer/symbols_noop_num.kbd: numrow (Sym + left thumb).
+        numrow_layer {
+            bindings = <
+            &trans  &trans      &trans      &trans      &trans                                                                                          &trans      &trans      &trans      &trans      &trans
+            &trans  &trans      &trans      &trans      &trans      &trans                                                                 &trans      &trans      &trans      &trans      &trans      &trans
+            &trans  &kp LS(N1)  &kp LS(N2)  &kp LS(N3)  &kp LS(N4)  &kp LS(N5)                                                             &kp LS(N6)  &kp LS(N7)  &kp LS(N8)  &kp LS(N9)  &kp LS(N0)  &trans
+            &trans  &kp N1      &kp N2      &kp N3      &kp N4      &kp N5                                                                 &kp N6      &kp N7      &kp N8      &kp N9      &kp N0      &trans
+            &trans  &dk1        &dk2        &dk3        &dk4        &dk5       &trans         &trans   &trans   &trans  &trans         &trans  &none       &kp RA(K)   &kp DOT     &kp N       &kp RA(L)   &trans
+            &trans  &trans      &trans      &trans      &trans                 &kp LS(SPACE)  &trans   &trans   &trans  &trans         &trans             &trans      &trans      &trans      &trans      &trans
+            >;
+        };
+
+        // deflayer/navigation_vim.kbd (hold the right pinky). The inner
+        // right thumb holds the function keys.
+        navigation_layer {
+            bindings = <
+            &trans  &trans      &trans        &trans       &trans          &trans                                                                                  &trans                &trans           &trans        &trans
+            &trans  &kp C_MUTE  &kp C_VOL_DN  &kp C_VOL_UP &kp C_PREV      &kp C_PP                                                         &kp C_NEXT        &kp C_BRI_DN         &kp C_BRI_UP     &kp LG(N9)    &kp PSCRN     &trans
+            &trans  &to NUMPAD  &kp LC(T)     &kp C_AC_BACK &kp C_AC_FORWARD &none                                                          &kp HOME          &kp PG_DN            &kp PG_UP        &kp END       &none         &trans
+            &trans  &kp LC(A)   &kp LC(S)     &kp LS(TAB)  &kp TAB         &none                                                            &kp LEFT          &kp DOWN             &kp UP           &kp RIGHT     &trans        &trans
+            &trans  &kp LC(Z)   &kp LC(X)     &kp LC(W)    &kp LC(V)       &none   &trans  &trans   &trans   &trans  &trans  &trans          &msc SCRL_LEFT    &msc SCRL_DOWN       &msc SCRL_UP     &msc SCRL_RIGHT &none       &trans
+            &trans  &trans      &trans        &trans       &trans                  &trans  &trans   &trans   &mo FUN &kp ESC &kp DEL                         &trans               &trans           &trans        &trans        &trans
+            >;
+        };
+
+        // deflayer/navigation_vim.kbd: numpad (locked, the Enter or Bspc
+        // thumb goes back to base).
+        numpad_layer {
+            bindings = <
+            &trans  &trans    &trans    &trans     &trans                                                                                        &trans  &trans  &trans  &trans  &trans
+            &trans  &trans    &trans    &trans     &trans     &trans                                                                 &trans     &trans  &trans  &trans  &trans  &trans
+            &trans  &none     &kp HOME  &kp UP     &kp END    &kp PG_UP                                                              &kp RA(L)  &kp N7  &kp N8  &kp N9  &none   &trans
+            &trans  &none     &kp LEFT  &kp DOWN   &kp RIGHT  &kp PG_DN                                                              &kp RA(K)  &kp N4  &kp N5  &kp N6  &kp N0  &trans
+            &trans  &none     &none     &none      &none      &none     &trans         &trans    &trans   &trans  &trans         &trans    &kp DOT    &kp N1  &kp N2  &kp N3  &kp N   &trans
+            &trans  &trans    &trans    &trans     &trans               &kp LS(SPACE)  &trans    &trans   &trans  &to BASE       &to BASE            &trans  &trans  &trans  &trans  &trans
+            >;
+        };
+
+        // deflayer/navigation_vim.kbd: function keys.
+        function_layer {
+            bindings = <
+            &trans  &trans  &trans  &trans  &trans                                                                          &trans  &trans     &trans    &trans    &trans
+            &trans  &none   &none   &none   &none   &none                                                           &none   &none   &none      &none     &none     &trans
+            &trans  &kp F1  &kp F2  &kp F3  &kp F4  &none                                                           &none   &none   &none      &none     &none     &trans
+            &trans  &kp F5  &kp F6  &kp F7  &kp F8  &none                                                           &none   &kp LCTRL &kp LALT &kp LGUI  &trans    &trans
+            &trans  &kp F9  &kp F10 &kp F11 &kp F12 &none   &trans  &trans  &trans     &trans  &trans  &trans       &none   &none   &none      &none     &none     &trans
+            &trans  &trans  &trans  &trans  &trans          &trans  &trans  &trans     &trans  &trans  &trans               &trans  &trans     &trans    &trans    &trans
+            >;
+        };
+
+        // deflayer/accent.kbd: one key after ★.
+        accent_layer {
+            bindings = <
+            &trans  &trans    &trans    &trans    &trans                                                                            &trans  &trans  &trans   &trans    &trans
+            &trans  &trans    &trans    &trans    &cent     &trans                                                          &trans  &trans  &trans  &trans   &deg      &trans
+            &trans  &a_circ   &c_ced    &oe       &o_circ   &trans                                                          &trans  &trans  &trans  &trans   &u_circ   &trans
+            &trans  &a_grave  &e_acute  &e_grave  &e_circ   &n_tilde                                                        &trans  &trans  &i_circ &trans   &u_grave  &trans
+            &trans  &ae       &trans    &trans    &trans    &trans    &trans  &trans  &trans     &trans  &trans  &trans       &trans  &trans  &trans  &mdot    &trans    &trans
+            &trans  &trans    &trans    &trans    &trans              &trans  &trans  &trans     &trans  &trans  &trans               &trans  &trans  &trans   &trans    &trans
+            >;
+        };
+
+        // deflayer/switcher.kbd: hold Esc, then 1 base, 2 qwerty, 3/4 plain.
+        switcher_layer {
+            bindings = <
+            &none   &none     &none       &none      &none                                                                       &none   &none   &none   &none   &none
+            &none   &to BASE  &to QWERTY  &to PLAIN  &to PLAIN  &none                                                    &none   &none   &none   &none   &none   &none
+            &none   &none     &none       &none      &none      &none                                                    &none   &none   &none   &none   &none   &none
+            &trans  &none     &none       &none      &none      &none                                                    &none   &none   &none   &none   &none   &none
+            &none   &none     &none       &none      &none      &none   &none   &none   &none     &none   &none   &none    &none   &none   &none   &none   &none   &none
+            &trans  &none     &none       &none      &none              &none   &none   &none     &none   &none   &none            &none   &none   &none   &none   &none
+            >;
+        };
+
+        // Glove80 default magic layer (Bluetooth, RGB, bootloader), minus
+        // the factory test layer.
+        magic_layer {
+            bindings = <
+            &bt BT_CLR   &none            &none            &none            &none                                                                                     &none  &none  &none  &none  &bt BT_CLR_ALL
+            &none        &none            &none            &none            &none            &none                                                             &none  &none  &none  &none  &none  &none
+            &none        &rgb_ug RGB_SPI  &rgb_ug RGB_SAI  &rgb_ug RGB_HUI  &rgb_ug RGB_BRI  &rgb_ug RGB_TOG                                                   &none  &none  &none  &none  &none  &none
+            &bootloader  &rgb_ug RGB_SPD  &rgb_ug RGB_SAD  &rgb_ug RGB_HUD  &rgb_ug RGB_BRD  &rgb_ug RGB_EFF                                                   &none  &none  &none  &none  &none  &bootloader
+            &sys_reset   &none            &none            &none            &none            &none            &bt_2   &bt_3   &none          &none  &none  &none     &none  &none  &none  &none  &none  &sys_reset
+            &none        &none            &none            &none            &none                             &bt_0   &bt_1   &out OUT_USB   &none  &none  &none            &none  &none  &none  &none  &none
+            >;
+        };
+    };
+};

@@ -1,0 +1,275 @@
+<title>Glove80 Ergo-L</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one board per layer, stacked in reach order; sticky chip bar to jump. */
+:root {
+  --bg: #eef0f3;
+  --panel: #f8f9fb;
+  --ink: #1c2230;
+  --muted: #5f6878;
+  --cap: #ffffff;
+  --cap-edge: #c9ced8;
+  --cap-faint: #e3e6eb;
+  --mod: #b45f06;
+  --mod-bg: #fdf1e3;
+  --layer: #0f7a73;
+  --layer-bg: #e1f4f2;
+  --accent: #6b3fc4;
+  --accent-bg: #efe8fb;
+  --held: #1c2230;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --u: clamp(34px, calc((min(100vw, 1120px) - 72px) / 19.4), 56px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171d; --panel: #1b1f27; --ink: #e6e9ef; --muted: #98a1b2;
+    --cap: #252a34; --cap-edge: #3a4150; --cap-faint: #1e222b;
+    --mod: #f0a457; --mod-bg: #3a2a18; --layer: #4fd1c5; --layer-bg: #15312f;
+    --accent: #b49cff; --accent-bg: #2a2342; --held: #e6e9ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171d; --panel: #1b1f27; --ink: #e6e9ef; --muted: #98a1b2;
+  --cap: #252a34; --cap-edge: #3a4150; --cap-faint: #1e222b;
+  --mod: #f0a457; --mod-bg: #3a2a18; --layer: #4fd1c5; --layer-bg: #15312f;
+  --accent: #b49cff; --accent-bg: #2a2342; --held: #e6e9ef;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+header { display: grid; gap: 10px; }
+h1 { font-family: var(--display); font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.1; margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 68ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .85rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--cap-edge); background: var(--cap); }
+.sw.m { background: var(--mod-bg); border-color: var(--mod); }
+.sw.l { background: var(--layer-bg); border-color: var(--layer); }
+.sw.a { background: var(--accent-bg); border-color: var(--accent); }
+.sw.h { background: var(--held); border-color: var(--held); }
+nav.chips { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 8px; display: flex; gap: 6px; overflow-x: auto; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+nav.chips a { flex: none; font-size: .82rem; font-weight: 500; text-decoration: none; color: var(--ink); background: var(--panel); border: 1px solid var(--cap-edge); padding: 4px 11px; border-radius: 999px; }
+nav.chips a:hover, nav.chips a:focus-visible { border-color: var(--layer); color: var(--layer); outline: none; }
+section { background: var(--panel); border: 1px solid var(--cap-edge); border-radius: 14px; padding: 18px 18px 14px; display: grid; gap: 10px; scroll-margin-top: 56px; min-width: 0; }
+section h2 { font-family: var(--display); font-size: 1.35rem; margin: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+section h2 small { font-family: var(--body); font-size: .85rem; font-weight: 500; color: var(--layer); }
+section p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 75ch; }
+.scroll { overflow-x: auto; padding-block: 6px; }
+.board { position: relative; width: calc(var(--u) * 19.2); height: calc(var(--u) * 7.3); margin: 0 auto; }
+.key { position: absolute; width: calc(var(--u) * .92); height: calc(var(--u) * .92); border-radius: calc(var(--u) * .16); background: var(--cap); border: 1px solid var(--cap-edge); box-shadow: 0 2px 0 var(--cap-edge); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; text-align: center; overflow: hidden; }
+.key .t { font-family: var(--mono); font-weight: 600; font-size: calc(var(--u) * .34); line-height: 1.05; }
+.key .t.long { font-family: var(--body); font-size: calc(var(--u) * .2); font-weight: 600; line-height: 1.1; padding-inline: 2px; }
+.key .h { font-size: calc(var(--u) * .19); font-weight: 600; line-height: 1; color: var(--muted); }
+.key.m .h, .key.m.only .t { color: var(--mod); }
+.key.m { border-color: var(--mod); background: var(--mod-bg); box-shadow: 0 2px 0 var(--mod); }
+.key.l { border-color: var(--layer); background: var(--layer-bg); box-shadow: 0 2px 0 var(--layer); }
+.key.l .h, .key.l.only .t { color: var(--layer); }
+.key.a { border-color: var(--accent); background: var(--accent-bg); box-shadow: 0 2px 0 var(--accent); }
+.key.a .t { color: var(--accent); }
+.key.k .t { color: var(--muted); }
+.key.trans { background: transparent; border-style: dashed; border-color: var(--cap-faint); box-shadow: none; }
+.key.none { background: var(--cap-faint); border-color: var(--cap-faint); box-shadow: none; }
+.key.held { background: var(--held); border-color: var(--held); box-shadow: none; }
+.key.held .t, .key.held .h { color: var(--bg); }
+.note { font-size: .85rem; color: var(--muted); border-left: 3px solid var(--mod); padding-left: 10px; }
+footer { font-size: .82rem; color: var(--muted); }
+code { font-family: var(--mono); font-size: .88em; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Glove80 · Ergo-L + Arsenik</h1>
+    <p>Chaque touche affiche ce que tu obtiens avec le layout fr(ergol) de l'OS. En haut le tap, en dessous l'effet en maintien. Le firmware envoie des positions QWERTY, l'OS en fait de l'Ergo-L, comme kanata sur le laptop.</p>
+    <div class="legend">
+      <span><i class="sw"></i>touche normale</span>
+      <span><i class="sw m"></i>modificateur en maintien</span>
+      <span><i class="sw l"></i>couche</span>
+      <span><i class="sw a"></i>accent ★</span>
+      <span><i class="sw h"></i>touche tenue pour être ici</span>
+    </div>
+  </header>
+  <nav class="chips" id="chips" aria-label="Couches"></nav>
+  <div id="layers" style="display:grid;gap:22px"></div>
+  <footer>Source : <code>glove80/glove80.keymap</code>, miroir de <code>modules/nixos/system/kanata</code>. Pouces listés de l'extérieur vers l'intérieur à gauche, de l'intérieur vers l'extérieur à droite.</footer>
+</div>
+
+<script>
+// Entry: null = transparent (falls through), "" = nothing, "tap|hold#kind".
+// Kinds: m modifier hold, l layer, a accent, k special key, h held to get here.
+const T = null, N = "";
+const t = n => Array(n).fill(T), x = n => Array(n).fill(N);
+
+const layers = [
+  { id: "base", name: "Base", how: "Toujours active",
+    desc: "Home-row mods sur s e n / t i, navigation sur u, Échap ouvre le sélecteur en maintien. ★ tapé arme la couche accent pour une touche.",
+    keys: [
+      "F1#k","F2#k","F3#k","F4#k","F5#k",  "F6#k","F7#k","F8#k","F9#k","F10#k",
+      "=","1","2","3","4","5",  "6","7","8","9","0","/",
+      "Tab#k","q","c","o","p","w",  "j","m","d","★#a","y","\\",
+      "Échap|Sélect.#l","a","s|Alt#m","e|Ctrl#m","n|Super#m","f",  "l","r","t|Ctrl#m","i|AltGr#m","u|Nav#l","'",
+      "`","z","x","-","v","b",  "Shift#m","Ctrl#m","Suppr#k",  "Super#m","Ctrl#m","Shift#m",  ".","h","g",",","k","PgUp#k",
+      "RGB|Magic#l","Début#k","Fin#k","←#k","→#k",  "Espace|Shift#m","Tab#k","Vue|Super#m",  "AltGr#m","Entrée|Sym#l","⌫|Shift#m",  "↑#k","↓#k","[","]","PgDn#k",
+    ] },
+  { id: "sym", name: "Symboles", how: "Maintenir Entrée",
+    desc: "La couche AltGr d'Ergo-L, au repos sous les doigts. Tab maintenu en plus ouvre les chiffres.",
+    keys: [
+      ...t(10),
+      T,"₁","₂","₃","₄","₅",  "₆","₇","₈","₉","₀",T,
+      T,"^","<",">","$","%",  "@","&","*","'","`",T,
+      T,"{","(",")","}","=",  "\\","+","-","/","\"",T,
+      T,"~","[","]","_","#",  ...t(6),  "|","!",";",":","?",T,
+      ...t(5),  "Espace","Chiffres#l",T,  T,"Sym#h",T,  ...t(5),
+    ] },
+  { id: "num", name: "Chiffres", how: "Entrée + Tab maintenus",
+    desc: "Rangée de chiffres sur la rangée de repos, leurs versions Shift au-dessus. La rangée du bas tape ★ puis un chiffre.",
+    keys: [
+      ...t(10),
+      ...t(12),
+      T,"€","«","»","$","%",  "^","&","*","#","@",T,
+      T,"1","2","3","4","5",  "6","7","8","9","0",T,
+      T,"„","“","”","¢","‰",  ...t(6),  N,"-",",",".","/",T,
+      ...t(5),  "Esp. fine","Chiffres#h",T,  T,"Sym#h",T,  ...t(5),
+    ] },
+  { id: "nav", name: "Navigation", how: "Maintenir u (auriculaire droit)",
+    desc: "Flèches façon vim à droite, raccourcis d'édition à gauche, médias sur la rangée des chiffres, molette sur la rangée du bas.",
+    keys: [
+      ...t(10),
+      T,"Muet","Vol−","Vol+","Préc.","Lecture",  "Suiv.","Lum−","Lum+","Super 9","Capture",T,
+      T,"Numpad#l","Fermer","Retour","Avancer",N,  "Début#k","PgDn#k","PgUp#k","Fin#k",N,T,
+      T,"Tout","Sauver","⇧Tab","Tab",N,  "←#k","↓#k","↑#k","→#k","Nav#h",T,
+      T,"Annuler","Couper","Copier","Coller",N,  ...t(6),  "Mol. ←","Mol. ↓","Mol. ↑","Mol. →",N,T,
+      ...t(5),  T,T,T,  "Touches F#l","Échap#k","Suppr#k",  ...t(5),
+    ] },
+  { id: "numpad", name: "Numpad", how: "Nav + q, reste verrouillé",
+    desc: "Pavé numérique verrouillé. Entrée ou ⌫ ramène à la base.",
+    keys: [
+      ...t(10),
+      ...t(12),
+      T,N,"Début#k","↑#k","Fin#k","PgUp#k",  "/","7","8","9",N,T,
+      T,N,"←#k","↓#k","→#k","PgDn#k",  "-","4","5","6","0",T,
+      T,...x(5),  ...t(6),  ",","1","2","3",".",T,
+      ...t(5),  "Esp. fine",T,T,  T,"Base#l","Base#l",  ...t(5),
+    ] },
+  { id: "accent", name: "Accent ★", how: "Taper ★, puis une touche (500 ms)",
+    desc: "Composé avec les vraies touches mortes de fr(ergol), comme kanata. Shift tenu sur la seconde touche donne la majuscule. Shift+★ reste !, AltGr+★ reste '.",
+    keys: [
+      ...t(10),
+      T,T,T,T,"¢#a",T,  T,T,T,T,"°#a",T,
+      T,"â#a","ç#a","œ#a","ô#a",T,  T,T,T,"★#h","û#a",T,
+      T,"à#a","é#a","è#a","ê#a","ñ#a",  T,T,"î#a",T,"ù#a",T,
+      T,"æ#a",T,T,T,T,  ...t(6),  T,T,T,"·#a",T,T,
+      ...t(16),
+    ] },
+  { id: "fn", name: "Touches F", how: "u + pouce droit intérieur maintenus",
+    desc: "F1 à F12 sous la main gauche, Ctrl, Alt et Super sous la main droite pour les combinaisons.",
+    keys: [
+      ...t(10),
+      T,...x(5),  ...x(5),T,
+      T,"F1","F2","F3","F4",N,  ...x(5),T,
+      T,"F5","F6","F7","F8",N,  N,"Ctrl#m","Alt#m","Super#m","Nav#h",T,
+      T,"F9","F10","F11","F12",N,  ...t(6),  ...x(5),T,
+      ...t(5),  T,T,T,  "F#h",T,T,  ...t(5),
+    ] },
+  { id: "switch", name: "Sélecteur", how: "Maintenir Échap",
+    desc: "Change la couche de base jusqu'au prochain choix. QWERTY émule un clavier QWERTY sur l'OS Ergo-L. Plain : touches simples sans mods ni couches (jeux).",
+    keys: [
+      ...x(10),
+      N,"Base#l","QWERTY#l","Plain#l","Plain#l",N,  ...x(6),
+      ...x(12),
+      "Échap#h",...x(11),
+      ...x(18),
+      T,...x(15),
+    ] },
+  { id: "magic", name: "Magic", how: "Maintenir Magic (bas gauche)",
+    desc: "Couche système du Glove80 : Bluetooth, RGB, bootloader pour flasher (Magic + Échap à gauche, Magic + ' à droite).",
+    keys: [
+      "BT eff.",N,N,N,N,  N,N,N,N,"BT tout eff.",
+      ...x(12),
+      N,"Vit.+","Sat.+","Teinte+","Lum.+","RGB",  ...x(6),
+      "Boot-loader#l","Vit.−","Sat.−","Teinte−","Lum.−","Effet",  ...x(5),"Boot-loader#l",
+      "Reset",...x(5),  "BT 3","BT 4",N,  N,N,N,  ...x(5),"Reset",
+      "Magic#h",...x(4),  "BT 1","BT 2","USB",  N,N,N,  ...x(5),
+    ] },
+];
+
+// Board geometry, in key units, in the keymap's binding order.
+const W = 19.2, Y0 = 0.3;
+const stagger = [0.3, 0.3, 0.1, 0, 0.1, 0.2];
+const L = (c, row) => ({ x: c, y: row + (row ? Y0 : 0) + stagger[c], r: 0 });
+const R = (c, row) => ({ x: W - 6 + c, y: row + (row ? Y0 : 0) + stagger[5 - c], r: 0 });
+const thumbL = (i, low) => ({ x: 6.1 + i * 1.02 - (low ? 0.25 : 0), y: (low ? 5.75 : 4.7) + i * 0.28, r: 10 + i * 8 });
+const thumbR = (i, low) => { const m = thumbL(2 - i, low); return { x: W - 1 - m.x, y: m.y, r: -m.r }; };
+const pos = [];
+for (let c = 0; c < 5; c++) pos.push(L(c, 0));
+for (let c = 1; c < 6; c++) pos.push(R(c, 0));
+for (const row of [1, 2, 3]) {
+  for (let c = 0; c < 6; c++) pos.push(L(c, row));
+  for (let c = 0; c < 6; c++) pos.push(R(c, row));
+}
+for (let c = 0; c < 6; c++) pos.push(L(c, 4));
+for (let i = 0; i < 3; i++) pos.push(thumbL(i, false));
+for (let i = 0; i < 3; i++) pos.push(thumbR(i, false));
+for (let c = 0; c < 6; c++) pos.push(R(c, 4));
+for (let c = 0; c < 5; c++) pos.push(L(c, 5));
+for (let i = 0; i < 3; i++) pos.push(thumbL(i, true));
+for (let i = 0; i < 3; i++) pos.push(thumbR(i, true));
+for (let c = 1; c < 6; c++) pos.push(R(c, 5));
+
+function keyEl(entry, p) {
+  const el = document.createElement("div");
+  el.className = "key";
+  el.style.left = `calc(var(--u) * ${p.x.toFixed(3)})`;
+  el.style.top = `calc(var(--u) * ${p.y.toFixed(3)})`;
+  if (p.r) el.style.transform = `rotate(${p.r}deg)`;
+  if (entry === null) { el.classList.add("trans"); return el; }
+  if (entry === "") { el.classList.add("none"); return el; }
+  let [label, kind] = entry.split("#");
+  let [tap, hold] = label.split("|");
+  if (kind === "h") el.classList.add("held");
+  else if (kind) el.classList.add(kind);
+  if (!hold) el.classList.add("only");
+  const tEl = document.createElement("span");
+  tEl.className = "t" + ([...tap].length > 2 ? " long" : "");
+  tEl.textContent = tap;
+  el.append(tEl);
+  if (hold) {
+    const hEl = document.createElement("span");
+    hEl.className = "h";
+    hEl.textContent = hold;
+    el.append(hEl);
+  }
+  el.title = hold ? `${tap} (tap) · ${hold} (maintien)` : tap;
+  return el;
+}
+
+const chips = document.getElementById("chips");
+const host = document.getElementById("layers");
+for (const layer of layers) {
+  if (layer.keys.length !== 80) console.error(layer.id, layer.keys.length);
+  const a = document.createElement("a");
+  a.href = "#" + layer.id;
+  a.textContent = layer.name;
+  chips.append(a);
+
+  const sec = document.createElement("section");
+  sec.id = layer.id;
+  sec.innerHTML = `<h2>${layer.name}<small>${layer.how}</small></h2><p>${layer.desc}</p>`;
+  const scroll = document.createElement("div");
+  scroll.className = "scroll";
+  const board = document.createElement("div");
+  board.className = "board";
+  board.setAttribute("role", "img");
+  board.setAttribute("aria-label", `Couche ${layer.name}`);
+  layer.keys.forEach((k, i) => board.append(keyEl(k, pos[i])));
+  scroll.append(board);
+  sec.append(scroll);
+  host.append(sec);
+}
+if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
+</script>

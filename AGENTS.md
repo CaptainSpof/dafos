@@ -91,6 +91,8 @@ Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkOpt'`,
   (`devinit`)
 - [esphome/AGENTS.md](esphome/AGENTS.md) — DIY ESPHome device firmware (build,
   first flash, board quirks)
+- [glove80/AGENTS.md](glove80/AGENTS.md) — Glove80 ZMK keymap mirroring the
+  kanata config (build, flash)
 - [modules/home/services/AGENTS.md](modules/home/services/AGENTS.md) —
   self-hosted service stack
 
