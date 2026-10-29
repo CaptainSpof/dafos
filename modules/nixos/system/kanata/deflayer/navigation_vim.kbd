@@ -1,5 +1,8 @@
 ;; Vim-Navigation layer:
 ;;  - right: Vim-like arrows on HJKL, home/end page up/down, mouse scroll
+;;  - right thumb (Super key): function keys while held. Not on the
+;;    pinky's own key: it is already down for this layer, so a binding
+;;    there can never fire.
 ;;  - left: one-hand shortcuts (Cmd/Ctrl-WASZXCV), Tab/Shift-Tab, prev/next
 ;;  - top: laptop-style media keys (mute, volume, transport, brightness);
 ;;         9 keeps Super-num (i3/sway/niri workspace switching), 0 is
@@ -12,9 +15,9 @@
   _
   mute vold volu prev pp   lrld next brdown brup M-9  prnt
   @pad @cls bck  fwd  XX        home pgdn pgup end  @run
-  @all @sav S-tab tab XX        lft  down up   rght @fun
+  @all @sav S-tab tab XX        lft  down up   rght _
   @ndo @cut @cpy @pst XX    _   @mwl @mwd @mwu @mwr XX
-            del             _             esc  _
+            del             _             esc  @fun
 )
 
 ;; NumPad
