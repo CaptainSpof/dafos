@@ -998,7 +998,7 @@ in
         };
 
         settings.pages.p3-infos = {
-          name = "Infos";
+          name = "Infos & Sports";
           slug = "infos";
           columns.main = {
             rank = 1000;
