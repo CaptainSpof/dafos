@@ -4,9 +4,12 @@ ZMK firmware for the MoErgo Glove80, giving it the same behaviour as the
 laptop/desktop keyboards under kanata. Nothing here is evaluated by the flake.
 
 - **The keymap mirrors kanata.** `glove80.keymap` ports
-  `modules/nixos/system/kanata` (base_lt_hrm, symbols_noop_num, navigation_vim,
+  `modules/nixos/system/kanata` (base_lt_hrm, navigation_vim,
   accent, switcher + their aliases); each layer names the `.kbd` it copies. A
   change to one belongs in the other.
+- **The thumbs deliberately differ** from the laptop: Space/Shift + Tab on the
+  left, Bspc/Shift + Enter/Nav on the right, and no Symbols layer (the AltGr
+  thumb gives the same symbols). Do not port those back to kanata.
 - **Bindings are physical keys**, like kanata's: the host layout stays
   `fr(ergol)` and turns them into Ergo-L. On a machine without that layout the
   Glove80 types QWERTY.
