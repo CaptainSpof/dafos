@@ -22,13 +22,12 @@ in
     "speakers_on"
     "tv_on"
     "tv_off"
-    "ambiance"
   ];
 
   gifs = pkgs.runCommand "divoom-animations" { nativeBuildInputs = [ python ]; } ''
     mkdir $out
     python3 - "$out" <<'EOF'
-    import colorsys, sys
+    import sys
     from PIL import Image
 
     out = sys.argv[1]
@@ -178,18 +177,6 @@ in
     tvOn = [tv(0), tv(1), tv(2), tv(3), tv(4), tv(4, play=True)]
     steps("tv_on", [tv(-1)] + tvOn, violet)
     steps("tv_off", [tv(4), tv(2), tv(0), tv(-1, dot=True), tv(-1)], violet)
-
-    # Ambiance (colour loop): a disc whose colours turn
-    frames = []
-    for t in range(12):
-        img = Image.new("RGB", (16, 16))
-        for y in range(16):
-            for x in range(16):
-                if (x - 7.5) ** 2 + (y - 7.5) ** 2 <= 7.5 ** 2:
-                    r, g, b = colorsys.hsv_to_rgb(((x + y) / 30 + t / 12) % 1, 1, 0.8)
-                    img.putpixel((x, y), (int(r * 255), int(g * 255), int(b * 255)))
-        frames.append(img)
-    save("ambiance", frames, [STEP] * len(frames))
     EOF
   '';
 }
