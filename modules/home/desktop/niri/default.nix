@@ -74,6 +74,9 @@ in
             always-center-single-column = true;
             empty-workspace-above-first = true;
 
+            # niri's default is half the screen; open new windows wider.
+            default-column-width.proportion = 0.75;
+
             focus-ring.enable = true;
             border.enable = true;
 
