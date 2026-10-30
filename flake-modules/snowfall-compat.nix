@@ -34,6 +34,8 @@ let
         "services/host-watch" = host-watch;
         "services/ollama" = ollama;
         "services/openssh" = openssh;
+        # New aspect, no legacy module behind it: the key only places it.
+        "services/polaris" = polaris;
         "services/tailscale" = tailscale;
         "system/locale" = locale;
         "system/networking" = networking;

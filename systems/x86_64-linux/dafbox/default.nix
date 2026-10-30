@@ -89,7 +89,8 @@ in
     };
 
     services.syncthing = enabled;
-    services.sunshine = enabled;
+    # Trialling Polaris in place of Sunshine (same GameStream ports).
+    services.polaris = enabled;
     services.moondeck-buddy = enabled;
     # Backs the DMS proofreader plugin (localhost only).
     services.languagetool = {
