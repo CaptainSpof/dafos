@@ -24,17 +24,20 @@ DesktopPluginComponent {
     property real roundness: pluginData.roundness ?? 0
     property real weight: pluginData.weight ?? 900
     // Where the digits sit inside the widget box: "left", "center" or "right".
-    // Pushing the widget against a screen edge and aligning to that side makes
-    // it hug the edge whatever the box size.
+    // The aligned side gets no margin and each row is flush with it, so a
+    // widget pushed against a screen edge and aligned to that side hugs it.
     property string align: pluginData.align ?? "center"
 
     // Shape of the interlock, as fractions of the font size.
     readonly property real overlapX: 0.13
     readonly property real overlapY: 0.07
     readonly property real gap: 0.022
-    // Inner margin around the digits, as a fraction of the shorter side.
+    // Inner margin around the digits, as a fraction of the shorter side. None on
+    // the aligned side.
     property real padding: (pluginData.margin ?? 13) / 100
     readonly property real pad: Math.min(width, height) * padding
+    readonly property real padL: align === "left" ? 0 : pad
+    readonly property real padR: align === "right" ? 0 : pad
 
     readonly property color backColor: Theme.primary
     readonly property color frontColor: Qt.rgba(
@@ -75,7 +78,7 @@ DesktopPluginComponent {
     readonly property real refW: ref.tightBoundingRect.width
     readonly property real refH: ref.tightBoundingRect.height
     readonly property real fontPx: {
-        var availW = width - 2 * pad;
+        var availW = width - padL - padR;
         var availH = height - 2 * pad;
         var blockW = 2 * refW - overlapX * 100;
         var blockH = 2 * refH - overlapY * 100;
@@ -98,22 +101,27 @@ DesktopPluginComponent {
         return [m0, m1, m2, m3][slot].tightBoundingRect.width;
     }
 
-    // Each row is centred as a pair, so a narrow "1" doesn't skew it; the block
-    // is as wide as its wider row and sits where `align` says.
+    // The block is as wide as its wider row and sits where `align` says. Rows
+    // follow the same alignment inside it (centred by default), so a narrow "1"
+    // never leaves a row short of the edge being hugged.
     function rowW(row) {
         return inkW(row * 2) + inkW(row * 2 + 1) - overlapX * fontPx;
     }
     readonly property real blockW: Math.max(rowW(0), rowW(1))
     readonly property real blockH: 2 * capH - overlapY * fontPx
-    readonly property real centerX: align === "left" ? pad + blockW / 2
-        : align === "right" ? width - pad - blockW / 2
-        : width / 2
+    readonly property real blockX: align === "left" ? 0
+        : align === "right" ? width - blockW
+        : (width - blockW) / 2
+    function rowX(row) {
+        var slack = blockW - rowW(row);
+        return blockX + (align === "left" ? 0 : align === "right" ? slack : slack / 2);
+    }
 
     // The card wraps the digits, not the whole widget box.
     Rectangle {
-        x: root.centerX - root.blockW / 2 - root.pad
+        x: root.blockX - root.padL
         y: (root.height - root.blockH) / 2 - root.pad
-        width: root.blockW + 2 * root.pad
+        width: root.blockW + root.padL + root.padR
         height: root.blockH + 2 * root.pad
         radius: Math.max(root.pad, root.fontPx * 0.1) * 1.2
         color: Theme.surfaceContainer
@@ -141,8 +149,7 @@ DesktopPluginComponent {
         }
         readonly property rect box: ink.tightBoundingRect
 
-        readonly property real rowW: root.rowW(row)
-        x: (col === 0 ? root.centerX - rowW / 2 : root.centerX + rowW / 2 - box.width) - box.x
+        x: (col === 0 ? root.rowX(row) : root.rowX(row) + root.rowW(row) - box.width) - box.x
         // Baselines: row 0 sits a cap-height above centre, row 1 below it.
         readonly property real baseY: root.height / 2
             + (row === 0 ? -root.overlapY * root.fontPx / 2 : root.capH - root.overlapY * root.fontPx / 2)

@@ -43,7 +43,7 @@ let
         echo "no host directory at $dir (set DAFOS_FLAKE?)" >&2
         exit 1
       fi
-      jq --slurpfile s ${lib.escapeShellArg settingsPath} '
+      jq -S --slurpfile s ${lib.escapeShellArg settingsPath} '
         ($s[0].desktopWidgetInstances // [] | map(.id)) as $ids
         | ${select}
         | .desktopWidgetInstancePositions |= with_entries(select(.key as $k | $ids | index($k)))
