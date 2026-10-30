@@ -75,7 +75,13 @@ in
             empty-workspace-above-first = true;
 
             # niri's default is half the screen; open new windows wider.
-            default-column-width.proportion = 0.85;
+            default-column-width.proportion = 0.90;
+            # Mod+O / Mod+Z cycle these; niri's default stops at 2/3.
+            preset-column-widths = [
+              { proportion = 0.5; }
+              { proportion = 0.75; }
+              { proportion = 0.9; }
+            ];
 
             focus-ring.enable = true;
             border.enable = true;
