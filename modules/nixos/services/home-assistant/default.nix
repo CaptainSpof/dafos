@@ -510,6 +510,7 @@ in
           "script origami" = origami.scripts;
           "script tv" = tv.scripts;
           "script cctv" = cctv.scripts;
+          "script divoom" = divoom.scripts;
 
           "template" = [
             # Template binary sensors + sensors migrated from the legacy

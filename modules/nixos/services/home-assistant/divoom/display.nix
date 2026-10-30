@@ -12,6 +12,12 @@
 #    scrolls its name. Hidden from 22:45 to 06:00.
 # 3. The clock, in blue at full brightness.
 #
+# On top of that, script.divoom_cube_feedback shows what a remote just did as
+# a short animation (./animations.nix) for a few seconds, then runs this
+# display again to go back to whatever it showed. The veranda cube ("Véranda
+# · Cube Controller", a UI blueprint automation) calls it first in each
+# gesture, with `script.turn_on` so the gesture's own action does not wait.
+#
 # The countdown tool only takes minutes:seconds (devices/divoom.py drops the
 # hours), so anything longer shows 99:59 until it gets under it, at the next
 # slot change.
@@ -90,6 +96,13 @@ let
   ];
 
   icons = import ./icons.nix { inherit pkgs statuses; };
+  animations = import ./animations.nix { inherit pkgs; };
+
+  # One directory: the integration refuses a file whose realpath leaves it
+  pixelart = pkgs.runCommand "divoom-pixelart" { } ''
+    mkdir $out
+    cp ${icons}/* ${animations.gifs}/* $out/
+  '';
 
   # Slot 1 has no suffix (minuteur-automation.yaml)
   slots = [
@@ -122,7 +135,41 @@ let
 in
 {
   # The integration's media directory (`pixelart` in its config entry)
-  tmpfiles = [ "L+ /var/lib/hass/pixelart - - - - ${icons}" ];
+  tmpfiles = [ "L+ /var/lib/hass/pixelart - - - - ${pixelart}" ];
+
+  scripts.divoom_cube_feedback = {
+    alias = "Divoom · Cube feedback";
+    description = "Shows a remote's action as an animation on the Divoom Timebox-Evo for a few seconds, then gives the display back to Divoom · Display. Managed in Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
+    icon = "mdi:cube-outline";
+    # A new gesture replaces the animation and restarts the wait; the
+    # integration sends one thing at a time, so uploads do not mix
+    mode = "restart";
+    fields = {
+      animation = {
+        description = "What the remote did";
+        required = true;
+        example = "light_on";
+        selector.select.options = animations.names;
+      };
+      seconds = {
+        description = "How long the animation stays up";
+        default = 4;
+        selector.number = {
+          min = 1;
+          max = 30;
+        };
+      };
+    };
+    sequence = [
+      (divoom "image" { file = "{{ animation }}.gif"; })
+      { delay.seconds = "{{ seconds | default(4) }}"; }
+      {
+        action = "automation.trigger";
+        target.entity_id = "automation.divoom_display";
+        data.skip_condition = true;
+      }
+    ];
+  };
 
   automations = [
     {
