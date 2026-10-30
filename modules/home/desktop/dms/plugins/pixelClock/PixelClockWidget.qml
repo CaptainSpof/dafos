@@ -23,13 +23,18 @@ DesktopPluginComponent {
     property real backgroundOpacity: (pluginData.backgroundOpacity ?? 45) / 100
     property real roundness: pluginData.roundness ?? 0
     property real weight: pluginData.weight ?? 900
+    // Where the digits sit inside the widget box: "left", "center" or "right".
+    // Pushing the widget against a screen edge and aligning to that side makes
+    // it hug the edge whatever the box size.
+    property string align: pluginData.align ?? "center"
 
     // Shape of the interlock, as fractions of the font size.
     readonly property real overlapX: 0.13
     readonly property real overlapY: 0.07
     readonly property real gap: 0.022
-    // Inner margin, as a fraction of the shorter side.
-    readonly property real padding: 0.13
+    // Inner margin around the digits, as a fraction of the shorter side.
+    property real padding: (pluginData.margin ?? 13) / 100
+    readonly property real pad: Math.min(width, height) * padding
 
     readonly property color backColor: Theme.primary
     readonly property color frontColor: Qt.rgba(
@@ -70,8 +75,8 @@ DesktopPluginComponent {
     readonly property real refW: ref.tightBoundingRect.width
     readonly property real refH: ref.tightBoundingRect.height
     readonly property real fontPx: {
-        var availW = width * 1 - 2 * Math.min(width, height) * padding;
-        var availH = height * 1 - 2 * Math.min(width, height) * padding;
+        var availW = width - 2 * pad;
+        var availH = height - 2 * pad;
         var blockW = 2 * refW - overlapX * 100;
         var blockH = 2 * refH - overlapY * 100;
         if (blockW <= 0 || blockH <= 0) return 0;
@@ -93,15 +98,30 @@ DesktopPluginComponent {
         return [m0, m1, m2, m3][slot].tightBoundingRect.width;
     }
 
+    // Each row is centred as a pair, so a narrow "1" doesn't skew it; the block
+    // is as wide as its wider row and sits where `align` says.
+    function rowW(row) {
+        return inkW(row * 2) + inkW(row * 2 + 1) - overlapX * fontPx;
+    }
+    readonly property real blockW: Math.max(rowW(0), rowW(1))
+    readonly property real blockH: 2 * capH - overlapY * fontPx
+    readonly property real centerX: align === "left" ? pad + blockW / 2
+        : align === "right" ? width - pad - blockW / 2
+        : width / 2
+
+    // The card wraps the digits, not the whole widget box.
     Rectangle {
-        anchors.fill: parent
-        radius: Math.min(width, height) * 0.16
+        x: root.centerX - root.blockW / 2 - root.pad
+        y: (root.height - root.blockH) / 2 - root.pad
+        width: root.blockW + 2 * root.pad
+        height: root.blockH + 2 * root.pad
+        radius: Math.max(root.pad, root.fontPx * 0.1) * 1.2
         color: Theme.surfaceContainer
         opacity: root.backgroundOpacity
     }
 
     // One digit, placed by its ink box rather than its line box.
-    // col 0 ends its ink at the centre line (plus overlap); col 1 starts there.
+    // Col 0 starts at the left edge of its row, col 1 ends at the right edge.
     component Digit: Text {
         id: d
         required property int slot
@@ -121,10 +141,8 @@ DesktopPluginComponent {
         }
         readonly property rect box: ink.tightBoundingRect
 
-        // Each row is centred as a pair, so a narrow "1" doesn't skew it.
-        readonly property real overlap: root.overlapX * root.fontPx
-        readonly property real rowW: root.inkW(row * 2) + root.inkW(row * 2 + 1) - overlap
-        x: (col === 0 ? (root.width - rowW) / 2 : (root.width + rowW) / 2 - box.width) - box.x
+        readonly property real rowW: root.rowW(row)
+        x: (col === 0 ? root.centerX - rowW / 2 : root.centerX + rowW / 2 - box.width) - box.x
         // Baselines: row 0 sits a cap-height above centre, row 1 below it.
         readonly property real baseY: root.height / 2
             + (row === 0 ? -root.overlapY * root.fontPx / 2 : root.capH - root.overlapY * root.fontPx / 2)
@@ -136,12 +154,16 @@ DesktopPluginComponent {
         id: back
         anchors.fill: parent
         layer.enabled: true
+        // Rendered at 2x and thresholded softly: the mask is a union of offset
+        // copies, and a hard threshold at 1x left a stair-stepped cut edge.
+        layer.textureSize: Qt.size(width * 2, height * 2)
+        layer.smooth: true
         layer.effect: MultiEffect {
             maskEnabled: true
             maskInverted: true
             maskSource: gapMask
             maskThresholdMin: 0.5
-            maskSpreadAtMin: 0.2
+            maskSpreadAtMin: 0.5
         }
 
         Digit { slot: 1; color: root.backColor }
@@ -154,6 +176,8 @@ DesktopPluginComponent {
         anchors.fill: parent
         visible: false
         layer.enabled: true
+        layer.textureSize: Qt.size(width * 2, height * 2)
+        layer.smooth: true
 
         Repeater {
             model: 24
