@@ -78,6 +78,16 @@ in
     {
       options.dafos.services.polaris = {
         enable = lib.mkEnableOption "the Polaris game stream host";
+        gpu = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "1002:747e";
+          description = ''
+            PCI vendor:device of the GPU the headless gamescope renders on.
+            null keeps the OS device order, which on hosts with an iGPU can
+            pick the iGPU. The encoder GPU is chosen separately in the web UI.
+          '';
+        };
       };
 
       # Upstream's nix/modules/nixos.nix, inlined: it declares
@@ -127,6 +137,7 @@ in
 
           services.polaris = packages // {
             enable = true;
+            preferVkDevice = cfg.gpu;
           };
 
           # Upstream seeds polaris.conf with encoder = nvenc. Seed the same file

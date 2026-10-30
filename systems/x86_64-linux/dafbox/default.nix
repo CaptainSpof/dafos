@@ -90,7 +90,11 @@ in
 
     services.syncthing = enabled;
     # Trialling Polaris in place of Sunshine (same GameStream ports).
-    services.polaris = enabled;
+    services.polaris = {
+      enable = true;
+      # RX 7800 XT, not the 7800X3D's Radeon 610M iGPU.
+      gpu = "1002:747e";
+    };
     services.moondeck-buddy = enabled;
     # Backs the DMS proofreader plugin (localhost only).
     services.languagetool = {
