@@ -1,6 +1,7 @@
 # Veranda TV (daftv) scripts: the start-up, called when the Google TV
 # Streamer wakes ("Véranda · daftv Controller", "Véranda · Cube Controller",
-# "Véranda · Switch Extras"), and the volume steps.
+# "Véranda · Switch Extras"), the speakers' own start-up (also on the cube and
+# the Maison dashboard's TV pop-up), and the volume steps.
 #
 # They were UI scripts (scripts/media_players.yaml) that targeted devices by
 # id; the ZHA → Zigbee2MQTT move of the TV plug (2026-10-20) and re-added
@@ -53,6 +54,14 @@ let
       }
     ];
   };
+
+  speakersStep = direction: {
+    alias = "${if direction == "up" then "Increase" else "Decrease"} TV speakers volume";
+    description = "Two infrared steps on the TV speakers. Managed in Nix (modules/nixos/services/home-assistant/tv.nix).";
+    icon = "mdi:volume-${if direction == "up" then "plus" else "minus"}";
+    mode = "queued";
+    sequence = [ (speakers "Speakers volume ${direction}" "vol_${direction}" 2) ];
+  };
 in
 {
   scripts = {
@@ -74,13 +83,30 @@ in
         }
         # The TV boots before it takes the speakers' input
         { delay.seconds = 15; }
-        (speakers "Turn on the TV speakers" "power" 1)
-        { delay.seconds = 10; }
-        (speakers "Select the optical input" "opt1" 1)
+        { action = "script.turn_on_tv_speakers"; }
         { delay.seconds = 10; }
         { action = "script.increase_tv_volume"; }
       ];
     };
+
+    # The learned `power` code is the remote's power key, which on IR speakers
+    # is usually a toggle: from the cube or the dashboard, run it only while
+    # they are off
+    turn_on_tv_speakers = {
+      alias = "Turn On TV Speakers";
+      description = "Turns the TV speakers on by infrared and selects the optical input (the TV). Managed in Nix (modules/nixos/services/home-assistant/tv.nix).";
+      icon = "mdi:speaker";
+      mode = "single";
+      sequence = [
+        (speakers "Turn on the TV speakers" "power" 1)
+        { delay.seconds = 10; }
+        (speakers "Select the optical input" "opt1" 1)
+      ];
+    };
+
+    # The speakers alone, for the dashboard: the streamer may be asleep
+    increase_tv_speakers_volume = speakersStep "up";
+    decrease_tv_speakers_volume = speakersStep "down";
 
     increase_tv_volume = volumeStep "up";
     decrease_tv_volume = volumeStep "down";
