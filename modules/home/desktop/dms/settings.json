@@ -372,14 +372,15 @@
 			"name": "Pixel Clock",
 			"enabled": true,
 			"config": {
-				"displayPreferences": ["all"],
+				"displayPreferences": [],
 				"backgroundOpacity": 0,
-				"roundness": 100,
-				"weight": 850,
+				"roundness": 80,
+				"weight": 880,
 				"showOnOverlay": false,
 				"showOnOverview": true,
-				"clickThrough": true,
-				"syncPositionAcrossScreens": true
+				"clickThrough": false,
+				"syncPositionAcrossScreens": false,
+				"align": "right"
 			}
 		}
 	],

@@ -20,14 +20,12 @@
 #define BASE 0
 #define QWERTY 1
 #define PLAIN 2
-#define SYM 3
-#define NUMROW 4
-#define NAV 5
-#define NUMPAD 6
-#define FUN 7
-#define ACCENT 8
-#define SWITCHER 9
-#define MAGIC 10
+#define NAV 3
+#define NUMPAD 4
+#define FUN 5
+#define ACCENT 6
+#define SWITCHER 7
+#define MAGIC 8
 
 #define TAP_TIMEOUT 250
 #define HOLD_TIMEOUT 250
@@ -62,7 +60,7 @@
             bindings = <&kp>, <&spc_noshift>;
         };
 
-        // @sym, @esw: layer when held, key when tapped.
+        // Enter/Nav, @esw: layer when held, key when tapped.
         ltb: layer_tap_balanced {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
@@ -173,13 +171,6 @@
         TAP3(oe, PAUSE_BREAK, E, D)
         TAP3(ae, PAUSE_BREAK, A, D)
 
-        // Numrow layer, bottom row: ★ latch then a digit (@dk1-5).
-        TAP2(dk1, O, N1)
-        TAP2(dk2, O, N2)
-        TAP2(dk3, O, N3)
-        TAP2(dk4, O, N4)
-        TAP2(dk5, O, N5)
-
         rgb_ug_status_macro: rgb_ug_status_macro_0 {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -213,7 +204,7 @@
         // deflayer/base_lt_hrm.kbd. Thumbs, outer to inner (unlike the
         // laptop, Backspace is Shift on the right thumb, Alt is only on S):
         //   left  lower: Space/Shift  Tab        F23/Super
-        //   right lower: Bspc/Shift   Enter/Sym  AltGr
+        //   right lower: Bspc/Shift   Enter/Nav  AltGr
         // Upper thumb rows keep the Glove80 defaults (inner left is Del).
         // Esc (tap) / layer switcher (hold) sits on the Glove80 Esc key.
         base_layer {
@@ -223,7 +214,7 @@
             &kp TAB            &kp Q    &kp W            &kp E            &kp R            &kp T                                                                           &kp Y   &kp U   &kp I   &acc              &kp P             &kp BSLH
             &ltb SWITCHER ESC  &kp A    &hrm LALT S      &hrm LCTRL D     &hrm LGUI F      &kp G                                                                           &kp H   &kp J   &hrm RCTRL K      &hrm RALT L       &ltn NAV SEMI     &kp SQT
             &kp GRAVE          &kp Z    &kp X            &kp C            &kp V            &kp B   &kp LSHFT      &kp LCTRL     &kp DEL       &kp LGUI  &kp RCTRL      &kp RSHFT       &kp N   &kp M   &kp COMMA         &kp DOT           &kp FSLH          &kp PG_UP
-            &magic MAGIC 0     &kp HOME &kp END          &kp LEFT         &kp RIGHT                &ssp LSHFT 0   &kp TAB       &met LGUI F23 &kp RALT  &ltb SYM RET   &th RSHFT BSPC          &kp UP  &kp DOWN          &kp LBKT          &kp RBKT          &kp PG_DN
+            &magic MAGIC 0     &kp HOME &kp END          &kp LEFT         &kp RIGHT                &ssp LSHFT 0   &kp TAB       &met LGUI F23 &kp RALT  &ltb NAV RET   &th RSHFT BSPC          &kp UP  &kp DOWN          &kp LBKT          &kp RBKT          &kp PG_DN
             >;
         };
 
@@ -248,31 +239,6 @@
             &trans  &kp A   &kp S   &kp D   &kp F   &kp G                                                           &kp H   &kp J   &kp K   &kp L   &kp SEMI &trans
             &trans  &kp Z   &kp X   &kp C   &kp V   &kp B   &trans   &trans   &trans     &trans   &trans   &trans   &kp N   &kp M   &kp COMMA &kp DOT &kp FSLH &trans
             &trans  &trans  &trans  &trans  &trans          &kp BSPC &kp DEL  &kp LALT   &kp RALT &kp RET  &kp SPACE         &trans  &trans  &trans  &trans  &trans
-            >;
-        };
-
-        // deflayer/symbols_noop_num.kbd: AltGr layer (fr(ergol) has the
-        // symbols on AltGr already); the Tab thumb holds the numrow layer.
-        symbols_layer {
-            bindings = <
-            &trans  &trans      &trans      &trans      &trans                                                                                          &trans      &trans      &trans          &trans        &trans
-            &trans  &kp RA(N1)  &kp RA(N2)  &kp RA(N3)  &kp RA(N4)  &kp RA(N5)                                                             &kp RA(N6)  &kp RA(N7)  &kp RA(N8)  &kp RA(N9)      &kp RA(N0)    &trans
-            &trans  &kp RA(Q)   &kp RA(W)   &kp RA(E)   &kp RA(R)   &kp RA(T)                                                              &kp RA(Y)   &kp RA(U)   &kp RA(I)   &kp RA(O)       &kp RA(P)     &trans
-            &trans  &kp RA(A)   &kp RA(S)   &kp RA(D)   &kp RA(F)   &kp RA(G)                                                              &kp RA(H)   &kp RA(J)   &kp RA(K)   &kp RA(L)       &kp RA(SEMI)  &trans
-            &trans  &kp RA(Z)   &kp RA(X)   &kp RA(C)   &kp RA(V)   &kp RA(B)  &trans         &trans      &trans   &trans  &trans         &trans  &kp RA(N)   &kp RA(M)   &kp RA(COMMA) &kp RA(DOT)   &kp RA(FSLH)  &trans
-            &trans  &trans      &trans      &trans      &trans                 &kp RA(SPACE)  &mo NUMROW  &trans   &trans  &trans         &trans             &trans      &trans        &trans          &trans        &trans
-            >;
-        };
-
-        // deflayer/symbols_noop_num.kbd: numrow (Sym + left thumb).
-        numrow_layer {
-            bindings = <
-            &trans  &trans      &trans      &trans      &trans                                                                                          &trans      &trans      &trans      &trans      &trans
-            &trans  &trans      &trans      &trans      &trans      &trans                                                                 &trans      &trans      &trans      &trans      &trans      &trans
-            &trans  &kp LS(N1)  &kp LS(N2)  &kp LS(N3)  &kp LS(N4)  &kp LS(N5)                                                             &kp LS(N6)  &kp LS(N7)  &kp LS(N8)  &kp LS(N9)  &kp LS(N0)  &trans
-            &trans  &kp N1      &kp N2      &kp N3      &kp N4      &kp N5                                                                 &kp N6      &kp N7      &kp N8      &kp N9      &kp N0      &trans
-            &trans  &dk1        &dk2        &dk3        &dk4        &dk5       &trans         &trans   &trans   &trans  &trans         &trans  &none       &kp RA(K)   &kp DOT     &kp N       &kp RA(L)   &trans
-            &trans  &trans      &trans      &trans      &trans                 &kp LS(SPACE)  &trans   &trans   &trans  &trans         &trans             &trans      &trans      &trans      &trans      &trans
             >;
         };
 

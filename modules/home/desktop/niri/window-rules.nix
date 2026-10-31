@@ -29,9 +29,6 @@
     background-effect = {
       blur = true;
     };
-    default-column-width = {
-      proportion = 0.75;
-    };
     default-window-height = { };
   }
   {

@@ -1267,6 +1267,23 @@
         "type": "github"
       }
     },
+    "polaris": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792549096,
+        "narHash": "sha256-3NbuTI0n17d1Y/tBNWAnnN3vuN7VPRJQ85Rb3Zb3xJY=",
+        "owner": "papi-ux",
+        "repo": "polaris",
+        "rev": "a8db09c70ac147d1512e2b7d64dba2ddf95a01e8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "papi-ux",
+        "ref": "v1.5.0-beta.2",
+        "repo": "polaris",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "claude-desktop": "claude-desktop",
@@ -1298,6 +1315,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_5",
         "plasma-manager": "plasma-manager",
+        "polaris": "polaris",
         "snowfall-lib": "snowfall-lib",
         "sonora": "sonora",
         "sops-nix": "sops-nix_2",

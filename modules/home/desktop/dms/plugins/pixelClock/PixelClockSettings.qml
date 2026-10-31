@@ -16,6 +16,28 @@ PluginSettings {
         defaultValue: "24"
     }
 
+    SelectionSetting {
+        settingKey: "align"
+        label: "Alignment"
+        description: "Where the digits sit in the widget. The aligned side gets no margin: put the widget against a screen edge and align to that side to hug it."
+        options: [
+            { label: "Left", value: "left" },
+            { label: "Center", value: "center" },
+            { label: "Right", value: "right" }
+        ]
+        defaultValue: "center"
+    }
+
+    SliderSetting {
+        settingKey: "margin"
+        label: "Margin"
+        description: "Space around the digits, as a share of the widget's shorter side. None on the aligned side."
+        defaultValue: 13
+        minimum: 0
+        maximum: 30
+        unit: "%"
+    }
+
     SliderSetting {
         settingKey: "weight"
         label: "Weight"

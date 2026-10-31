@@ -201,6 +201,16 @@
       };
     };
 
+    # Game stream host (Sunshine/Apollo lineage), trialled on dafbox. Not
+    # consumed as a flake: its overlay forces cudaSupport and its own nixpkgs;
+    # the aspect callPackages the packages and imports the modules by path.
+    # No submodules here (Granite's nested SPIRV-Tools rev is off-branch and
+    # the flake fetcher can't reach it); the aspect fetchgits the build source.
+    polaris = {
+      url = "github:papi-ux/polaris/v1.5.0-beta.2";
+      flake = false;
+    };
+
     # Vault Integration
     vault-service = {
       url = "github:DeterminateSystems/nixos-vault-service";
