@@ -33,6 +33,8 @@ in
               hash = "sha256-UqhKYxnVfOM0VStHr0y49UzCPlZ8LYUyfp4VhIx4814=";
             };
             cudaSupport = false;
+            # Removed from nixpkgs (EOL); listed upstream but never used, pcre2 stays.
+            pcre = null;
           }).overrideAttrs
             (old: {
               # Upstream only adds vulkan-headers alongside CUDA, but cmake
