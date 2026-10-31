@@ -51,12 +51,16 @@ in
       # Upstream's HM module, with its scripts built under a shellcheck that
       # tolerates SC2030/SC2031 (info-level subshell-export notes in
       # polaris-gamescope-session that our newer shellcheck makes fatal).
+      # It also puts pkgs.steam in home.packages, which shadows the system
+      # Steam on PATH (autostart included) and drops its extest preload, so
+      # hand it the system package instead.
       hmModule =
         { pkgs, ... }@args:
         import "${src}/nix/modules/home-manager.nix" (
           args
           // {
             pkgs = pkgs // {
+              steam = config.programs.steam.package;
               writeShellApplication =
                 app:
                 pkgs.writeShellApplication (
@@ -88,6 +92,26 @@ in
             pick the iGPU. The encoder GPU is chosen separately in the web UI.
           '';
         };
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 47989;
+          description = ''
+            GameStream base port; the others are offsets from it, as in
+            Sunshine. Move it off the default to run alongside Sunshine, then
+            add the host in Moonlight as `<ip>:<port>`.
+          '';
+        };
+        name = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "dafbox-polaris";
+          description = ''
+            Host name Moonlight shows once paired. null keeps the hostname,
+            the same as a Sunshine on the same host. The mDNS instance name
+            stays the hostname regardless; avahi renames the second publisher
+            "<host> #2", which is harmless.
+          '';
+        };
       };
 
       # Upstream's nix/modules/nixos.nix, inlined: it declares
@@ -95,8 +119,8 @@ in
       config = lib.mkIf cfg.enable {
         assertions = [
           {
-            assertion = !config.services.sunshine.enable;
-            message = "Polaris and Sunshine bind the same GameStream ports; enable only one.";
+            assertion = !config.services.sunshine.enable || config.services.sunshine.settings.port != cfg.port;
+            message = "Polaris and Sunshine share a GameStream base port; move dafos.services.polaris.port.";
           }
         ];
 
@@ -109,18 +133,20 @@ in
         # Discovery (_nvstream); the avahi aspect already enables publishing.
         dafos.services.avahi.enable = lib.mkDefault true;
 
+        # Offsets from the base port, as in nixpkgs' sunshine module.
         networking.firewall = {
-          allowedTCPPorts = [
-            47984
-            47989
-            47990
-            48010
+          allowedTCPPorts = map (o: cfg.port + o) [
+            (-5)
+            0
+            1
+            21
           ];
-          allowedUDPPorts = [
-            47998
-            47999
-            48000
-            48010
+          allowedUDPPorts = map (o: cfg.port + o) [
+            9
+            10
+            11
+            13
+            21
           ];
         };
 
@@ -163,6 +189,33 @@ in
               ''} "$confdir/polaris.conf"
             fi
           '';
+
+          # Port and name are owned here, not by the web UI: rewritten on every
+          # activation (polaris.service only reads them when it starts).
+          home.activation.polarisConfOwned =
+            let
+              owned = {
+                port = toString cfg.port;
+              }
+              // lib.optionalAttrs (cfg.name != null) { sunshine_name = cfg.name; };
+            in
+            hm.lib.hm.dag.entryAfter [ "polarisConfSeed" ] (
+              ''
+                conf="$HOME/.config/polaris/polaris.conf"
+                polarisSet() {
+                  if ${pkgs.gnugrep}/bin/grep -q "^$1 *=" "$conf"; then
+                    ${pkgs.gnused}/bin/sed -i "s|^$1 *=.*|$1 = $2|" "$conf"
+                  else
+                    echo "$1 = $2" >> "$conf"
+                  fi
+                }
+              ''
+              + lib.concatStrings (
+                lib.mapAttrsToList (k: v: ''
+                  polarisSet ${k} ${lib.escapeShellArg v}
+                '') owned
+              )
+            );
         };
       };
     };

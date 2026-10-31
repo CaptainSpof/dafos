@@ -89,11 +89,15 @@ in
     };
 
     services.syncthing = enabled;
-    # Trialling Polaris in place of Sunshine (same GameStream ports).
+    # Trialling Polaris next to Sunshine: Sunshine keeps the default ports,
+    # Polaris moves up 1000; Moonlight adds it as 192.168.0.12:48989.
+    services.sunshine = enabled;
     services.polaris = {
       enable = true;
       # RX 7800 XT, not the 7800X3D's Radeon 610M iGPU.
       gpu = "1002:747e";
+      port = 48989;
+      name = "dafbox-polaris";
     };
     services.moondeck-buddy = enabled;
     # Backs the DMS proofreader plugin (localhost only).
