@@ -241,7 +241,9 @@ in
         x = 0;
         y = 0;
       };
-      variable-refresh-rate = true;
+      # Always-on VRR flickers at idle desktop frame rates; only games
+      # (window rule in modules/home/desktop/niri) turn it on.
+      variable-refresh-rate = "on-demand";
     };
     "HDMI-A-1" = {
       mode = {

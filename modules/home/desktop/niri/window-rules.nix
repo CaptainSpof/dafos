@@ -6,6 +6,15 @@
     matches = [ { app-id = "^steam_app_"; } ];
     open-fullscreen = true;
   }
+  # Games drive VRR on outputs set to "on-demand"; the desktop stays at a
+  # fixed refresh rate (VRR flickers the M27Q at idle frame rates).
+  {
+    matches = [
+      { app-id = "^steam_app_"; }
+      { app-id = "^gamescope$"; }
+    ];
+    variable-refresh-rate = true;
+  }
   {
     draw-border-with-background = false;
     geometry-corner-radius =
