@@ -262,6 +262,13 @@
           Wants=sops-nix.service
           After=sops-nix.service
         '';
+
+        # Those re-runs trip systemd's default start limit (5 in 10 s) whenever a
+        # switch restarts many containers at once; home-manager's own `sops-nix`
+        # step is then refused, its activation fails and deploy-rs rolls back
+        # (2026-11-01, a nix-podman-stacks bump). Each run only rewrites the same
+        # files, so it needs no limit.
+        systemd.user.services.sops-nix.Unit.StartLimitIntervalSec = 0;
       };
     };
 }
