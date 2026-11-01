@@ -14,10 +14,10 @@ let
   cfg = config.${namespace}.services.glance;
   domain = config.${namespace}.services.traefik.base-url;
 
-  dynacat = {
-    # renovate: versioning=semver
-    image = "docker.io/panonim/dynacat:3.0.1";
-  };
+  # nps ships both engines as stacks of the same shape, each named after its
+  # one container: `nps.stacks.<engine>.containers.<engine>`.
+  stack = cfg.engine;
+  stackCfg = config.nps.stacks.${stack};
 
   # `update-interval` is how Dynacat refreshes a widget in place; upstream
   # Glance does not know the key.
@@ -349,8 +349,6 @@ let
     traefik = "Reverse proxy";
   };
 
-  glanceCfg = config.nps.stacks.glance;
-
   # Same selection nps's extension.nix makes: a null category hides it.
   shown = lib.filterAttrs (_: c: c.glance.category != null) config.services.podman.containers;
 
@@ -464,7 +462,7 @@ let
           // lib.optionalAttrs (descriptions ? ${name}) { description = descriptions.${name}; }
         ) members;
       }
-      // lib.optionalAttrs glanceCfg.useSocketProxy {
+      // lib.optionalAttrs stackCfg.useSocketProxy {
         sock-path = config.nps.stacks.socket-proxy.address;
       }
     )
@@ -534,7 +532,7 @@ in
       })
     ];
 
-    services.podman.containers.glance.extraEnv = lib.mkMerge [
+    services.podman.containers.${stack}.extraEnv = lib.mkMerge [
       (lib.mkIf releaseCalendar (
         lib.listToAttrs (
           map (a: lib.nameValuePair (envName a) { fromFile = config.sops.secrets."${a}/api-key".path; }) arrs
@@ -547,11 +545,11 @@ in
     ];
 
     nps.stacks = {
-      glance = {
+      ${stack} = {
         enable = true;
 
         containers = {
-          glance = {
+          ${stack} = {
             expose = true;
             traefik.subDomain = cfg.subDomain;
 
@@ -573,12 +571,10 @@ in
             # container only sees its own overlay (see `hostDisks`).
           }
           // lib.optionalAttrs (cfg.engine == "dynacat") {
-            # Dynacat reads the same config format, and the `glance.*`
-            # container overrides too. It only looks for a different file
-            # name; a missing config would serve its first-run setup page,
-            # which lets anyone write the config.
-            image = lib.mkForce dynacat.image;
-            volumeMap.settings = lib.mkForce "${config.nps.stacks.glance.settings}:/app/config/dynacat.yml";
+            # The widgets read every container's `glance.*` entry: nps's
+            # `dynacat.*` copy lacks the per-stack icon overrides (lldap,
+            # karakeep). nps hides only the glance container from it.
+            glance.category = null;
           }
           // {
             volumes = lib.mapAttrsToList (key: d: "${d.source}:${hostfs}/${key}:ro") hostDisks;

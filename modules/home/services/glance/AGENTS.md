@@ -35,7 +35,8 @@
   child's status only shows in the parent's hover popover.
 - **nps's own docker-containers widgets are discarded** with `lib.mkForce` on
   `pages.home.columns.center.widgets`. Our widgets copy the shape of nps's
-  `modules/glance/extension.nix`; recheck it after an nps bump.
+  `modules/glance/extension.nix` (`modules/dynacat/extension.nix` generates the
+  same); recheck it after an nps bump.
 - **Page order is attribute-name order** (nps applies `attrValues`). `home`
   stays first, the rest are `p<N>-<slug>`.
 - **Disk usage = statfs on a bind-mounted directory.** Mount an empty or
@@ -45,12 +46,16 @@
   `hide = false` or it is hidden too.
 - UI strings are in French. Glance has no i18n, so the built-in labels
   (calendar, weather, "x hours ago") stay English.
-- **`engine = "dynacat"`** swaps the image for the Dynacat fork and mounts the
-  same config as `/app/config/dynacat.yml`. If that file is missing, Dynacat
-  serves a first-run setup page that lets anyone write the config. Validate with
-  `dynacat --config <file> config:validate`; it checks that `assets-path`
-  exists, so point it at a local directory when you run it outside the
-  container.
+- **`engine` picks the nps stack**: `nps.stacks.<engine>`, whose one container
+  carries the same name (`dynacat` on dafoltop: unit `podman-dynacat`). The
+  image comes with the nps input, so a Dynacat bump arrives with `flake.lock`,
+  not a Renovate PR. The widgets read every container's `glance.*` entry, not
+  nps's `dynacat.*` copy (it lacks the per-stack icon overrides), so the dynacat
+  container sets `glance.category = null` itself. If the config file is missing,
+  Dynacat serves a first-run setup page that lets anyone write the config.
+  Validate with `dynacat --config <file> config:validate`; it checks that
+  `assets-path` exists, so point it at a local directory when you run it outside
+  the container.
 - **Dynacat's UI editor is on by default, with no auth.** Keep
   `server.allow-editing = false`; Authelia does not stand in for it. The startup
   log warns when it is on.
@@ -82,9 +87,9 @@
   written the new file. Starting a container now runs sops-nix first, and the
   container checks its files (see `flake-modules/security/sops.nix`). If a value
   still comes out empty, check
-  `/run/user/1000/glance/extra_env/from_file_content` (lengths, not values) and
-  the unit's journal for that script's lines, then
-  `systemctl --user restart podman-glance`.
+  `/run/user/1000/<engine>/extra_env/from_file_content` (lengths, not values)
+  and the unit's journal for that script's lines, then
+  `systemctl --user restart podman-<engine>`.
 - `health.nix` (Accueil) lists only broken containers and host services and
   calls `hide` otherwise. Dynacat's `getResponse` rejects a 2xx non-JSON body as
   status 0 / "invalid response JSON", so that error counts as "up". Test both
