@@ -151,13 +151,13 @@
     };
 
     dank-material-shell = {
-      url = "github:AvengeMedia/DankMaterialShell";
+      url = "github:duxlabs-dev/dux-shell";
       # url = "git+file:///home/daf/Repositories/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     dank-calendar = {
-      url = "github:AvengeMedia/DankCalendar";
+      url = "github:duxlabs-dev/dux-calendar";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

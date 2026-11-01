@@ -1,5 +1,6 @@
 {
   config,
+  options,
   lib,
   namespace,
   ...
@@ -21,6 +22,13 @@ in
   config = mkIf cfg.enable {
     programs.dank-calendar = {
       enable = true;
+
+      # Upstream 07cd4c3 imports dux-go/wayland/client without refreshing its
+      # vendorHash, so the vendored modules lack that package. Drop this once
+      # upstream bumps the hash (the build then fails on a hash mismatch).
+      package = options.programs.dank-calendar.package.default.overrideAttrs {
+        vendorHash = "sha256-JT6mHK52mIJh4lzVWYVpqNY2S2oeinSWBIKaI3TiY34=";
+      };
 
       # dcal launches its embedded QML UI with `qs`. DMS already installs a
       # quickshell wrapped with QtWebSockets into home.packages; installing
