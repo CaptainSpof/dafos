@@ -31,6 +31,10 @@ bind yg composite js "git clone " + document.location.href.replace(/https?:\/\//
 
 " " Navigation
 bind R tabprev
+" " History back/forward on the ErgoL keys at physical H/L (defaults H/L would
+" " sit on physical h/,). L overrides the default `L forward`; I is unbound.
+bind L back
+bind I forward
 
 " " Focus last-used text input (restore default; -l keeps the count form, e.g. 3gi)
 bind gi focusinput -l
