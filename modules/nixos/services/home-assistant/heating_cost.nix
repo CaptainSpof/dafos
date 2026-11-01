@@ -41,7 +41,7 @@ in
   # No `initial`: it would reset the values on every restart.
   input_number = {
     heating_gas_price = price "Chauffage · Prix du gaz" "mdi:fire" 0.0001 "€/kWh";
-    heating_electricity_price = price "Chauffage · Prix de l'électricité" "mdi:flash" 0.0001 "€/kWh";
+    heating_electricity_price = price "Électricité · Prix du kWh" "mdi:flash" 0.0001 "€/kWh";
     stove_pellets_bag_price = price "Poêle · Prix d'un sac de granulés" "mdi:sack" 0.01 "€";
     heating_boiler_power =
       price "Chaudière · Puissance gaz moyenne en chauffe" "mdi:water-boiler" 0.5

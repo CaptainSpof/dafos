@@ -74,6 +74,9 @@ let
   # Estimated heating cost, boiler against stove.
   heatingCost = import ./heating_cost.nix { };
 
+  # Electricity cost of each metered appliance.
+  electricityCost = import ./electricity_cost.nix { inherit lib; };
+
   # Bedroom lights off once the room is empty.
   bedroomLights = import ./bedroom_lights.nix { };
 
@@ -533,6 +536,7 @@ in
           ++ heatingUsage.templates
           ++ pellets.templates
           ++ heatingCost.templates
+          ++ electricityCost.templates
           ++ deviceWatch.templates
           ++ activity.templates;
 
@@ -544,7 +548,7 @@ in
           inherit (pellets) input_button;
           input_number =
             import ./sensors/input_numbers.nix // pellets.input_number // heatingCost.input_number;
-          inherit (heatingCost) utility_meter;
+          utility_meter = heatingCost.utility_meter // electricityCost.utility_meter;
           input_text = import ./sensors/input_texts.nix // appliancePrograms.input_text;
           sensor = [
             {
