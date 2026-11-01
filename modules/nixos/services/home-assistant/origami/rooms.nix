@@ -255,7 +255,8 @@
       humidity = "sensor.desk_air_quality_monitor_humidity";
       opening = "binary_sensor.desk_door_sensor_contact";
       climate = "climate.desk_radiator_thermostat";
-      presence = null;
+      # No presence sensor here: somebody using dafbox (../desk_presence.nix).
+      presence = "binary_sensor.desk_dafbox_in_use";
       activity = [
         "sensor.desk_switch_action"
         "sensor.desk_switch_desk_side_action"
