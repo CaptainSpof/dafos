@@ -37,8 +37,9 @@
 #
 # Room table: valve, presence entities, comfort windows (input_datetime ids or
 # "HH:MM", wrapping past midnight; an optional third element overrides comfort
-# for that window, first match wins), comfort/eco temperatures. Change heating
-# behaviour here, not with per-room automations.
+# for that window, first match wins), comfort/eco temperatures; ground_floor
+# rooms stay on eco while only the desk is in use (ground_idle below). Change
+# heating behaviour here, not with per-room automations.
 _:
 
 let
@@ -85,6 +86,7 @@ let
     {
       name = "Kitchen";
       climate = "climate.kitchen_radiator_thermostat";
+      ground_floor = true;
       presence = [
         "binary_sensor.global_maybe_home_occupied"
       ];
@@ -104,6 +106,7 @@ let
     {
       name = "Véranda";
       climate = "climate.veranda_radiator";
+      ground_floor = true;
       presence = [
         "binary_sensor.global_maybe_home_occupied"
       ];
@@ -145,8 +148,10 @@ let
     {
       name = "Desk";
       climate = "climate.desk_radiator_thermostat";
+      # Somebody at dafbox (./desk_presence.nix); device_tracker.dafbox
+      # stayed home all day, so the desk was heated while nobody sat there.
       presence = [
-        "device_tracker.dafbox"
+        "binary_sensor.desk_dafbox_in_use"
       ];
       windows = [
         [
@@ -227,7 +232,8 @@ in
             "person.joaquim_da_fonseca"
             "person.myriam_da_fonseca"
             "person.johan"
-            "device_tracker.dafbox"
+            "binary_sensor.desk_dafbox_in_use"
+            "binary_sensor.heating_ground_floor_idle"
             "binary_sensor.global_maybe_home_occupied"
             "binary_sensor.global_home_is_occupied"
           ];
@@ -638,7 +644,7 @@ in
                           {% set e = states(w[1])[:5] if w[1].startswith('input_datetime.') else w[1] %}
                           {% if ns.t == 0 and ((s <= e and s <= hm < e) or (s > e and (hm >= s or hm < e))) %}{% set ns.t = w[2] if w | count > 2 else repeat.item.comfort %}{% endif %}
                         {% endfor %} {{ ns.t }}'';
-                      present = "{{ returning or repeat.item.presence | select('is_state', ['home', 'on']) | list | count > 0 }}";
+                      present = "{{ returning or (not (ground_idle and repeat.item.get('ground_floor', false)) and repeat.item.presence | select('is_state', ['home', 'on']) | list | count > 0) }}";
                       arrival = ''
                         {% set p = repeat.item.get('arrival_comfort') %} {{ p is not none and is_state(p, 'home')
                            and now() - states[p].last_changed < timedelta(hours=3) }}'';
@@ -680,15 +686,15 @@ in
                 hm = "{{ now().strftime('%H:%M') }}";
                 stove = ''
                   {% set t = trigger.id %} {% if t == 'stove-off' or t == 'stove-warm' or (t == 'stove-toggle' and is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on')) or (t == 'slot' and hm == '22:45') or (t == 'mode' and away) or (t == 'house-empty' and away) %}off {% elif t == 'stove-on' or (t == 'stove-toggle' and not (is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on') and is_state('switch.living_room_stove_switch', 'on'))) %}on
-                  {% elif season and not away and stove_start <= hm < '21:00'
+                  {% elif season and not away and not ground_idle and stove_start <= hm < '21:00'
                        and is_state('binary_sensor.global_home_is_occupied', 'on')
                        and (states('sensor.living_room_current_temperature') | float(none) if has_value('sensor.living_room_current_temperature') else states('sensor.veranda_temperature_sensor_temperature') | float(none)) | float(99) < 19
                        and (t == 'stove-morning'
                             or (t == 'mode' and not away)
                             or (t == 'season' and season)
                             or t == 'stove-cold'
-                            or (t == 'presence' and trigger.entity_id == 'binary_sensor.global_home_is_occupied'
-                                and trigger.to_state.state == 'on')) %}on
+                            or (t == 'presence' and trigger.entity_id in ['binary_sensor.global_home_is_occupied', 'binary_sensor.heating_ground_floor_idle']
+                                and trigger.to_state.state == ('on' if trigger.entity_id == 'binary_sensor.global_home_is_occupied' else 'off'))) %}on
                   {% else %}keep{% endif %}'';
                 stove_cooldown_ok = "{% set last = states('input_datetime.heating_last_stove_command') | as_datetime(none) %} {{ last is none or now() - last | as_local > timedelta(minutes=45) }}";
                 stove_manual_off_ok = "{% set last = states('input_datetime.heating_last_stove_command') | as_datetime(none) %} {% set lit = states('sensor.heating_stove_last_start') | as_datetime(none) %} {{ trigger.id in ['stove-off', 'stove-toggle'] and last is not none and lit is not none and lit >= (last | as_local) - timedelta(minutes=1) }}";
@@ -924,6 +930,12 @@ in
         absent = "{{ is_state('input_select.heating_mode', 'Absent') }}";
         inherit rooms;
         season = "{{ is_state('binary_sensor.global_is_cold_season', 'on') }}";
+        # Only the desk is in use and the ground floor has been empty for
+        # 30 min (./desk_presence.nix): the ground-floor rooms (ground_floor in
+        # the room table) drop to eco and the stove is not started; a stove
+        # already burning is left to its warm/22:45 rules. Back downstairs,
+        # they return to the table and the stove may start.
+        ground_idle = "{{ is_state('binary_sensor.heating_ground_floor_idle', 'on') }}";
         # Mode Absent, or nobody home for 1 h (dafbox stays `home` all day, so
         # an empty house still got heated). The hour comes from the recorder: a
         # state's last_changed restarts at every HA restart.

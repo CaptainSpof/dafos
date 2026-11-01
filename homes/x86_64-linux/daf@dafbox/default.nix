@@ -141,6 +141,10 @@ in
 
     services.kanata-notify = enabled;
 
+    # The desk heating follows whether dafbox is in use
+    # (flake-modules/services/desk-presence.nix).
+    services.desk-presence = enabled;
+
     services.sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafbox.pem" ];
 
     system.xdg = enabled;

@@ -83,6 +83,9 @@ let
   # Zigbee/Matter devices that dropped off, with a phone alert.
   deviceWatch = import ./device_watch.nix { };
 
+  # dafbox in use at the desk, ground floor left empty (heating).
+  deskPresence = import ./desk_presence.nix { };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -130,6 +133,15 @@ in
       sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/zigbee2mqtt.yaml";
       # EnvironmentFile is only read at start, so a rotated token needs one.
       restartUnits = [ "zigbee2mqtt.service" ];
+    };
+
+    # Webhook dafbox pushes its desk presence to (./desk_presence.nix); dafbox's
+    # pusher reads the same file (flake-modules/services/desk-presence.nix).
+    sops.secrets."dafbox-presence/webhook-id" = {
+      sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/dafbox-presence.yaml";
+      key = "webhook-id";
+      owner = "hass";
+      restartUnits = [ "home-assistant.service" ];
     };
 
     # Shared with Frigate's home-manager stack (modules/home/services/frigate).
@@ -538,7 +550,8 @@ in
           ++ heatingCost.templates
           ++ electricityCost.templates
           ++ deviceWatch.templates
-          ++ activity.templates;
+          ++ activity.templates
+          ++ deskPresence.templates config.sops.secrets."dafbox-presence/webhook-id".path;
 
           input_boolean =
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
@@ -568,7 +581,8 @@ in
           ++ origami.platformSensors
           ++ heatingUsage.platformSensors
           ++ heatingController.platformSensors
-          ++ pellets.platformSensors;
+          ++ pellets.platformSensors
+          ++ deskPresence.platformSensors;
 
           # No `zha:` block: ZHA is config-flow only. It reads the coordinator
           # from the config entry and `create_zha_config` overwrites whatever
