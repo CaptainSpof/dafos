@@ -11,6 +11,19 @@ let
   inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.suites.video;
+
+  # The streaming server only probes FHS paths for ffmpeg; without it casting
+  # (which transcodes) spawns `null` and fails.
+  stremioWithFfmpeg = pkgs.symlinkJoin {
+    name = "stremio-linux-shell-with-ffmpeg";
+    paths = [ pkgs.stremio-linux-shell ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/stremio \
+        --set FFMPEG_BIN ${lib.getExe' pkgs.ffmpeg "ffmpeg"} \
+        --set FFPROBE_BIN ${lib.getExe' pkgs.ffmpeg "ffprobe"}
+    '';
+  };
 in
 {
   options.${namespace}.suites.video = {
@@ -29,10 +42,13 @@ in
         vlc
         yt-dlp
         freetube
-        stremio-linux-shell
+        stremioWithFfmpeg
       ]
       ++ lib.optionals cfg.jellyfin.enable [ jellyfin-media-player ]
-      ++ lib.optionals cfg.mpv.enable [ mpv haruna ]
+      ++ lib.optionals cfg.mpv.enable [
+        mpv
+        haruna
+      ]
       ++ lib.optionals cfg.editing.enable [ kdenlive ];
 
     dafos = {
