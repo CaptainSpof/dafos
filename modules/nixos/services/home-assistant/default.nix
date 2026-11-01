@@ -71,6 +71,9 @@ let
   # Pellet tank estimate and refill alert.
   pellets = import ./pellets.nix { };
 
+  # Estimated heating cost, boiler against stove.
+  heatingCost = import ./heating_cost.nix { };
+
   # Bedroom lights off once the room is empty.
   bedroomLights = import ./bedroom_lights.nix { };
 
@@ -529,6 +532,7 @@ in
           ]
           ++ heatingUsage.templates
           ++ pellets.templates
+          ++ heatingCost.templates
           ++ deviceWatch.templates
           ++ activity.templates;
 
@@ -538,7 +542,9 @@ in
           input_datetime =
             import ./sensors/input_datetimes.nix // netatmoWatchdog.input_datetime // pellets.input_datetime;
           inherit (pellets) input_button;
-          input_number = import ./sensors/input_numbers.nix // pellets.input_number;
+          input_number =
+            import ./sensors/input_numbers.nix // pellets.input_number // heatingCost.input_number;
+          inherit (heatingCost) utility_meter;
           input_text = import ./sensors/input_texts.nix // appliancePrograms.input_text;
           sensor = [
             {
