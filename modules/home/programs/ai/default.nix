@@ -26,6 +26,19 @@ let
   mcpNixosPkg = inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.default;
   mcpNixos = getExe' mcpNixosPkg "mcp-nixos";
 
+  # Journal of AI work; the global Claude rule tells the agent to call it.
+  aiLog = pkgs.writeShellApplication {
+    name = "ai-log";
+    runtimeInputs = with pkgs; [
+      coreutils
+      curl
+      git
+      hostname
+      jq
+    ];
+    text = builtins.readFile ./ai-log.sh;
+  };
+
   # The stdio MCP server entry, shared by every Claude client.
   nixosServer = {
     type = "stdio";
@@ -76,7 +89,12 @@ in
       (mkIf cfg.claude.desktop.enable [ pkgs.claude-desktop-fhs ])
       (mkIf cfg.antigravity.cli.enable [ pkgs.antigravity-cli ])
       (mkIf anyClaude [ mcpNixosPkg ])
+      (mkIf cfg.claude.code.enable [ aiLog ])
     ];
+
+    home.file.".claude/CLAUDE.md" = mkIf cfg.claude.code.enable {
+      source = ./claude-global.md;
+    };
 
     # Register the nixos MCP server with each enabled Claude client. The config
     # files are rewritten by the apps at runtime, so we can't symlink them from
