@@ -35,7 +35,16 @@ in
         mangohud
         # nixpkgs' pince passes each makeWrapperArgs flag as one spaced string,
         # which only word-splits with structured attrs off.
-        (pince.overrideAttrs { __structuredAttrs = false; })
+        # Default signal table stops on SIGPIPE: Unity's telemetry thread hits
+        # one on every failed upload, freezing Proton games until detach. This
+        # only seeds new/reset settings; an existing PINCE.conf keeps its table.
+        (pince.overrideAttrs (old: {
+          __structuredAttrs = false;
+          postPatch = (old.postPatch or "") + ''
+            substituteInPlace GUI/Settings/settings.py \
+              --replace-fail '["SIGPIPE", True, True]' '["SIGPIPE", False, True]'
+          '';
+        }))
         protontricks
         protonup-ng
         protonup-qt
