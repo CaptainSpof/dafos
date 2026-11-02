@@ -56,6 +56,13 @@ in
       # It also puts pkgs.steam in home.packages, which shadows the system
       # Steam on PATH (autostart included) and drops its extest preload, so
       # hand it the system package instead.
+      # The gamescope session gets that Steam minus extest, ahead on its PATH:
+      # gamescope's own Xwayland takes XTest natively, and extest there finds
+      # no WAYLAND_DISPLAY and aborts Steam on the first trackpad motion.
+      steamNoExtest = config.programs.steam.package.override (prev: {
+        extraEnv = removeAttrs (prev.extraEnv or { }) [ "LD_PRELOAD" ];
+      });
+
       hmModule =
         { pkgs, ... }@args:
         import "${src}/nix/modules/home-manager.nix" (
@@ -67,6 +74,9 @@ in
                 app:
                 pkgs.writeShellApplication (
                   app
+                  // lib.optionalAttrs (app.name == "polaris-gamescope-session") {
+                    runtimeInputs = app.runtimeInputs ++ [ steamNoExtest ];
+                  }
                   // {
                     excludeShellChecks = (app.excludeShellChecks or [ ]) ++ [
                       "SC2030"
