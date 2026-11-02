@@ -82,6 +82,10 @@ let
       # installs Cyberpunk collections natively
       "nexusmods-app-unfree-0.21.1"
     ];
+    # nixpkgs marks gtk2 broken ahead of its removal (NixOS/nixpkgs#410814),
+    # but lutris' FHS env still ships it for old games. Drop once lutris
+    # no longer pulls it in.
+    problems.handlers."gtk+".broken = "warn";
   };
 
   # ------------------------------------------------------------------
