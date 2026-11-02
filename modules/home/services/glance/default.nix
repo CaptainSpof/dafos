@@ -66,6 +66,11 @@ let
   # Where host filesystems appear inside the container, for server-stats.
   hostfs = "/hostfs";
 
+  # The security-status aspect's JSON, mounted under Dynacat's assets
+  # (nps sets `assets-path = /app/assets`) and read back from its own port.
+  securityStatus = config.${namespace}.services.security-status or { enable = false; };
+  securityAssets = "/app/assets/security";
+
   # The filesystems server-stats reports, also handed to this host's Glance
   # agent so the « État des hôtes » widget can warn about a full one. Keys
   # name the path under `hostfs`. Each source is a directory that holds
@@ -577,7 +582,10 @@ in
             glance.category = null;
           }
           // {
-            volumes = lib.mapAttrsToList (key: d: "${d.source}:${hostfs}/${key}:ro") hostDisks;
+            volumes =
+              lib.mapAttrsToList (key: d: "${d.source}:${hostfs}/${key}:ro") hostDisks
+              # Read by the Sécurité page from Dynacat's own port (security.nix).
+              ++ lib.optional securityStatus.enable "${securityStatus.dir}:${securityAssets}:ro";
           };
         };
 
@@ -1121,6 +1129,37 @@ in
             ++ widgetsFor "monitoring";
           };
         };
+
+        settings.pages.p5-securite = lib.mkIf (cfg.engine == "dynacat" && securityStatus.enable) (
+          let
+            widgets = lib.mapAttrs (_: liveWidget) (
+              import ./security.nix {
+                url = "http://127.0.0.1:8080${lib.removePrefix "/app" securityAssets}/status.json";
+              }
+            );
+          in
+          {
+            name = "Sécurité";
+            slug = "securite";
+            columns = {
+              left = {
+                rank = 500;
+                size = "small";
+                widgets = [ widgets.defences ];
+              };
+              main = {
+                rank = 1000;
+                size = "full";
+                widgets = [ widgets.bans ];
+              };
+              right = {
+                rank = 1500;
+                size = "small";
+                widgets = [ widgets.attacks ];
+              };
+            };
+          }
+        );
       };
     };
   };

@@ -22,6 +22,14 @@
   custom-api widget with subrequests, a failing main request errors the whole
   widget. A category whose containers all moved away keeps its title on its
   monitor widget.
+- **Sécurité page** (`p5-securite`, `security.nix`): reads the `status.json` the
+  security-status aspect writes every 5 min
+  (`flake-modules/services/security-status.nix`: CrowdSec bans and 24 h alerts,
+  LAPI/CAPI, Authelia failures and regulation bans). Its directory is
+  bind-mounted under Dynacat's assets and read from Dynacat's own port, so no
+  server or port is added. Dynacat renders widgets before it listens, so the
+  file is fetched with `getResponse` in the template and a refused connection
+  reads « en attente » instead of an error box.
 - **A docker-containers widget needs `category`.** Glance lists every container
   on the socket and filters on it; without it each widget shows the whole host,
   databases included. The per-container overrides must carry the same category.
@@ -119,10 +127,10 @@
   the only raw HTML Dynacat renders into the page. Widget templates arrive via
   innerHTML, so their `<script>` never runs, though inline `onclick` does (CSP
   allows it). `window.dynacatRefreshWidget(id)` forces a widget refresh.
-- **Monitoring tab alert** (`monitoring-alert.js`): any element with the
-  `dafos-alert` class on the Monitoring page turns its tab red. Widgets add that
+- **Tab alerts** (`monitoring-alert.js`): any element with the `dafos-alert`
+  class on the Monitoring or Sécurité page turns that tab red. Widgets add that
   class to the alerts they render; the script reads the live DOM there and
-  fetches `/api/pages/monitoring/content/` every 2 min elsewhere.
+  fetches `/api/pages/<slug>/content/` every 2 min elsewhere.
 - **Group tabs survive live updates** (`group-tabs.js`): Dynacat 3.0.1 morphs a
   refreshed group back to its first tab (its tab-state save skips the refreshed
   widget itself). The script remembers each group's tab, in `localStorage` too,

@@ -62,6 +62,8 @@ let
         "services/securo" = securo;
         "services/socket-proxy" = socket-proxy;
         "services/sparky-fitness" = sparky-fitness;
+        # New aspect, no legacy module behind it: the key only places it.
+        "services/security-status" = security-status;
         "services/sops" = sops;
         "services/traefik" = traefik;
         "user" = user;

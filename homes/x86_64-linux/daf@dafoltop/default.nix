@@ -94,6 +94,8 @@ in
       # This host's temperature for the dashboard's Températures widget.
       glance-agent = enabled;
       immich-kiosk = enabled;
+      # CrowdSec and Authelia summary for the dashboard's Sécurité page.
+      security-status = enabled;
       # it-tools moved to dafpi (flake-modules/hosts/dafpi).
       # kaneo moved to dafpi (flake-modules/hosts/dafpi).
       # kitchenowl moved to dafpi (flake-modules/hosts/dafpi).
