@@ -205,7 +205,8 @@
         // laptop, Backspace is Shift on the right thumb, Alt is only on S):
         //   left  lower: Space/Shift  Tab        F23/Super
         //   right lower: Bspc/Shift   Enter/Nav  AltGr
-        // Upper thumb rows keep the Glove80 defaults (inner left is Del).
+        // Upper thumb rows keep the Glove80 defaults, except Del on the inner
+        // left and the outer right (above Bspc).
         // Esc (tap) / layer switcher (hold) sits on the Glove80 Esc key.
         base_layer {
             bindings = <
@@ -213,7 +214,7 @@
             &kp EQUAL          &kp N1   &kp N2           &kp N3           &kp N4           &kp N5                                                                          &kp N6  &kp N7  &kp N8  &kp N9            &kp N0            &kp MINUS
             &kp TAB            &kp Q    &kp W            &kp E            &kp R            &kp T                                                                           &kp Y   &kp U   &kp I   &acc              &kp P             &kp BSLH
             &ltb SWITCHER ESC  &kp A    &hrm LALT S      &hrm LCTRL D     &hrm LGUI F      &kp G                                                                           &kp H   &kp J   &hrm RCTRL K      &hrm RALT L       &ltn NAV SEMI     &kp SQT
-            &kp GRAVE          &kp Z    &kp X            &kp C            &kp V            &kp B   &kp LSHFT      &kp LCTRL     &kp DEL       &kp LGUI  &kp RCTRL      &kp RSHFT       &kp N   &kp M   &kp COMMA         &kp DOT           &kp FSLH          &kp PG_UP
+            &kp GRAVE          &kp Z    &kp X            &kp C            &kp V            &kp B   &kp LSHFT      &kp LCTRL     &kp DEL       &kp LGUI  &kp RCTRL      &kp DEL         &kp N   &kp M   &kp COMMA         &kp DOT           &kp FSLH          &kp PG_UP
             &magic MAGIC 0     &kp HOME &kp END          &kp LEFT         &kp RIGHT                &ssp LSHFT 0   &kp TAB       &met LGUI F23 &kp RALT  &ltb NAV RET   &th RSHFT BSPC          &kp UP  &kp DOWN          &kp LBKT          &kp RBKT          &kp PG_DN
             >;
         };
