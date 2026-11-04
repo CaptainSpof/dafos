@@ -1,6 +1,5 @@
 # Tells Home Assistant whether somebody is using this desktop: pushes
-# {"active": bool, "activity": game|video|music|code|terminal|web|other|""}
-# to an HA webhook every minute and on every change. Active =
+# {"active": bool} to an HA webhook every minute and on every change. Active =
 # the session is unlocked (DMS lock screen) and there was input in the last
 # idleSeconds; swayidle (ext-idle-notify) honours idle inhibitors, so a video
 # or a game holding one counts as input. Suspend pushes false right away; once
@@ -33,51 +32,21 @@
         runtimeInputs = [
           pkgs.coreutils
           pkgs.curl
-          pkgs.jq
-          pkgs.playerctl
-          pkgs.procps
           pkgs.swayidle
           config.programs.dank-material-shell.package
-          config.programs.niri.package
         ];
         text = ''
           state="$XDG_RUNTIME_DIR/desk-presence"
 
-          # What the screen shows, for the dashboard's desk icon: a running
-          # Steam game wins, then a playing MPRIS player, then the focused
-          # window's app.
-          activity() {
-            if pgrep -f 'SteamLaunch AppId=' >/dev/null; then
-              echo game
-              return
-            fi
-            local player
-            player=$(playerctl -a metadata --format '{{status}}|{{playerName}}|{{xesam:url}}' 2>/dev/null |
-              grep -m1 '^Playing|' || true)
-            case "$player" in
-              *'|spotify|'* | *'|strawberry|'* | *'|tidal'* | *music.youtube.com* | *deezer.com*) echo music; return ;;
-              Playing*) echo video; return ;;
-            esac
-            case "$(niri msg -j focused-window 2>/dev/null | jq -r '.app_id // empty' | tr '[:upper:]' '[:lower:]')" in
-              *emacs* | code | code-* | codium | *zed* | *jetbrains*) echo code ;;
-              *wezterm* | *kitty* | foot | *alacritty* | *ghostty* | *konsole*) echo terminal ;;
-              *firefox* | *chromium* | *chrome* | *zen*) echo web ;;
-              steam | *gamescope* | *ryujinx* | *lutris* | *heroic*) echo game ;;
-              *) echo other ;;
-            esac
-          }
-
           push() {
-            local active=false what=""
+            local active=false
             if [ "''${1:-}" != off ] &&
               [ "$(cat "$state" 2>/dev/null || echo active)" = active ] &&
               [ "$(dms ipc call lock isLocked 2>/dev/null)" != true ]; then
               active=true
-              what=$(activity)
             fi
             curl -fsS --max-time 10 -o /dev/null -X POST \
-              -H 'Content-Type: application/json' \
-              -d "{\"active\": $active, \"activity\": \"$what\"}" \
+              -H 'Content-Type: application/json' -d "{\"active\": $active}" \
               ${lib.escapeShellArg cfg.url}"/api/webhook/$(cat ${
                 config.sops.secrets."dafbox-presence/webhook-id".path
               })" || echo "push to Home Assistant failed" >&2

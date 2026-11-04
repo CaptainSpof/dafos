@@ -63,9 +63,6 @@ in
           device_class = "occupancy";
           icon = "mdi:monitor-account";
           state = "{{ trigger.json.active | default(false) | bool(false) }}";
-          # What the screen shows (game, video, music, code, terminal, web,
-          # other); drives the pictogram in the Maison dashboard's desk icon.
-          attributes.activity = "{{ trigger.json.activity | default('') }}";
           auto_off.minutes = 3;
         }
       ];
