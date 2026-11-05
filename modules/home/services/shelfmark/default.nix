@@ -6,8 +6,7 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf types;
-  inherit (lib.${namespace}) mkOpt;
+  inherit (lib) mkEnableOption mkIf;
 
   cfg = config.${namespace}.services.shelfmark;
   bookorbitUrl = "https://${
@@ -18,7 +17,6 @@ in
 
   options.${namespace}.services.shelfmark = {
     enable = mkEnableOption "Whether or not to configure shelfmark.";
-    subDomain = mkOpt types.str "shelfmark" "The base url";
   };
 
   config = mkIf cfg.enable {

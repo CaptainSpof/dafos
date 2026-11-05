@@ -7,8 +7,8 @@
 }:
 
 let
-  inherit (lib) mkIf types;
-  inherit (lib.${namespace}) mkBoolOpt mkOpt;
+  inherit (lib) mkIf;
+  inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.programs.rustdesk;
 in
@@ -23,7 +23,6 @@ in
     # needs the app to connect out.
     unattended.enable = mkBoolOpt true "Whether or not to run the unattended agent (controllable target).";
 
-    direct-access-port = mkOpt types.int 21118 "Port RustDesk listens on for direct IP access.";
   };
 
   config = mkIf cfg.enable {
@@ -47,8 +46,8 @@ in
       Install.WantedBy = [ "graphical-session.target" ];
     };
 
-    home.activation.rustdeskUnattended =
-      mkIf cfg.unattended.enable (config.lib.dag.entryAfter [ "sops-nix" "writeBoundary" ] ''
+    home.activation.rustdeskUnattended = mkIf cfg.unattended.enable (
+      config.lib.dag.entryAfter [ "sops-nix" "writeBoundary" ] ''
         cfgdir="$HOME/.config/rustdesk"
         toml="$cfgdir/RustDesk2.toml"
         secret=${lib.escapeShellArg config.sops.secrets."rustdesk-password".path}
@@ -70,6 +69,7 @@ in
 
         # Pick up the seeded config.
         run ${pkgs.systemd}/bin/systemctl --user try-restart rustdesk.service || true
-      '');
+      ''
+    );
   };
 }

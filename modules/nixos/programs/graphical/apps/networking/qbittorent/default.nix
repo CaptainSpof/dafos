@@ -15,7 +15,6 @@ in
 {
   options.${namespace}.apps.qbittorrent = {
     enable = mkBoolOpt false "Whether or not to enable qbittorent.";
-    nox.enable = mkBoolOpt false "Whether or not to enable qbittorent-nox.";
     port = mkOpt types.port 9080 "The port the WebUI listens on.";
   };
 

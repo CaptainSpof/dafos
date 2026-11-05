@@ -6,8 +6,7 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf types;
-  inherit (lib.${namespace}) mkOpt;
+  inherit (lib) mkEnableOption mkIf;
   inherit (config.${namespace}.services) lldap;
 
   cfg = config.${namespace}.services.authelia;
@@ -16,8 +15,6 @@ in
 
   options.${namespace}.services.authelia = {
     enable = mkEnableOption "Whether or not to configure authelia.";
-    base-url = mkOpt types.str "authelia.daftdaf.dev" "The base url";
-    port = mkOpt types.int 8086 "The port";
   };
 
   config = mkIf cfg.enable {

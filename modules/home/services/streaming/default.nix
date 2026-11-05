@@ -7,9 +7,9 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf types;
+  inherit (lib) mkEnableOption mkIf;
   inherit (lib.${namespace}) enabled;
-  inherit (lib.${namespace}) mkOpt mkBoolOpt;
+  inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.services.streaming;
 
@@ -193,7 +193,6 @@ in
 
   options.${namespace}.services.streaming = {
     enable = mkEnableOption "Whether or not to configure streaming.";
-    base-url = mkOpt types.str "streaming.daftdaf.dev" "The base url";
 
     jellyfin.ldapAuth.enable = mkBoolOpt true "Whether to authenticate Jellyfin against lldap with the official LDAP Authentication plugin.";
   };

@@ -22,7 +22,6 @@ in
       apps = {
         qbittorrent = {
           enable = false;
-          nox.enable = false;
         };
       };
     };
