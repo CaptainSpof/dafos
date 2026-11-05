@@ -61,6 +61,11 @@
                   INFERENCE_JOB_TIMEOUT_SEC = "600";
                 };
               };
+
+              # Meilisearch owns the search index on disk: keep it off the
+              # unattended Sunday registry pull like every other database here
+              # (see ./bar-assistant.nix), even though nps pins its tag.
+              containers.karakeep-meilisearch.autoUpdate = "local";
             };
           }
 
