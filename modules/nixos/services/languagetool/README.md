@@ -22,7 +22,7 @@ Nothing here is enabled yet. Do it only if daftop needs it — the JVM costs up 
    };
    ```
 
-2. In `modules/home/services/traefik/default.nix`, add a router and a service
+2. In `flake-modules/services/traefik.nix`, add a router and a service
    next to `zigbee2mqtt-nix`:
 
    ```nix

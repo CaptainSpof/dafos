@@ -81,7 +81,7 @@ podman exec -i grimmory-db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD
 On a rebuilt host, restore `/etc/ssh/ssh_host_*` and `~/.ssh/daf@dafoltop.pem`
 **first**, or the system secrets (including this repository's password, which
 dafbox can still decrypt) stop decrypting: see
-[secrets/AGENTS.md](../../../../secrets/AGENTS.md).
+[secrets/AGENTS.md](../../../secrets/AGENTS.md).
 
 ## Other hosts: dafoltop's rest-server
 

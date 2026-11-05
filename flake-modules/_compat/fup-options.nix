@@ -2,7 +2,7 @@
 # https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/3542fe9126dc492e53ddd252bb0260fe035f2c0f/lib/options.nix
 #
 # Snowfall Lib pulled this module in through flake-utils-plus' mkFlake.
-# modules/nixos/nix sets all three options, so the registry, /etc/nix/inputs
+# flake-modules/nix.nix sets all three options, so the registry, /etc/nix/inputs
 # links, and NIX_PATH generation must survive the flake-parts migration.
 # `inputs` arrives via _module.args (set in _lib/default.nix, includes self).
 {

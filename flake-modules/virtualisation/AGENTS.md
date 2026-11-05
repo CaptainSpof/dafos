@@ -1,4 +1,4 @@
-# podman
+# podman (`podman.nix`)
 
 ## Container DNS is firewalled by default
 
@@ -9,7 +9,7 @@ podman networks. The symptom is inside the container, not in any host log:
 dial tcp: lookup <host> on 10.89.x.1:53: i/o timeout
 ```
 
-[default.nix](default.nix) opens TCP and UDP 53 on `podman+` interfaces
+[podman.nix](podman.nix) opens TCP and UDP 53 on `podman+` interfaces
 fleet-wide. It is keyed on the upstream `virtualisation.podman.enable`, not on
 the `dafos` option, because oci-container service modules turn podman on without
 going through the wrapper.
