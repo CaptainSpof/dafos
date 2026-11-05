@@ -15,7 +15,13 @@ in
 {
   options.${namespace}.suites.photo = {
     enable = mkBoolOpt false "Whether or not to enable photo configuration.";
+    digikam.enable = mkBoolOpt false "Whether or not to enable digiKam.";
   };
 
-  config = mkIf cfg.enable { home.packages = with pkgs; lib.optionals stdenv.isLinux [ digikam ]; };
+  config = mkIf cfg.enable {
+    home.packages =
+      with pkgs;
+      # Bulk uploads to Immich (immich.daftdaf.dev on dafoltop).
+      [ immich-go ] ++ lib.optionals (cfg.digikam.enable && stdenv.isLinux) [ digikam ];
+  };
 }

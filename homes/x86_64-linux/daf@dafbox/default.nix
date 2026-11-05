@@ -211,6 +211,7 @@ in
         sonora = enabled;
       };
       office = enabled;
+      photo = enabled;
       social = enabled;
       video = enabled;
     };
