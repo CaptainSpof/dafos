@@ -264,6 +264,8 @@ in
             "geo.provider.use_geoclue" = false;
             "geo.provider.use_gpsd" = false;
             "intl.accept_languages" = "en-US,en,fr";
+            # Dates and times follow LC_TIME (fr_FR) instead of the en-US UI.
+            "intl.regional_prefs.use_os_locales" = true;
 
             "media.eme.enabled" = true;
             "media.videocontrols.picture-in-picture.video-toggle.enabled" = false;
@@ -333,9 +335,7 @@ in
           })
         ];
 
-        userChrome = ''
-        ''
-        + cfg.userChrome;
+        userChrome = "" + cfg.userChrome;
       };
     };
   };
