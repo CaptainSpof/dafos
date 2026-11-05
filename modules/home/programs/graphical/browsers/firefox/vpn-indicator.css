@@ -37,3 +37,15 @@
     var(--toolbar-field-border-color, transparent)
   ) !important;
 }
+
+/* The border already shows the state, so the button itself stays invisible
+   until hovered (or while its popup is open). It keeps its slot: opacity,
+   not display, so it remains clickable and keeps its attributes updated. */
+#vpn_proton_ch-browser-action {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+#vpn_proton_ch-browser-action:is(:hover, :focus-within, :has([open])) {
+  opacity: 1;
+}
