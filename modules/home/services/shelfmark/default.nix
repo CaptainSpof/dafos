@@ -10,6 +10,9 @@ let
   inherit (lib.${namespace}) mkOpt;
 
   cfg = config.${namespace}.services.shelfmark;
+  bookorbitUrl = "https://${
+    config.${namespace}.services.bookorbit.subDomain
+  }.${config.nps.stacks.traefik.domain}";
 in
 {
 
@@ -34,8 +37,10 @@ in
 
             extraEnv = {
               BOOK_LANGUAGE = "en,fr";
-              CALIBRE_WEB_URL = "book.daftdaf.dev";
-              AUDIOBOOK_LIBRARY_URL = "audibook.daftdaf.dev";
+              # The "go to library" buttons: BookOrbit holds both the books
+              # and the audiobooks.
+              CALIBRE_WEB_URL = bookorbitUrl;
+              AUDIOBOOK_LIBRARY_URL = bookorbitUrl;
               METADATA_PROVIDER = "openlibrary";
 
               # TODO: setup prowlarr
