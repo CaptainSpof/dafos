@@ -1,11 +1,11 @@
 # dafbox
 
-Desktop/workstation. AMD CPU + GPU (Navi 31 / RX 7900), Niri with autologin and
+Desktop/workstation. AMD CPU + GPU (Navi 32 / RX 7800 XT), Niri with autologin and
 the DMS greeter, gaming archetype, sunshine, syncthing.
 
 ## Audio: pin the LG, not the M27Q
 
-The Navi 31 exposes several HDMI/DP audio profiles but only one can be active at
+The Navi 32 exposes several HDMI/DP audio profiles but only one can be active at
 a time. WirePlumber defaults to the higher-priority M27Q port, which has no
 speakers — only the LG monitor does. The fix is declarative: the
 `99-pin-lg-audio` ALSA rule in [default.nix](default.nix) pins `device.profile`

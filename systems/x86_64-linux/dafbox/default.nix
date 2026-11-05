@@ -138,7 +138,7 @@ in
   };
 
   # Pin HDMI/DP audio to the LG monitor (the only display with speakers).
-  # The Navi 31 GPU exposes several HDMI/DP outputs but can only run one stereo
+  # The Navi 32 GPU exposes several HDMI/DP outputs but can only run one stereo
   # audio profile at a time. On a fresh install WirePlumber has no saved state
   # and falls back to the higher-priority M27Q port (output:hdmi-stereo), which
   # has no speakers — leaving the box silent. Force the LG's port instead.
