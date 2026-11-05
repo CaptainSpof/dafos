@@ -12,6 +12,11 @@
 #    scrolls its name. Hidden from 22:45 to 06:00.
 # 3. The clock, in blue at full brightness.
 #
+# The desk colour panel mirrors item 2: it glows in the top status's colour,
+# at 10 %, and goes off when there is none or at night, at the same moment as
+# the Divoom. It follows status changes and the 22:45/06:00 edges only, so a
+# timer or a cube animation never turns it back on after "all lights off".
+#
 # On top of that, script.divoom_cube_feedback shows what a remote just did as
 # a short animation (./animations.nix) for a few seconds, then runs this
 # display again to go back to whatever it showed. The veranda cube ("Véranda
@@ -25,6 +30,11 @@
 
 let
   device = "divoom_timebox_evo_audio";
+
+  deskPanel = "light.desk_color_panel";
+  # The desk panel only glows
+  deskPanelBrightness = 10;
+  # The desk panel only glows
 
   statuses = [
     {
@@ -246,6 +256,33 @@ in
         }
         {
           variables.fresh = "{{ trigger.id == 'status' and trigger.to_state.state == 'on' and top is not none and top.entity == trigger.entity_id }}";
+        }
+        {
+          alias = "Desk colour panel: the top status's colour, or off";
+          "if" = [ "{{ (trigger.id | default('')) in ['status', 'night', 'morning'] }}" ];
+          "then" = [
+            {
+              "if" = [ "{{ top is not none }}" ];
+              "then" = [
+                {
+                  action = "light.turn_on";
+                  target.entity_id = deskPanel;
+                  data = {
+                    rgb_color = "{{ top.rgb }}";
+                    brightness_pct = deskPanelBrightness;
+                  };
+                  continue_on_error = true;
+                }
+              ];
+              "else" = [
+                {
+                  action = "light.turn_off";
+                  target.entity_id = deskPanel;
+                  continue_on_error = true;
+                }
+              ];
+            }
+          ];
         }
         {
           choose = [
