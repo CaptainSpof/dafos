@@ -1,4 +1,4 @@
-/* Proton VPN indicator: an outline around the URL bar, green while the
+/* Proton VPN indicator: the URL bar's own border is tinted, green while the
    extension's proxy is on, amber while connecting, red otherwise.
 
    The extension only exposes its state through its toolbar button, so the
@@ -10,7 +10,7 @@
    lands in the button's style attribute. Unlike the title ("Proton VPN:
    Protected - CH#1"), it does not depend on the extension's UI language.
    Connecting blinks between state-unprotected-2 and state-unprotected-1, so
-   the outline blinks amber/red. */
+   the border blinks amber/red. */
 
 :root {
   --dafos-vpn-on: light-dark(#2f9e5a, #5fd38d);
@@ -27,9 +27,13 @@
   --dafos-vpn-color: var(--dafos-vpn-on);
 }
 
-/* Skipped while the results popover is open: the background then merges
-   with the popover and an outline would cut through the joint. */
+/* Only the colour of the existing 1px border changes, mixed with the theme's
+   field border to stay quiet. Skipped while the results popover is open, where
+   the border is meant to vanish into the joint with the popover. */
 #urlbar:not([popover-open]) > .urlbar-background {
-  outline: 2px solid var(--dafos-vpn-color) !important;
-  outline-offset: 0 !important;
+  border-color: color-mix(
+    in srgb,
+    var(--dafos-vpn-color) 65%,
+    var(--toolbar-field-border-color, transparent)
+  ) !important;
 }
