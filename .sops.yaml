@@ -12,10 +12,8 @@ keys:
   # restic rest-server secrets come with the backup step.
   - &root_dafrelay age1t35rmmvfgrek9l7pwlgr3dfjnnj8l5fushy25ctucdmd0j752aaqqg6yx4
 creation_rules:
-  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
-    key_groups:
-      - age:
-          - *admin_daf
+  # No catch-all: a file outside these paths must fail to encrypt rather than
+  # land on admin_daf alone, a key no host holds any more (secrets/AGENTS.md).
   - path_regex: secrets/daftop/daf/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
