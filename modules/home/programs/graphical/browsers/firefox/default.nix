@@ -176,8 +176,8 @@ in
                   "customizableui-special-spring4"
                   "simple-tab-groups_drive4ik-browser-action"
                   "urlbar-container"
-                  "vpn_proton_ch-browser-action" # Proton VPN (drives the URL-bar outline, vpn-indicator.css)
                   "_446900e4-71c2-419f-a6a7-df9c091e268b_-browser-action" # Bitwarden
+                  "vpn_proton_ch-browser-action" # Proton VPN (drives the URL-bar border, vpn-indicator.css)
                   "customizableui-special-spring5"
                   "downloads-button"
 
