@@ -322,6 +322,11 @@ in
           samsungtv-smart
           smartir
           spook
+          # UI eXtension, card-mod's successor (nixpkgs dropped the card-mod
+          # lovelace module for it). Drop-in for existing `card_mod:` card and
+          # theme keys. Config-flow only: add the "UI eXtension" service once
+          # under Devices & services, or nothing gets styled.
+          uix
           # tuya_local
           # localtuya
           # Divoom Timebox-Evo display over Bluetooth Classic (RFCOMM, which
@@ -423,7 +428,6 @@ in
           atomic-calendar-revive
           bubble-card
           button-card
-          card-mod
           custom-brand-icons
           decluttering-card
           fold-entity-row
