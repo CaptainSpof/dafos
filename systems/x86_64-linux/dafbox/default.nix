@@ -100,6 +100,7 @@ in
       name = "dafbox-polaris";
     };
     services.moondeck-buddy = enabled;
+    programs.craftapps = enabled;
     # Backs the DMS proofreader plugin (localhost only).
     services.languagetool = {
       enable = true;

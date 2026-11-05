@@ -211,6 +211,12 @@
       flake = false;
     };
 
+    # ArtCraft Crafting Apps (photocraft, vectorcraft, …), upstream release binaries.
+    nix-craftapps = {
+      url = "github:olafkfreund/nix-craftapps";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Vault Integration
     vault-service = {
       url = "github:DeterminateSystems/nixos-vault-service";

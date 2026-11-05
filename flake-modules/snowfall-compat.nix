@@ -37,6 +37,8 @@ let
         "services/openssh" = openssh;
         # New aspect, no legacy module behind it: the key only places it.
         "services/polaris" = polaris;
+        # New aspect, no legacy module behind it: the key only places it.
+        "programs/craftapps" = craftapps;
         "services/tailscale" = tailscale;
         "system/locale" = locale;
         "system/networking" = networking;
