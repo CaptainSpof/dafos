@@ -1,0 +1,279 @@
+# Server alerts relayed to the phones through a Home Assistant webhook.
+#
+# NixOS side: `dafos-alert TITLE MESSAGE`, the HA automation behind the
+# webhook, OnFailure on the critical system units, the alert-failure@ system
+# and user templates, and smartd. Home side: OnFailure on the rootless stacks
+# that take SSO or ingress down (traefik, authelia, lldap); it follows the
+# NixOS side, which provides the user template.
+{
+  flake.modules.nixos.alerting =
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+
+    let
+      inherit (lib)
+        mkEnableOption
+        mkIf
+        mkOption
+        types
+        optionals
+        optionalString
+        genAttrs
+        getExe
+        ;
+
+      cfg = config.dafos.services.alerting;
+      host = config.networking.hostName;
+
+      alert = pkgs.writeShellApplication {
+        name = "dafos-alert";
+        runtimeInputs = [
+          pkgs.curl
+          pkgs.jq
+        ];
+        text = ''
+          title=''${1:?usage: dafos-alert TITLE [MESSAGE]}
+          message=''${2:-}
+          jq -n --arg title "$title" --arg message "$message" '{title: $title, message: $message}' |
+            curl -fsS --max-time 10 -X POST -H 'Content-Type: application/json' --data @- \
+              "${cfg.homeAssistantUrl}/api/webhook/${cfg.webhookId}"
+        '';
+      };
+
+      unitFailureAlert =
+        user:
+        pkgs.writeShellScript "alert-unit-failure" ''
+          unit="$1"
+          logs=$(${pkgs.systemd}/bin/journalctl ${optionalString user "--user"} -u "$unit" -n 5 -o cat --no-pager || true)
+          exec ${getExe alert} "${host} : $unit en échec" "$logs"
+        '';
+
+      failureTemplate = user: {
+        description = "Alert Home Assistant that %i failed";
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${unitFailureAlert user} %i";
+        };
+      };
+
+      smartdAlert = pkgs.writeShellScript "smartd-alert" ''
+        exec ${getExe alert} "${host} : disque $SMARTD_DEVICESTRING" "$SMARTD_MESSAGE"
+      '';
+    in
+    {
+      options.dafos.services.alerting = {
+        enable = mkEnableOption "server alerts relayed to phones through Home Assistant";
+
+        homeAssistantUrl = mkOption {
+          type = types.str;
+          default = "http://127.0.0.1:8123";
+          description = "Home Assistant instance that relays the alerts.";
+        };
+
+        # Not a secret: the automation below is `local_only`, so Home Assistant
+        # refuses it from anything but the LAN and tailnet. It only has to be
+        # unguessable enough that a stray LAN device cannot spam the phones.
+        webhookId = mkOption {
+          type = types.str;
+          default = "dafoltop-alert-769827bc5d06e383701ca8df";
+          description = "Home Assistant webhook the alerts are posted to. Read by the home-manager side too.";
+        };
+
+        notify = mkOption {
+          type = types.listOf types.str;
+          default = [ "notify.mobile_app_dafphone" ];
+          description = "Home Assistant notify actions that receive each alert.";
+        };
+
+        units = mkOption {
+          type = types.listOf types.str;
+          default =
+            optionals config.services.home-assistant.enable [ "home-assistant" ]
+            ++ optionals config.services.zigbee2mqtt.enable [ "zigbee2mqtt" ]
+            ++ optionals config.services.mosquitto.enable [ "mosquitto" ]
+            ++ optionals config.services.immich.enable [
+              "immich-server"
+              "immich-machine-learning"
+            ]
+            ++ optionals config.services.postgresql.enable [ "postgresql" ]
+            ++ optionals config.services.blocky.enable [ "blocky" ];
+          description = "System units that raise an alert when they end up failed.";
+        };
+
+        smartd.enable = mkOption {
+          type = types.bool;
+          default = true;
+          description = "Whether to watch every disk with smartd and alert on SMART problems.";
+        };
+
+        smartd.satDevices = mkOption {
+          type = types.listOf types.str;
+          default = [ ];
+          description = ''
+            Disks behind a USB-SATA bridge, listed by their stable /dev/disk/by-id path.
+            DEVICESCAN registered only the NVMe on dafoltop (smartd reported "1 device"),
+            so the dock disks were not watched at all. They are listed explicitly and
+            queried with `-d sat`.
+          '';
+        };
+      };
+
+      config = mkIf cfg.enable {
+        environment.systemPackages = [ alert ];
+
+        # `dafos-alert TITLE MESSAGE` posts here; the automation fans the alert out
+        # to the phones and leaves a persistent notification in the HA UI. When HA
+        # itself is down nothing is relayed, so HA failures only show up once it
+        # is back (as a persistent notification) or through gatus.
+        services.home-assistant.config."automation manual" = mkIf config.services.home-assistant.enable [
+          {
+            id = "dafos_server_alert";
+            alias = "Alerte serveur";
+            description = "Relays alerts posted by dafos-alert (smartd, failed units, gatus).";
+            mode = "queued";
+            triggers = [
+              {
+                trigger = "webhook";
+                webhook_id = cfg.webhookId;
+                allowed_methods = [ "POST" ];
+                local_only = true;
+              }
+            ];
+            actions =
+              let
+                data = {
+                  title = "{{ trigger.json.title }}";
+                  message = "{{ trigger.json.message }}";
+                };
+                # One tag per alert source, so gatus's "rétabli" replaces its own
+                # "en panne" instead of stacking a second notification.
+                tag = "{{ 'alert_' ~ (trigger.json.title | regex_replace(' (en panne|rétabli)$', '') | slugify) }}";
+                # Own Android channel and shade group, apart from the house notifications.
+                phone = {
+                  inherit tag;
+                  group = "Monitoring";
+                  channel = "Monitoring";
+                  importance = "high";
+                };
+                resolved = {
+                  condition = "template";
+                  value_template = "{{ trigger.json.title is search(' rétabli$') }}";
+                };
+              in
+              [
+                {
+                  action = "persistent_notification.create";
+                  data = data // {
+                    notification_id = tag;
+                  };
+                }
+              ]
+              ++ map (action: {
+                # A recovery is still worth seeing, but is no longer current after an hour.
+                "if" = [ resolved ];
+                "then" = [
+                  {
+                    inherit action;
+                    data = data // {
+                      data = phone // {
+                        timeout = 3600;
+                      };
+                    };
+                  }
+                ];
+                "else" = [
+                  {
+                    inherit action;
+                    data = data // {
+                      data = phone;
+                    };
+                  }
+                ];
+              }) cfg.notify;
+          }
+        ];
+
+        # OnFailure only fires once a unit is marked failed, so a service that
+        # restarts itself only alerts after it exhausts its start limit.
+        systemd.services =
+          genAttrs cfg.units (_: {
+            onFailure = [ "alert-failure@%n.service" ];
+          })
+          // {
+            "alert-failure@" = failureTemplate false;
+          };
+        # For the rootless podman stacks: their quadlets point OnFailure here.
+        systemd.user.services."alert-failure@" = failureTemplate true;
+
+        services.smartd = mkIf cfg.smartd.enable {
+          enable = true;
+          # `-n standby,q` skips a sleeping disk instead of spinning it up every
+          # poll. The notify options go here rather than through
+          # services.smartd.notifications, which only knows mail/wall/x11.
+          defaults.autodetected = "-a -n standby,q -m <nomailer> -M exec ${smartdAlert}";
+          # Explicitly listed devices take their own defaults, not the autodetected ones.
+          defaults.monitored = "-a -n standby,q -m <nomailer> -M exec ${smartdAlert}";
+          devices = map (device: {
+            inherit device;
+            options = "-d sat";
+          }) cfg.smartd.satDevices;
+        };
+      };
+    };
+
+  flake.modules.homeManager.alerting =
+    {
+      lib,
+      config,
+      osConfig ? { },
+      ...
+    }:
+
+    let
+      inherit (lib) mkIf mkOption types;
+
+      cfg = config.dafos.services.alerting;
+
+      # The stacks whose failure takes SSO or ingress down for everything else.
+      watched = lib.filter (name: config.nps.stacks.${name}.enable or false) cfg.stacks;
+    in
+    {
+      options.dafos.services.alerting = {
+        enable = mkOption {
+          type = types.bool;
+          default = osConfig.dafos.services.alerting.enable or false;
+          description = "Whether failed containers raise an alert. Follows the NixOS alerting module, which provides the alert-failure@ user template.";
+        };
+
+        # host.containers.internal lands on the host over `lo`, which the
+        # webhook's `local_only` accepts.
+        webhookUrl = mkOption {
+          type = types.str;
+          default = "http://host.containers.internal:8123/api/webhook/${
+            osConfig.dafos.services.alerting.webhookId or ""
+          }";
+          description = "The alert webhook as reached from inside a rootless container.";
+        };
+
+        stacks = mkOption {
+          type = types.listOf types.str;
+          default = [
+            "traefik"
+            "authelia"
+            "lldap"
+          ];
+          description = "nps stacks whose main container raises an alert when it ends up failed.";
+        };
+      };
+
+      config = mkIf cfg.enable {
+        services.podman.containers = lib.genAttrs watched (_: {
+          extraConfig.Unit.OnFailure = "alert-failure@%n.service";
+        });
+      };
+    };
+}

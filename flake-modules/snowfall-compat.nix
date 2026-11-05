@@ -23,6 +23,7 @@ let
         "home" = home;
         "nix" = nix;
         "security/sops" = sops;
+        "services/alerting" = alerting;
         "services/avahi" = avahi;
         "services/backup" = backup;
         # New aspect, no legacy module behind it: the key only places it.
@@ -44,6 +45,7 @@ let
         "virtualisation/podman" = podman;
       };
       home = with config.flake.modules.homeManager; {
+        "services/alerting" = alerting;
         # New aspect, no legacy module behind it: the key only places it.
         "services/authelia-peers" = authelia-peers;
         "services/backup-dumps" = backup-dumps;
