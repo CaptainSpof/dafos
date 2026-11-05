@@ -101,7 +101,7 @@ in
     );
 
     # The user avatar (AccountsService `Icon=`) used to be set from here; it's
-    # desktop-agnostic and DMS needs it too, so it moved to modules/nixos/user.
+    # desktop-agnostic and DMS needs it too, so it moved to flake-modules/user.nix.
 
     # Required for app indicators
     services.udev.packages = with pkgs; [ gnome3.gnome-settings-daemon ];

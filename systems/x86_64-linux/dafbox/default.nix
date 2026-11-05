@@ -79,7 +79,7 @@ in
     };
 
     # Avatar shown by DMS (control centre header, dash user card, lock screen)
-    # and the DMS greeter, via AccountsService. See modules/nixos/user.
+    # and the DMS greeter, via AccountsService. See flake-modules/user.nix.
     user.icon = ./avatar.jpg;
 
     hardware = {
