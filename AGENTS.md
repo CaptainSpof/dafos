@@ -72,9 +72,9 @@ those commits. An earlier "push" does not cover later commits.
 hooks (git-hooks.nix) run treefmt (non-blocking), clang-tidy, luacheck and a
 sops-encryption check inside that shell.
 
-Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkOpt'`,
-`mkBoolOpt`), the `enabled`/`disabled` shortcuts, audio node helpers,
-`network.create-proxy`, `mkDeploy`. See [lib/AGENTS.md](lib/AGENTS.md).
+Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkBoolOpt`),
+the `enabled`/`disabled` shortcuts and `mkDeploy`. See
+[lib/AGENTS.md](lib/AGENTS.md).
 
 ## Scoped guidance
 
