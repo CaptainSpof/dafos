@@ -2,8 +2,9 @@
 
 Stacks that nix-podman-stacks does not ship, written in its own style
 (`nps.stacks.<name>`, `mkAliases`, inline container images) so they could be
-upstreamed as-is. Each one has a dafos wrapper in
-[../services](../services/AGENTS.md) that adds sops secrets, `/mnt` paths and
+upstreamed as-is. Each one has a dafos wrapper, in
+[../services](../services/AGENTS.md) or, for the migrated ones (bar-assistant,
+securo), in `flake-modules/services/`, that adds sops secrets, `/mnt` paths and
 subdomains. A stack module never touches sops or `dafos.*`, which is what lets
 it boot in a bare test VM.
 

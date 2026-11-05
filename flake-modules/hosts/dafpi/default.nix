@@ -28,8 +28,8 @@ in
     dafos = {
       nix.nh.enable = true;
 
-      # No home-manager sops module here (yet), so no user keys.txt: the host
-      # key (root_dafpi) decrypts everything dafpi needs.
+      # System secrets decrypt with the host key (root_dafpi) alone, so the
+      # system side does not wait on the keys.txt the home sops module writes.
       security.sops = {
         enable = true;
         userKey = false;

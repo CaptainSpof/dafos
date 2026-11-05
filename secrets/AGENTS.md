@@ -23,6 +23,15 @@ Scope follows the path:
 - `secrets/daf/*.yaml` — what several hosts genuinely share (github, vicinae,
   rustdesk). Admin plus every user and root key.
 - `secrets/daftop/daf/*.yaml` — admin plus the daftop user only.
+- `secrets/dafoltop/{bar-assistant,cloudflare,…}.yaml` — the files both servers
+  need (apps moved to dafpi, the Cloudflare DNS token, the Glance agent token):
+  the dafoltop set plus the dafpi user and root keys. The list is the first
+  `secrets/dafoltop/` rule in `.sops.yaml`.
+- `secrets/dafpi/*.yaml` — dafpi's services: admin, the dafbox user, the dafpi
+  user and root keys. `dafpi/restic.yaml` also opens with the dafoltop keys,
+  whose rest-server holds that repository.
+- `secrets/dafoltop/{esphome,home-assistant}.yaml` are read by the scripts in
+  `esphome/`, not by Nix.
 
 A secret that a _system_ service must read has to be in a file the host root key
 can open — see the OIDC entries in `secrets/dafoltop/`, which both a

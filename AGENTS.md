@@ -34,6 +34,7 @@ to the module or host it describes. Longer rationale goes in that directory's
 | `dafoltop` | x86_64-linux  | Laptop repurposed as homelab server — runs most self-hosted services | Plasma (autologin), Niri disabled |
 | `daftop`   | x86_64-linux  | Laptop                                                               | Niri                              |
 | `dafpi`    | aarch64-linux | Orange Pi 5, small always-on server taking load off dafoltop         | none                              |
+| `dafrelay` | aarch64-linux | Raspberry Pi 4, off-site backup target at a family member's home     | none                              |
 
 `dafoltop` is the de facto home server and the live house — see
 [systems/x86_64-linux/dafoltop/AGENTS.md](systems/x86_64-linux/dafoltop/AGENTS.md)
@@ -41,16 +42,16 @@ before touching anything that runs on it.
 
 ## Layout and composition
 
-`flake-modules/` holds the dendritic aspects and hosts (dafpi is built only from
-it). The rest is the legacy Snowfall layout: `systems/`, `homes/`,
-`modules/{nixos,home}/`, `packages/`, `overlays/`, `lib/`, `secrets/`,
+`flake-modules/` holds the dendritic aspects and hosts (dafpi and dafrelay are
+built only from it). The rest is the legacy Snowfall layout: `systems/`,
+`homes/`, `modules/{nixos,home}/`, `packages/`, `overlays/`, `lib/`, `secrets/`,
 `shells/`, `checks/`. Read the tree rather than a description of it.
 
 Configuration composes in one direction:
 
 `archetypes` (workstation/gaming/server) → `suites` (common, desktop,
-development, games, graphics, music, office, social, video, yahrr, common-slim)
-→ `services`/`programs`/`apps`.
+development, games, graphics, music, office, photo, social, video, yahrr,
+common-slim) → `services`/`programs`/`apps`.
 
 Host `default.nix` files mostly toggle suites and override specifics with
 `lib.mkForce`. To find out what a host actually enables, follow the

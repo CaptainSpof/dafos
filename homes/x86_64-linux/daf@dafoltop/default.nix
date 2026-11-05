@@ -32,7 +32,8 @@ in
     };
 
     programs = {
-      # Unattended RustDesk target: controllable over the tailnet via direct IP.
+      # Off: dafoltop used to be an unattended RustDesk target (direct IP over
+      # the tailnet).
       rustdesk = disabled;
       graphical = {
         launchers.vicinae = mkForce disabled;
