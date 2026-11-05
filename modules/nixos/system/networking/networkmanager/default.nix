@@ -30,8 +30,7 @@ in
 
         unmanaged =
           lib.optionals config.${namespace}.services.tailscale.enable [ "interface-name:tailscale*" ]
-          ++ lib.optionals config.${namespace}.virtualisation.podman.enable [ "interface-name:docker*" ]
-          ++ lib.optionals config.${namespace}.virtualisation.kvm.enable [ "interface-name:virbr*" ];
+          ++ lib.optionals config.${namespace}.virtualisation.podman.enable [ "interface-name:docker*" ];
       };
     };
 

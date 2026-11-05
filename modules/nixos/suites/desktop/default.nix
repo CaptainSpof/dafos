@@ -8,7 +8,7 @@
 
 let
   inherit (lib) mkIf;
-  inherit (lib.${namespace}) mkBoolOpt enabled disabled;
+  inherit (lib.${namespace}) mkBoolOpt enabled;
 
   cfg = config.${namespace}.suites.desktop;
 in
@@ -26,7 +26,6 @@ in
 
     dafos = {
       desktop = {
-        gnome = disabled;
         plasma = enabled;
         niri = enabled;
       };
