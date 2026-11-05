@@ -63,6 +63,29 @@ to the provider is it safe to flip it; BookOrbit refuses to start if that would
 lock everyone out, and flipping it back is the recovery path when Authelia is
 down.
 
+## Kobo and KOReader
+
+Traefik puts no Authelia forward-auth in front of BookOrbit (it does its own
+OIDC), so device endpoints authenticate with BookOrbit's own tokens and need no
+bypass: a bad token gets a 401 JSON from BookOrbit, not an Authelia redirect.
+
+- **Kobo native sync:** Settings → Kobo → add a device; it shows
+  `https://book.daftdaf.dev/api/v1/kobo/<token>`, which goes in
+  `[OneStoreServices] api_endpoint` of `.kobo/Kobo/Kobo eReader.conf`. The token
+  is the only credential and lives in that URL.
+- **KOReader:** BookOrbit ships its own `bookorbit.koplugin` (catalogue,
+  progress, two-way highlights, reading stats), which replaces the stock
+  _Progress sync_ (kosync) plugin and OPDS. Settings → KOReader → create sync
+  credentials → _Download preconfigured plugin_; unzip into `koreader/plugins/`.
+  Leave kosync unconfigured to avoid double syncing. OPDS (`/api/v1/opds`, Basic
+  auth with OPDS users) exists for other readers.
+
+Cédric's Kobo Libra Colour (firmware 4.46) launches KOReader from NickelMenu
+(`.adds/nm/koreader`). **NickelMenu does not support Kobo firmware 5.x**
+(pgaskin/NickelMenu#230), so firmware updates are declined and
+`AcceptPreviewUpgrades=false` is set; KOReader on 5.x would also need the
+`kobov5` package instead of `kobo`.
+
 ## Notes
 
 - The database image must ship `pgvector`; a stock `postgres` image is missing
