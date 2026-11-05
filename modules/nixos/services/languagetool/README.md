@@ -22,8 +22,8 @@ Nothing here is enabled yet. Do it only if daftop needs it — the JVM costs up 
    };
    ```
 
-2. In `flake-modules/services/traefik.nix`, add a router and a service
-   next to `zigbee2mqtt-nix`:
+2. In `flake-modules/services/traefik.nix`, add a router and a service next to
+   `zigbee2mqtt-nix`:
 
    ```nix
    routers.languagetool-nix = {
@@ -62,9 +62,9 @@ their/there) that the bare server lacks. `languagetool-ngrams.service` fetches
 each missing `<lang>/` once, then restarts the server; until it finishes, the
 server runs without them and only logs `ngram index dir … not found`.
 
-The first `nixos-rebuild switch` waits on that oneshot: fr is a 1.8 GB zip, en
-a 9 GB one. dafbox keeps the ~18 GB unpacked under `/home`, which the unit
-reaches through `ProtectHome=tmpfs` plus a read-only bind mount.
+The first `nixos-rebuild switch` waits on that oneshot: fr is a 1.8 GB zip, en a
+9 GB one. dafbox keeps the ~18 GB unpacked under `/home`, which the unit reaches
+through `ProtectHome=tmpfs` plus a read-only bind mount.
 
 Dropping a language from the list leaves its directory behind; delete it by
 hand.
@@ -78,5 +78,5 @@ through the same `/v2/check` API as `grammalecte_*` rule ids. LanguageTool
 already drops Grammalecte's typography-only rules (apostrophes, spaces).
 
 nixpkgs' server crashes on Python 3.12+ (its vendored bottle imports `cgi` and
-`imp`); the module patches it onto the packaged bottle. Two worker processes
-use about 200 MB.
+`imp`); the module patches it onto the packaged bottle. Two worker processes use
+about 200 MB.

@@ -1,7 +1,7 @@
 # dafbox
 
-Desktop/workstation. AMD CPU + GPU (Navi 32 / RX 7800 XT), Niri with autologin and
-the DMS greeter, gaming archetype, sunshine, syncthing.
+Desktop/workstation. AMD CPU + GPU (Navi 32 / RX 7800 XT), Niri with autologin
+and the DMS greeter, gaming archetype, sunshine, syncthing.
 
 ## Audio: pin the LG, not the M27Q
 
