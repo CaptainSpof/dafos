@@ -79,6 +79,9 @@ let
 
   # Bedroom lights off once the room is empty.
   bedroomLights = import ./bedroom_lights.nix { };
+  # Veranda lights off once nobody is around, unless daftv is on.
+  verandaLights = import ./veranda_lights.nix { };
+  # Veranda lights off once nobody is around, unless daftv is on.
 
   # Zigbee/Matter devices that dropped off, with a phone alert.
   deviceWatch = import ./device_watch.nix { };
@@ -519,6 +522,7 @@ in
             ++ pellets.automations
             ++ deviceWatch.automations
             ++ bedroomLights.automations
+            ++ verandaLights.automations
             ++ deskCube.automations
             ++ bilresa.automations
             ++ rodret.automations
@@ -564,7 +568,10 @@ in
             import ./sensors/input_datetimes.nix // netatmoWatchdog.input_datetime // pellets.input_datetime;
           inherit (pellets) input_button;
           input_number =
-            import ./sensors/input_numbers.nix // pellets.input_number // heatingCost.input_number;
+            import ./sensors/input_numbers.nix
+            // pellets.input_number
+            // heatingCost.input_number
+            // verandaLights.input_number;
           utility_meter = heatingCost.utility_meter // electricityCost.utility_meter;
           input_text = import ./sensors/input_texts.nix // appliancePrograms.input_text;
           sensor = [
