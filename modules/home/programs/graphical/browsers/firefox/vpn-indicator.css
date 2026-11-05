@@ -1,0 +1,35 @@
+/* Proton VPN indicator: an outline around the URL bar, green while the
+   extension's proxy is on, amber while connecting, red otherwise.
+
+   The extension only exposes its state through its toolbar button, so the
+   button has to sit in the nav-bar (see browser.uiCustomization.state in
+   default.nix): the unified-extensions panel is built lazily and its items
+   are absent from the DOM until it is opened.
+
+   The match is on the icon set by action.setIcon (img/state-*.png), which
+   lands in the button's style attribute. Unlike the title ("Proton VPN:
+   Protected - CH#1"), it does not depend on the extension's UI language.
+   Connecting blinks between state-unprotected-2 and state-unprotected-1, so
+   the outline blinks amber/red. */
+
+:root {
+  --dafos-vpn-on: light-dark(#2f9e5a, #5fd38d);
+  --dafos-vpn-connecting: light-dark(#b7791f, #f6c445);
+  --dafos-vpn-off: light-dark(#c9372c, #ff6b6b);
+  --dafos-vpn-color: var(--dafos-vpn-off);
+}
+
+:root:has(#vpn_proton_ch-browser-action [style*="state-unprotected-2"]) {
+  --dafos-vpn-color: var(--dafos-vpn-connecting);
+}
+
+:root:has(#vpn_proton_ch-browser-action [style*="state-protected"]) {
+  --dafos-vpn-color: var(--dafos-vpn-on);
+}
+
+/* Skipped while the results popover is open: the background then merges
+   with the popover and an outline would cut through the joint. */
+#urlbar:not([popover-open]) > .urlbar-background {
+  outline: 2px solid var(--dafos-vpn-color) !important;
+  outline-offset: 0 !important;
+}

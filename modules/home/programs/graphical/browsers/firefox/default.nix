@@ -147,7 +147,6 @@ in
                 # panel (the puzzle-piece popup). Anything not listed here gets
                 # appended at the bottom in registration order.
                 unified-extensions-area = [
-                  "vpn_proton_ch-browser-action" # Proton VPN
                   "frankerfacez_frankerfacez_com-browser-action" # FrankerFaceZ
                   "gdpr_cavi_au_dk-browser-action" # Consent-O-Matic
                   "uget-integration_slgobinath-browser-action" # uGet Integration
@@ -177,6 +176,7 @@ in
                   "customizableui-special-spring4"
                   "simple-tab-groups_drive4ik-browser-action"
                   "urlbar-container"
+                  "vpn_proton_ch-browser-action" # Proton VPN (drives the URL-bar outline, vpn-indicator.css)
                   "_446900e4-71c2-419f-a6a7-df9c091e268b_-browser-action" # Bitwarden
                   "customizableui-special-spring5"
                   "downloads-button"
@@ -335,7 +335,7 @@ in
           })
         ];
 
-        userChrome = "" + cfg.userChrome;
+        userChrome = builtins.readFile ./vpn-indicator.css + cfg.userChrome;
       };
     };
   };
