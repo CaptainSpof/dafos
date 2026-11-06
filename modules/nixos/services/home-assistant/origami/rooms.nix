@@ -216,7 +216,7 @@
       humidity = "sensor.bedroom_bed_side_temperature_sensor_humidity";
       opening = "binary_sensor.bedroom_door_sensor_contact";
       climate = "climate.bedroom_radiator_thermostat";
-      presence = "binary_sensor.bedroom_presence_sensor_occupancy";
+      presence = "binary_sensor.bedroom_presence";
       activity = [
         "sensor.bedroom_remote_action"
         "sensor.bedroom_switch_action"

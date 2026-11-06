@@ -17,8 +17,8 @@ let
   # Living room. The cat set the lights off in the evening through the
   # Everything Presence radar. The radar now lights the room only while someone
   # is likely up: in the day, or from 22:00 to 06:00 when someone at home is
-  # out of bed. Cédric is up once his bedroom's presence sensor has seen
-  # nobody for 2 min, whether his door is open or not; the door stands in
+  # out of bed. Cédric is up once his bedroom presence (./bedroom_presence.nix,
+  # held while his door is shut) has seen nobody for 2 min; the door stands in
   # while the sensor is unavailable. The parents are up when their door is
   # open. Whatever the bedrooms say, a person proven downstairs in the last
   # 15 min (a door, a remote, a light from the app: origami/activity.nix) is
@@ -27,7 +27,7 @@ let
   downstairs = "binary_sensor.stairs_going_dowstairs_sensor";
   downstairsActivity = "binary_sensor.ground_floor_activity";
   livingRadar = "binary_sensor.everything_presence_lite_61659c_occupancy";
-  bedroomPresence = "binary_sensor.bedroom_presence_sensor_occupancy";
+  bedroomPresence = "binary_sensor.bedroom_presence";
   bedroomDoor = "binary_sensor.bedroom_door_sensor_contact";
   bedroomEmptyMinutes = 2;
   eveningHour = 22;

@@ -77,6 +77,8 @@ let
   # Electricity cost of each metered appliance.
   electricityCost = import ./electricity_cost.nix { inherit lib; };
 
+  # Bedroom presence held while the door stays shut.
+  bedroomPresence = import ./bedroom_presence.nix { };
   # Bedroom lights off once the room is empty.
   bedroomLights = import ./bedroom_lights.nix { };
   # Veranda lights off once nobody is around, unless daftv is on.
@@ -558,6 +560,7 @@ in
           ++ heatingCost.templates
           ++ electricityCost.templates
           ++ deviceWatch.templates
+          ++ bedroomPresence.templates
           ++ activity.templates
           ++ deskPresence.templates config.sops.secrets."dafbox-presence/webhook-id".path;
 

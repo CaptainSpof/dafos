@@ -1,15 +1,15 @@
 # Cédric's bedroom lights go off once the room has been empty for a while.
 #
-# Empty is the presence sensor (SNZB-06P, mmWave) seeing nobody. Motion is no
-# proof that someone is there (the cat), but a radar seeing nothing for
-# 10 min is a fair proof that nobody is, since mmWave also picks up someone
-# keeping still. If it ever misses someone in bed, raise emptyMinutes.
-# A light switched on while the room is already empty goes off after the
-# same 10 min. Nothing happens while the sensor is unavailable.
+# Empty is ./bedroom_presence.nix (the SNZB-06P radar, held while the door is
+# shut) seeing nobody. Motion is no proof that someone is there (the cat), but
+# a radar seeing nothing for 10 min is a fair proof that nobody is, since
+# mmWave also picks up someone keeping still. A light switched on while the
+# room is already empty goes off after the same 10 min. Nothing happens while
+# the sensor is unavailable.
 _:
 
 let
-  presence = "binary_sensor.bedroom_presence_sensor_occupancy";
+  presence = "binary_sensor.bedroom_presence";
   lights = "light.bedroom_all_lights";
   emptyMinutes = 10;
   delay = "00:${toString emptyMinutes}:00";
