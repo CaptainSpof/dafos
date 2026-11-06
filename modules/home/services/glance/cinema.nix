@@ -30,6 +30,7 @@
               {{ else }}
                 <div class="cinema-poster"></div>
               {{ end }}
+              {{ if gt ($f.Int "vote_count") 0 }}<span class="cinema-score">★ {{ printf "%.1f" ($f.Float "vote_average") | replaceAll "." "," }}</span>{{ end }}
               <div class="cinema-title color-highlight text-truncate">{{ $f.String "title" }}</div>
               <div class="size-h6">
                 {{ if $f.String "release_date" }}{{ ($f.String "release_date" | parseTime "dateonly").Format "02/01/2006" }}{{ end }}

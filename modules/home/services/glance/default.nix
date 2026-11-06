@@ -685,7 +685,17 @@ in
             padding-bottom: 0.6rem;
           }
           .cinema-film { flex: 0 0 11rem; min-width: 0; }
-          .cinema-link { display: block; text-decoration: none; }
+          .cinema-link { display: block; position: relative; text-decoration: none; }
+          .cinema-score {
+            position: absolute;
+            top: 0.6rem;
+            left: 0.6rem;
+            padding: 0.1rem 0.6rem;
+            border-radius: 0.4rem;
+            background: rgba(0, 0, 0, 0.75);
+            color: hsl(45, 90%, 60%);
+            font-size: 1.2rem;
+          }
           .cinema-poster {
             display: block;
             width: 100%;
