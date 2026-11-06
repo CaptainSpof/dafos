@@ -149,20 +149,20 @@ in
 
   scripts.divoom_cube_feedback = {
     alias = "Divoom · Cube feedback";
-    description = "Shows a remote's action as an animation on the Divoom Timebox-Evo for a few seconds, then gives the display back to Divoom · Display. Managed in Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
+    description = "Affiche l'action d'une télécommande en animation sur le Divoom Timebox-Evo pendant quelques secondes, puis rend l'écran à Divoom · Display. Géré dans Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
     icon = "mdi:cube-outline";
     # A new gesture replaces the animation and restarts the wait; the
     # integration sends one thing at a time, so uploads do not mix
     mode = "restart";
     fields = {
       animation = {
-        description = "What the remote did";
+        description = "Ce qu'a fait la télécommande";
         required = true;
         example = "light_on";
         selector.select.options = animations.names;
       };
       seconds = {
-        description = "How long the animation stays up";
+        description = "Durée d'affichage de l'animation";
         default = 4;
         selector.number = {
           min = 1;
@@ -185,7 +185,7 @@ in
     {
       id = "dafos_divoom_display";
       alias = "Divoom · Display";
-      description = "Shows the kitchen knob timers, then the top household status (icon in its colour), then the clock on the Divoom Timebox-Evo. Managed in Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
+      description = "Affiche sur le Divoom Timebox-Evo les minuteurs du bouton de la cuisine, sinon le statut de la maison le plus prioritaire (icône dans sa couleur), sinon l'heure. Géré dans Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
       mode = "restart";
       variables = {
         statuses = map (s: {
@@ -258,7 +258,7 @@ in
           variables.fresh = "{{ trigger.id == 'status' and trigger.to_state.state == 'on' and top is not none and top.entity == trigger.entity_id }}";
         }
         {
-          alias = "Desk colour panel: the top status's colour, or off";
+          alias = "Panneau couleur du bureau : la couleur du statut prioritaire, ou éteint";
           "if" = [ "{{ (trigger.id | default('')) in ['status', 'night', 'morning'] }}" ];
           "then" = [
             {
@@ -287,7 +287,7 @@ in
         {
           choose = [
             {
-              alias = "Timer finished";
+              alias = "Minuteur terminé";
               conditions = [ "{{ finished | count > 0 }}" ];
               sequence = [
                 (divoom "text" {
@@ -301,7 +301,7 @@ in
               ];
             }
             {
-              alias = "Timer running";
+              alias = "Minuteur en cours";
               conditions = [ "{{ running > 0 }}" ];
               sequence = [
                 (divoom "countdown" {
@@ -311,7 +311,7 @@ in
               ];
             }
             {
-              alias = "Timer paused";
+              alias = "Minuteur en pause";
               conditions = [ "{{ paused >= 0 }}" ];
               sequence = [
                 (divoom "text" {
@@ -325,7 +325,7 @@ in
               ];
             }
             {
-              alias = "Household status";
+              alias = "Statut de la maison";
               conditions = [ "{{ top is not none }}" ];
               sequence = [
                 {
@@ -359,7 +359,7 @@ in
       # 03:01 the offset two hours earlier differs only on those nights.
       id = "dafos_divoom_clock_sync";
       alias = "Divoom · Clock sync";
-      description = "Sends Home Assistant's time to the Divoom Timebox-Evo after a summer/winter time change, and when Home Assistant starts. Managed in Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
+      description = "Envoie l'heure de Home Assistant au Divoom Timebox-Evo après un changement d'heure été/hiver, et au démarrage de Home Assistant. Géré dans Nix (modules/nixos/services/home-assistant/divoom/display.nix).";
       mode = "single";
       triggers = [
         {

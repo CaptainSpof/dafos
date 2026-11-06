@@ -33,7 +33,7 @@ let
   # The speakers by infrared and the streamer's own volume, together.
   volumeStep = direction: {
     alias = "${if direction == "up" then "Increase" else "Decrease"} TV volume";
-    description = "Five infrared steps on the speakers and three on the streamer. Managed in Nix (modules/nixos/services/home-assistant/tv.nix).";
+    description = "Cinq crans infrarouges sur les enceintes et trois sur le streamer. Géré dans Nix (modules/nixos/services/home-assistant/tv.nix).";
     icon = "mdi:volume-${if direction == "up" then "plus" else "minus"}";
     sequence = [
       {
@@ -57,7 +57,7 @@ let
 
   speakersStep = direction: {
     alias = "${if direction == "up" then "Increase" else "Decrease"} TV speakers volume";
-    description = "Two infrared steps on the TV speakers. Managed in Nix (modules/nixos/services/home-assistant/tv.nix).";
+    description = "Deux crans infrarouges sur les enceintes de la TV. Géré dans Nix (modules/nixos/services/home-assistant/tv.nix).";
     icon = "mdi:volume-${if direction == "up" then "plus" else "minus"}";
     mode = "queued";
     sequence = [ (speakers "Speakers volume ${direction}" "vol_${direction}" 2) ];
@@ -67,12 +67,12 @@ in
   scripts = {
     turn_on_and_setup_living_room_tv = {
       alias = "Turn On and Setup TV";
-      description = "Powers the TV plug, then turns the speakers on, on the optical input, and raises the volume. Managed in Nix (modules/nixos/services/home-assistant/tv.nix).";
+      description = "Allume la prise de la TV, puis les enceintes sur l'entrée optique, et monte le volume. Géré dans Nix (modules/nixos/services/home-assistant/tv.nix).";
       icon = "mdi:television";
       mode = "single";
       sequence = [
         {
-          alias = "Only from a cold start: the plug is off";
+          alias = "Seulement à froid : la prise est éteinte";
           condition = "state";
           entity_id = plug;
           state = "off";
@@ -94,7 +94,7 @@ in
     # they are off
     turn_on_tv_speakers = {
       alias = "Turn On TV Speakers";
-      description = "Turns the TV speakers on by infrared and selects the optical input (the TV). Managed in Nix (modules/nixos/services/home-assistant/tv.nix).";
+      description = "Allume les enceintes de la TV par infrarouge et choisit l'entrée optique (la TV). Géré dans Nix (modules/nixos/services/home-assistant/tv.nix).";
       icon = "mdi:speaker";
       mode = "single";
       sequence = [

@@ -49,7 +49,7 @@ let
 in
 {
   binarySensors = map (r: {
-    name = "${r.name} · Air quality poor";
+    name = "${r.name} · Air chargé";
     unique_id = "dafos.binary_sensor.${r.id}_air_quality_poor";
     default_entity_id = poor r;
     device_class = "problem";
@@ -61,7 +61,7 @@ in
   }) rooms;
 
   sensors = map (r: {
-    name = "${r.name} · Air quality";
+    name = "${r.name} · Qualité de l'air";
     unique_id = "dafos.sensor.${r.id}_air_quality";
     default_entity_id = "sensor.${r.id}_air_quality";
     icon = "mdi:air-filter";
@@ -85,7 +85,7 @@ in
     map (r: {
       name = "${r.id}_air_quality_notified";
       value = {
-        name = "${r.name} · Air quality notified";
+        name = "${r.name} · Air chargé signalé";
         icon = "mdi:bell-check-outline";
       };
     }) rooms
@@ -95,7 +95,7 @@ in
     {
       id = "dafos_household_air_quality";
       alias = "Household · Air Quality";
-      description = "Kitchen and veranda air: asks to open the windows when an episode of poor air starts (VOC index >= ${toString vocPoor} or PM2.5 >= ${toString pmPoor} for 5 min), then says the windows can be closed once it ended. Only while someone is home and outside the night state. Managed in Nix (modules/nixos/services/home-assistant/air_quality.nix).";
+      description = "Air de la cuisine et de la véranda : demande d'ouvrir les fenêtres quand un épisode d'air chargé commence (indice COV >= ${toString vocPoor} ou PM2.5 >= ${toString pmPoor} pendant 5 min), puis dit qu'on peut les refermer une fois l'épisode fini. Seulement quand quelqu'un est là, et hors mode nuit. Géré dans Nix (modules/nixos/services/home-assistant/air_quality.nix).";
       mode = "queued";
       triggers = concatMap (r: [
         {
@@ -120,7 +120,7 @@ in
         {
           choose = concatMap (r: [
             {
-              alias = "${r.name}: poor air, ask to open the windows";
+              alias = "${r.name} : air chargé, demander d'ouvrir les fenêtres";
               conditions = [
                 {
                   condition = "trigger";
@@ -138,7 +138,7 @@ in
                 }
               ]
               ++ lib.optional (r.opening != null) {
-                alias = "Not already aired";
+                alias = "Pas déjà aéré";
                 condition = "state";
                 entity_id = r.opening;
                 state = "off";
@@ -161,7 +161,7 @@ in
               ];
             }
             {
-              alias = "${r.name}: air back to normal, the windows can be closed";
+              alias = "${r.name} : air redevenu normal, on peut refermer les fenêtres";
               conditions = [
                 {
                   condition = "trigger";

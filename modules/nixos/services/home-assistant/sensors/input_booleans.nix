@@ -1,50 +1,50 @@
 {
   outdoor_household_trash = {
-    name = "Outdoor · Household Trash";
+    name = "Extérieur · Poubelle ordures ménagères";
     icon = "mdi:trash-can";
   };
   outdoor_recyclable_trash = {
-    name = "Outdoor · Recyclable Trash";
+    name = "Extérieur · Poubelle recyclables";
     icon = "mdi:trash-can";
   };
   kitchen_dishwasher_is_running = {
-    name = "Kitchen · Dishwasher is running";
+    name = "Cuisine · Lave-vaisselle en marche";
     icon = "mdi:dishwasher";
   };
   laundry_washing_machine_is_running = {
-    name = "Laundry · Washing Machine is running";
+    name = "Buanderie · Lave-linge en marche";
     icon = "mdi:washing-machine";
   };
   laundry_dryer_is_running = {
-    name = "Laundry · Dryer is running";
+    name = "Buanderie · Sèche-linge en marche";
     icon = "mdi:tumble-dryer";
   };
   kitchen_dishwasher_is_finished = {
-    name = "Kitchen · Dishwasher is finished";
+    name = "Cuisine · Lave-vaisselle terminé";
     icon = "mdi:dishwasher";
   };
   laundry_washing_machine_is_finished = {
-    name = "Laundry · Washing Machine is finished";
+    name = "Buanderie · Lave-linge terminé";
     icon = "mdi:washing-machine-off";
   };
   laundry_dryer_is_finished = {
-    name = "Laundry · Dryer is finished";
+    name = "Buanderie · Sèche-linge terminé";
     icon = "mdi:tumble-dryer-off";
   };
   # Rooms Vacuum
   entry_vacuum = {
-    name = "Entry · Vacuum";
+    name = "Entrée · Aspirateur";
   };
   kitchen_vacuum = {
-    name = "Kitchen · Vacuum";
+    name = "Cuisine · Aspirateur";
   };
   living_room_vacuum = {
-    name = "Living Room · Vacuum";
+    name = "Salon · Aspirateur";
   };
   veranda_vacuum = {
-    name = "Véranda · Vacuum";
+    name = "Véranda · Aspirateur";
   };
   study_room_vacuum = {
-    name = "Study Room · Vacuum";
+    name = "Bureau RdC · Aspirateur";
   };
 }

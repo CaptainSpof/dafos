@@ -40,7 +40,7 @@ in
     {
       id = "dafos_desk_cube";
       alias = "Desk · Cube";
-      description = "Desk lights, desk plug and dafbox from the desk's Aqara cube. Managed in Nix (modules/nixos/services/home-assistant/desk_cube.nix).";
+      description = "Lumières du bureau, prise du bureau et dafbox depuis le cube Aqara du bureau. Géré dans Nix (modules/nixos/services/home-assistant/desk_cube.nix).";
       mode = "queued";
       max = 10;
       triggers = [
@@ -61,7 +61,7 @@ in
         {
           choose = [
             (gesture {
-              alias = "Shake: desk lights on/off";
+              alias = "Secouer : allumer/éteindre les lumières du bureau";
               action = "shake";
               sequence = [
                 {
@@ -71,7 +71,7 @@ in
               ];
             })
             (gesture {
-              alias = "Double tap on face 0: desk lights on/off, warm at 60 %";
+              alias = "Double tape sur la face 0 : allumer/éteindre les lumières du bureau, blanc chaud à 60 %";
               action = "tap";
               side = 0;
               sequence = [
@@ -86,7 +86,7 @@ in
               ];
             })
             (gesture {
-              alias = "Double tap on face 1: desk plug on/off";
+              alias = "Double tape sur la face 1 : allumer/éteindre la prise du bureau";
               action = "tap";
               side = 1;
               sequence = [
@@ -97,7 +97,7 @@ in
               ];
             })
             (gesture {
-              alias = "Rotate right on face 0: brighter";
+              alias = "Rotation à droite sur la face 0 : plus fort";
               action = "rotate_right";
               side = 0;
               sequence = [
@@ -108,7 +108,7 @@ in
               ];
             })
             (gesture {
-              alias = "Rotate left on face 0: dimmer";
+              alias = "Rotation à gauche sur la face 0 : moins fort";
               action = "rotate_left";
               side = 0;
               sequence = [
@@ -119,7 +119,7 @@ in
               ];
             })
             (gesture {
-              alias = "Flip 90° onto face 1: desk plug on, then dafbox";
+              alias = "Basculer de 90° sur la face 1 : allumer la prise du bureau, puis dafbox";
               action = "flip90";
               side = 1;
               sequence = [ { action = "script.power_on_desk_plug_and_turn_on_dafbox"; } ];

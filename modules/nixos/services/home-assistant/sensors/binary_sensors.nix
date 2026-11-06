@@ -8,7 +8,7 @@
 # so without it HA would slugify `name` and rename them, breaking automations).
 [
   {
-    name = "Global · Home is Occupied";
+    name = "Maison · Occupée";
     unique_id = "dafos.binary_sensor.global_maybe_home_occupied";
     default_entity_id = "binary_sensor.global_maybe_home_occupied";
     device_class = "occupancy";
@@ -37,14 +37,14 @@
     '';
   }
   {
-    name = "Véranda · daftv is running";
+    name = "Véranda · daftv allumée";
     unique_id = "dafos.binary_sensor.veranda_maybe_daftv_running";
     default_entity_id = "binary_sensor.veranda_maybe_daftv_running";
     device_class = "running";
     state = "{{ not(states('sensor.veranda_tv_plug_power') | float(0) < 30 and states('media_player.daftv') == 'off') }}";
   }
   {
-    name = "Desk · dafbox is running";
+    name = "Bureau · dafbox allumé";
     unique_id = "dafos.binary_sensor.desk_maybe_dafbox_running";
     default_entity_id = "binary_sensor.desk_maybe_dafbox_running";
     device_class = "running";
@@ -74,21 +74,21 @@
   [
     {
       id = "laundry_washing_machine";
-      name = "Laundry · Washing Machine is active";
+      name = "Buanderie · Lave-linge actif";
       power = "sensor.laundry_washing_machine_power";
       threshold = 5;
       delayOff = 10;
     }
     {
       id = "laundry_dryer";
-      name = "Laundry · Dryer is active";
+      name = "Buanderie · Sèche-linge actif";
       power = "sensor.laundry_dryer_power";
       threshold = 25;
       delayOff = 5;
     }
     {
       id = "kitchen_dishwasher";
-      name = "Kitchen · Dishwasher is active";
+      name = "Cuisine · Lave-vaisselle actif";
       power = "sensor.kitchen_dishwasher_plug_power";
       threshold = 2;
       delayOff = 15;
@@ -99,7 +99,7 @@
   {
     # Entry door open, or closed less than an hour ago: shows the Maison
     # dashboard's "Entrée" favourite tile.
-    name = "Entry · Door Recently Opened";
+    name = "Entrée · Porte ouverte récemment";
     unique_id = "dafos.binary_sensor.entry_door_recently_opened";
     default_entity_id = "binary_sensor.entry_door_recently_opened";
     device_class = "door";

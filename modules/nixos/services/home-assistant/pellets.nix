@@ -132,7 +132,7 @@ in
     {
       id = "dafos_stove_pellets";
       alias = "Poêle · Granulés";
-      description = "Estimates the pellet tank from burn hours since the last refill and alerts when about ${toString warnHours} h are left. Managed in Nix (modules/nixos/services/home-assistant/pellets.nix).";
+      description = "Estime le réservoir de granulés à partir des heures de combustion depuis la dernière recharge, et alerte quand il reste environ ${toString warnHours} h. Géré dans Nix (modules/nixos/services/home-assistant/pellets.nix).";
       mode = "queued";
       triggers = [
         {
@@ -170,7 +170,7 @@ in
         {
           choose = [
             {
-              alias = "Refilled: restart the count, drop the alert";
+              alias = "Rechargé : repartir de zéro, retirer l'alerte";
               conditions = [
                 {
                   condition = "trigger";
@@ -179,7 +179,7 @@ in
               ];
               sequence = [
                 {
-                  alias = "One bag less in stock";
+                  alias = "Un sac de moins en stock";
                   action = "input_number.set_value";
                   target.entity_id = bags;
                   data.value = "{{ [states('${bags}') | int(0) - 1, 0] | max }}";
@@ -199,14 +199,14 @@ in
               ];
             }
             {
-              alias = "Ran dry: the hours burned on this fill become the autonomy";
+              alias = "Réservoir vide : les heures brûlées sur ce plein deviennent l'autonomie";
               conditions = [
                 {
                   condition = "trigger";
                   id = "empty";
                 }
                 {
-                  alias = "Ignore a press right after a refill";
+                  alias = "Ignorer un appui juste après une recharge";
                   condition = "numeric_state";
                   entity_id = burned;
                   above = 3;
@@ -222,7 +222,7 @@ in
               ];
             }
             {
-              alias = "Low: time to top up";
+              alias = "Bas : il est temps de recharger";
               conditions = [
                 {
                   condition = "trigger";
@@ -234,7 +234,7 @@ in
               ];
             }
             {
-              alias = "Out: the estimate says empty";
+              alias = "Vide : l'estimation dit que le réservoir est vide";
               conditions = [
                 {
                   condition = "trigger";

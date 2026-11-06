@@ -37,7 +37,7 @@ in
 {
   binarySensors = [
     {
-      name = "Kitchen · Light presence";
+      name = "Cuisine · Présence pour l'éclairage";
       unique_id = "dafos.binary_sensor.kitchen_light_presence";
       default_entity_id = "binary_sensor.kitchen_light_presence";
       device_class = "occupancy";
@@ -51,7 +51,7 @@ in
       availability = "{{ has_value('${pir}') }}";
     }
     {
-      name = "Living Room · Light presence";
+      name = "Salon · Présence pour l'éclairage";
       unique_id = "dafos.binary_sensor.living_room_light_presence";
       default_entity_id = "binary_sensor.living_room_light_presence";
       device_class = "occupancy";

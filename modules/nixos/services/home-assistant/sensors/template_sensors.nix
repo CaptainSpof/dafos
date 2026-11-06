@@ -19,7 +19,7 @@
     '';
   }
   {
-    name = "Maybe Dashboard Warning";
+    name = "Alerte du dashboard";
     unique_id = "dafos.sensor.maybe_dashboard_warning";
     state = ''
       {{ label_entities('dashboard-warning') | expand | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list | count > 0 }}

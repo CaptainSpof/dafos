@@ -72,7 +72,7 @@ let
       inherit triggers;
       conditions = [
         {
-          alias = "A light counts only when switched from the app, and not on a mere attribute change";
+          alias = "Une lumière ne compte que si elle est commandée depuis l'appli, pas sur un simple changement d'attribut";
           condition = "template";
           value_template = ''
             {{ trigger.id != 'light'

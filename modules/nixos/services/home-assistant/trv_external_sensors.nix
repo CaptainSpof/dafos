@@ -39,7 +39,7 @@ let
     {
       id = "dafos_trv_external_${valve}";
       alias = "Heating · ${valve} external sensor";
-      description = "Feeds ${sensor} to the ${valve} valve as its external temperature, or puts it back on its own sensor when that thermometer is unavailable. Managed in Nix (modules/nixos/services/home-assistant/trv_external_sensors.nix).";
+      description = "Envoie ${sensor} à la vanne ${valve} comme température externe, ou la remet sur son propre capteur quand ce thermomètre est indisponible. Géré dans Nix (modules/nixos/services/home-assistant/trv_external_sensors.nix).";
       mode = "queued";
       max = 3;
       triggers = [

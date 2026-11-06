@@ -118,7 +118,7 @@ let
     {
       id = "dafos_${id}";
       inherit alias;
-      description = "${alias}: lights on/off and dimming like the room's RODRET switch, plus its double presses. Managed in Nix (modules/nixos/services/home-assistant/bilresa.nix).";
+      description = "${alias} : marche/arrêt et variation des lumières comme l'interrupteur RODRET de la pièce, plus ses doubles appuis. Géré dans Nix (modules/nixos/services/home-assistant/bilresa.nix).";
       # A new press stops a running dim
       mode = "restart";
       triggers = [

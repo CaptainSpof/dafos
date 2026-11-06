@@ -38,22 +38,22 @@ let
     {
       id = "black";
       label = "Noir";
-      name = "Black (BK)";
+      name = "Noir (BK)";
     }
     {
       id = "photo_blue";
       label = "Bleu photo";
-      name = "Photo Blue";
+      name = "Bleu photo";
     }
     {
       id = "yellow";
       label = "Jaune";
-      name = "Yellow";
+      name = "Jaune";
     }
     {
       id = "pigment_black";
       label = "Noir pigment";
-      name = "Black (PGBK)";
+      name = "Noir (PGBK)";
     }
     {
       id = "magenta";
@@ -146,7 +146,7 @@ in
     {
       id = "dafos_printer_ink_low";
       alias = "Printer · Ink Low";
-      description = "Notifies when a Canon TS9100 tank drops to ${toString lowLevel} % or the printer marks one low or empty; clears once every tank is back at ${toString fineLevel} % or more. Managed in Nix (modules/nixos/services/home-assistant/printer_ink.nix).";
+      description = "Prévient quand un réservoir de la Canon TS9100 descend à ${toString lowLevel} % ou que l'imprimante en signale un bas ou vide ; efface la notification une fois tous les réservoirs revenus à ${toString fineLevel} % ou plus. Géré dans Nix (modules/nixos/services/home-assistant/printer_ink.nix).";
       mode = "queued";
       triggers =
         map (t: {
@@ -176,7 +176,7 @@ in
         {
           choose = [
             {
-              alias = "A tank is low: notify, listing the low tanks";
+              alias = "Un réservoir est bas : prévenir, avec la liste des réservoirs bas";
               conditions = [
                 {
                   condition = "trigger";
@@ -204,7 +204,7 @@ in
               ];
             }
             {
-              alias = "Every tank fine again (cartridge replaced): clear";
+              alias = "Tous les réservoirs sont de nouveau bons (cartouche changée) : effacer";
               conditions = [
                 {
                   condition = "trigger";

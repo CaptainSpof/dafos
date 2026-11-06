@@ -46,7 +46,7 @@ let
 in
 {
   input_number.veranda_lights_off_delay = {
-    name = "Véranda · Lights off delay";
+    name = "Véranda · Délai d'extinction des lumières";
     icon = "mdi:timer-outline";
     # No `initial`: it would reset the value on every restart. A new
     # input_number starts at `min`, so it is set to 10 once after the first
@@ -62,7 +62,7 @@ in
     {
       id = "dafos_veranda_lights_empty";
       alias = "Véranda · Lights off when empty";
-      description = "Turns the veranda lights off once the living room radar, the veranda's switch, cube and button and daftv have all been quiet for input_number.veranda_lights_off_delay minutes. Never while daftv is on. Managed in Nix (modules/nixos/services/home-assistant/veranda_lights.nix).";
+      description = "Éteint les lumières de la véranda quand le radar du salon, l'interrupteur, le cube et le bouton de la véranda, et daftv sont tous restés calmes pendant input_number.veranda_lights_off_delay minutes. Jamais quand daftv est allumée. Géré dans Nix (modules/nixos/services/home-assistant/veranda_lights.nix).";
       mode = "single";
       triggers = [
         (quietFor radar)
@@ -87,16 +87,16 @@ in
           state = "on";
         }
         {
-          alias = "Lit for the whole delay";
+          alias = "Allumées pendant tout le délai";
           condition = "state";
           entity_id = lights;
           state = "on";
           "for" = delay;
         }
-        (quietSince radar // { alias = "Nobody seen by the radar for the whole delay"; })
-        (quietSince tv // { alias = "daftv off for the whole delay"; })
+        (quietSince radar // { alias = "Personne vu par le radar pendant tout le délai"; })
+        (quietSince tv // { alias = "daftv éteinte pendant tout le délai"; })
         {
-          alias = "No veranda switch, cube or button press for the whole delay";
+          alias = "Aucun appui sur l'interrupteur, le cube ou le bouton de la véranda pendant tout le délai";
           condition = "template";
           value_template = ''
             {% set d = timedelta(minutes=states('${delayHelper}') | int(10)) %}

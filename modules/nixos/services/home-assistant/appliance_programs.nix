@@ -24,15 +24,15 @@ let
   appliances = [
     {
       id = "laundry_washing_machine";
-      name = "Laundry · Washing Machine";
+      name = "Buanderie · Lave-linge";
     }
     {
       id = "laundry_dryer";
-      name = "Laundry · Dryer";
+      name = "Buanderie · Sèche-linge";
     }
     {
       id = "kitchen_dishwasher";
-      name = "Kitchen · Dishwasher";
+      name = "Cuisine · Lave-vaisselle";
     }
   ];
 
@@ -80,7 +80,7 @@ in
     map (a: {
       name = "${a.id}_programs";
       value = {
-        name = "${a.name} programmes";
+        name = "${a.name} · Programmes";
         icon = "mdi:format-list-numbered";
         max = 255;
         # No `initial`: it would forget the learned list on every restart.
@@ -92,7 +92,7 @@ in
     {
       id = "dafos_household_appliance_programs";
       alias = "Household · Appliance Programmes";
-      description = "Learns each appliance's programme lengths from its cycles and sets the expected cycle length to the shortest programme the running cycle has not outlasted. Managed in Nix (modules/nixos/services/home-assistant/appliance_programs.nix).";
+      description = "Apprend la durée des programmes de chaque appareil à partir de ses cycles, et fixe la durée attendue du cycle en cours au plus court programme qu'il n'a pas encore dépassé. Géré dans Nix (modules/nixos/services/home-assistant/appliance_programs.nix).";
       mode = "queued";
       triggers =
         concatMap (a: [
@@ -119,7 +119,7 @@ in
       actions = [
         {
           choose = map (a: {
-            alias = "${a.name}: cycle over, learn its length";
+            alias = "${a.name} : cycle terminé, apprendre sa durée";
             conditions = [
               {
                 condition = "trigger";
@@ -167,7 +167,7 @@ in
           # Idle appliances expect their shortest programme, so the next
           # start's notification already has it. This also overrides the
           # moving average Household · Appliances still writes at each end.
-          alias = "Expect the shortest programme the cycle has not outlasted (idle: the shortest)";
+          alias = "Attendre le plus court programme que le cycle n'a pas dépassé (à l'arrêt : le plus court)";
           "if" = [
             {
               condition = "trigger";

@@ -57,7 +57,7 @@ in
       ];
       binary_sensor = [
         {
-          name = "Desk · dafbox in use";
+          name = "Bureau · dafbox utilisé";
           unique_id = "dafos.binary_sensor.desk_dafbox_in_use";
           default_entity_id = inUse;
           device_class = "occupancy";
@@ -104,7 +104,7 @@ in
       ];
       binary_sensor = [
         {
-          name = "Heating · Ground floor idle";
+          name = "Chauffage · Rez-de-chaussée inoccupé";
           unique_id = "dafos.binary_sensor.heating_ground_floor_idle";
           default_entity_id = idle;
           icon = "mdi:home-floor-0";

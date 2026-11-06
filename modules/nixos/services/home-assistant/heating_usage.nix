@@ -192,7 +192,7 @@ in
     {
       id = "dafos_heating_usage_notifications";
       alias = "Heating · Usage Notifications";
-      description = "Notifies dafphone when the stove lights or the boiler starts heating, and replaces it with the run's length when it stops. Managed in Nix (modules/nixos/services/home-assistant/heating_usage.nix).";
+      description = "Prévient dafphone quand le poêle s'allume ou que la chaudière se met à chauffer, et remplace la notification par la durée de fonctionnement à l'arrêt. Géré dans Nix (modules/nixos/services/home-assistant/heating_usage.nix).";
       mode = "queued";
       triggers = concatMap (h: [
         {

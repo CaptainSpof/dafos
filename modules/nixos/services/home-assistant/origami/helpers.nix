@@ -60,7 +60,7 @@ let
   '';
 
   climateSensor = r: {
-    name = "Climate · ${r.name}";
+    name = "Climat · ${r.name}";
     unique_id = "dafos.sensor.climate_${r.id}";
     default_entity_id = "sensor.climate_${r.id}";
     icon = "mdi:thermometer";
@@ -101,7 +101,7 @@ let
   # The card shows this sensor's icon: rising, falling or steady, with a dead
   # band of ±0.2 °C/h so sensor noise does not flip the arrow.
   trendSensor = r: {
-    name = "Climate · ${r.name} trend";
+    name = "Climat · ${r.name} tendance";
     unique_id = "dafos.sensor.climate_${r.id}_trend";
     default_entity_id = "sensor.climate_${r.id}_trend";
     unit_of_measurement = "°C/h";
@@ -121,7 +121,7 @@ in
     ++ map trendSensor climateRooms
     # Per floor, for the heating usage graph.
     ++ map (f: {
-      name = "Climate · Temperature average ${f.name}";
+      name = "Climat · Température moyenne ${f.name}";
       unique_id = "dafos.sensor.temperature_average_${f.id}";
       default_entity_id = "sensor.temperature_average_${f.id}";
       unit_of_measurement = "°C";
@@ -131,7 +131,7 @@ in
     }) (filter (f: builtins.any (r: r.floor == f.id) climateRooms) floors)
     ++ [
       {
-        name = "Climate · Temperature peaks";
+        name = "Climat · Pics de température";
         unique_id = "dafos.sensor.climate_temperature_peaks";
         default_entity_id = "sensor.climate_temperature_peaks";
         icon = "mdi:thermometer";
@@ -139,7 +139,7 @@ in
         attributes.lowest = peak "temperature" climateRooms "min";
       }
       {
-        name = "Climate · Humidity peaks";
+        name = "Climat · Pics d'humidité";
         unique_id = "dafos.sensor.climate_humidity_peaks";
         default_entity_id = "sensor.climate_humidity_peaks";
         icon = "mdi:water-percent";
@@ -147,7 +147,7 @@ in
         attributes.lowest = peak "humidity" humidityRooms "min";
       }
       {
-        name = "Climate · Temperature average";
+        name = "Climat · Température moyenne";
         unique_id = "dafos.sensor.temperature_average";
         default_entity_id = "sensor.temperature_average";
         unit_of_measurement = "°C";
@@ -155,7 +155,7 @@ in
         state = average "temperature" climateRooms 1;
       }
       {
-        name = "Climate · Humidity average";
+        name = "Climat · Humidité moyenne";
         unique_id = "dafos.sensor.humidity_average";
         default_entity_id = "sensor.humidity_average";
         unit_of_measurement = "%";
@@ -163,7 +163,7 @@ in
         state = average "humidity" humidityRooms 0;
       }
       {
-        name = "Climate · Home";
+        name = "Climat · Maison";
         unique_id = "dafos.sensor.climate_home";
         default_entity_id = "sensor.climate_home";
         icon = "mdi:home-thermometer";
@@ -181,7 +181,7 @@ in
       {
         # Doors, really: the house has no window contacts. Same list as the
         # room cards, so the header count matches what the cards show.
-        name = "Climate · Openings open count";
+        name = "Climat · Ouvertures ouvertes";
         unique_id = "dafos.sensor.windows_open_count";
         default_entity_id = "sensor.windows_open_count";
         icon = "mdi:door-open";
@@ -193,7 +193,7 @@ in
         # Origami counts zone.home, which never drops below 1 here: the kiosk
         # iPad's GPS sits inside the zone. Real people only, like
         # binary_sensor.global_maybe_home_occupied.
-        name = "Maison · People home";
+        name = "Maison · Personnes présentes";
         unique_id = "dafos.sensor.people_home_count";
         default_entity_id = "sensor.people_home_count";
         icon = "mdi:account-group-outline";
@@ -210,7 +210,7 @@ in
         # The small line above the greeting: the next event within a day from
         # the family or Cédric's calendar, otherwise today's date. A calendar
         # without an upcoming event has no `message`, which showed `undefined`.
-        name = "Maison · Greeting subtitle";
+        name = "Maison · Sous-titre d'accueil";
         unique_id = "dafos.sensor.greeting_subtitle";
         default_entity_id = "sensor.greeting_subtitle";
         icon = "mdi:calendar-today";
@@ -235,7 +235,7 @@ in
         '';
       }
       {
-        name = "Greetings";
+        name = "Accueil";
         unique_id = "dafos.sensor.greetings";
         default_entity_id = "sensor.greetings";
         icon = "mdi:hand-wave";
@@ -276,13 +276,13 @@ in
   input_boolean = {
     # Opens the climate table under the rooms header
     room_climate_card = {
-      name = "Maison · Room climate table";
+      name = "Maison · Tableau climat des pièces";
       icon = "mdi:table";
     };
     # Unfolds the plugs in a room pop-up; every pop-up turns it off on close,
     # so the plugs start folded and are not switched off by a stray tap.
     plugs_unfolded = {
-      name = "Maison · Plugs unfolded";
+      name = "Maison · Prises dépliées";
       icon = "mdi:power-socket-eu";
     };
   }
@@ -291,7 +291,7 @@ in
     map (
       f:
       nameValuePair "maison_floor_${f.id}" {
-        name = "Maison · ${f.name} unfolded";
+        name = "Maison · ${f.name} déplié";
         icon = "mdi:home-floor-${
           if f.id == "basement" then
             "negative-1"
@@ -308,16 +308,16 @@ in
     # The plus and minus buttons of the thermostat rows
     thermostat_step = {
       alias = "Thermostat step";
-      description = "Moves a thermostat's target temperature up or down.";
+      description = "Monte ou baisse la consigne d'un thermostat.";
       mode = "queued";
       fields = {
         thermostat = {
-          description = "The thermostat";
+          description = "Le thermostat";
           example = "climate.sejour";
           selector.entity.domain = "climate";
         };
         step = {
-          description = "How far, in degrees";
+          description = "De combien, en degrés";
           example = -0.5;
         };
       };

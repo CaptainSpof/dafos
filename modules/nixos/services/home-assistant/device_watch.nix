@@ -69,7 +69,7 @@ in
     {
       id = "dafos_devices_offline";
       alias = "Appareils hors ligne";
-      description = "Alerts when a Zigbee2MQTT or Matter device has been offline for 30 minutes. Managed in Nix (modules/nixos/services/home-assistant/device_watch.nix).";
+      description = "Alerte quand un appareil Zigbee2MQTT ou Matter est hors ligne depuis 30 minutes. Géré dans Nix (modules/nixos/services/home-assistant/device_watch.nix).";
       mode = "queued";
       triggers = [
         {
@@ -81,7 +81,7 @@ in
       ];
       conditions = [
         {
-          alias = "Not the first value after a restart or a new sensor";
+          alias = "Pas la première valeur après un redémarrage ou un nouveau capteur";
           condition = "template";
           value_template = "{{ trigger.from_state is not none and trigger.from_state.attributes.devices is defined }}";
         }
@@ -95,7 +95,7 @@ in
         {
           choose = [
             {
-              alias = "Everything back: drop the alert";
+              alias = "Tout est revenu : retirer l'alerte";
               conditions = [
                 {
                   condition = "template";
@@ -113,7 +113,7 @@ in
               ];
             }
             {
-              alias = "A device newly offline";
+              alias = "Un appareil vient de passer hors ligne";
               conditions = [
                 {
                   condition = "template";

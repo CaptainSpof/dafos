@@ -3,7 +3,7 @@
   # last airing advice that was pushed to the phone, so the automation can skip
   # re-notifying when the recomputed advice is identical (deduplication).
   window_airing_last_advice = {
-    name = "Window Airing · Last Advice";
+    name = "Aération · Dernier conseil";
     icon = "mdi:window-open-variant";
     max = 255;
   };

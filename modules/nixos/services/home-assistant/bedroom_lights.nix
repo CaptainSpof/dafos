@@ -19,7 +19,7 @@ in
     {
       id = "dafos_bedroom_lights_empty";
       alias = "Bedroom · Lights off when empty";
-      description = "Turns the bedroom lights off once its presence sensor has seen nobody for ${toString emptyMinutes} min. Managed in Nix (modules/nixos/services/home-assistant/bedroom_lights.nix).";
+      description = "Éteint les lumières de la chambre quand son capteur de présence n'a vu personne depuis ${toString emptyMinutes} min. Géré dans Nix (modules/nixos/services/home-assistant/bedroom_lights.nix).";
       mode = "single";
       triggers = [
         {
@@ -42,7 +42,7 @@ in
           state = "on";
         }
         {
-          alias = "Nobody seen for the whole delay";
+          alias = "Personne vu pendant tout le délai";
           condition = "state";
           entity_id = presence;
           state = "off";

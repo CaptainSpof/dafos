@@ -48,7 +48,7 @@ let
 in
 {
   input_datetime.netatmo_watchdog_last_restart = {
-    name = "Netatmo watchdog · Last restart";
+    name = "Surveillance Netatmo · Dernier redémarrage";
     icon = "mdi:restart-alert";
     has_date = true;
     has_time = true;
@@ -58,7 +58,7 @@ in
     {
       id = "dafos_netatmo_watchdog";
       alias = "Netatmo · Watchdog";
-      description = "Warns when Netatmo reports the thermostat unreachable; reloads the Netatmo integration when the API itself is down 10 min, and restarts HA (at most once a day, 07:00-22:30) when the entry is stuck unloading or a reload did not help. Managed in Nix (modules/nixos/services/home-assistant/netatmo_watchdog.nix).";
+      description = "Prévient quand Netatmo signale le thermostat injoignable ; recharge l'intégration Netatmo quand l'API elle-même est en panne depuis 10 min, et redémarre HA (au plus une fois par jour, entre 07:00 et 22:30) quand l'entrée reste bloquée en déchargement ou qu'un rechargement n'a pas suffi. Géré dans Nix (modules/nixos/services/home-assistant/netatmo_watchdog.nix).";
       mode = "single";
       triggers = [
         {
@@ -84,7 +84,7 @@ in
         {
           choose = [
             {
-              alias = "Back: drop the alerts";
+              alias = "Revenu : retirer les alertes";
               conditions = [
                 {
                   condition = "trigger";
@@ -106,7 +106,7 @@ in
               ];
             }
             {
-              alias = "Down for 10 min, but the API answers: the thermostat itself is unreachable, warn only";
+              alias = "En panne depuis 10 min, mais l'API répond : c'est le thermostat qui est injoignable, prévenir seulement";
               conditions = [
                 {
                   condition = "template";
@@ -118,7 +118,7 @@ in
               ];
             }
             {
-              alias = "Down for 10 min or more, API down too: repair";
+              alias = "En panne depuis 10 min ou plus, API en panne aussi : réparer";
               conditions = [
                 {
                   condition = "template";
@@ -127,7 +127,7 @@ in
               ];
               sequence = [
                 {
-                  alias = "Reload, unless the entry is stuck in a transition";
+                  alias = "Recharger, sauf si l'entrée est bloquée dans une transition";
                   "if" = [
                     {
                       condition = "template";
@@ -148,7 +148,7 @@ in
                   ];
                 }
                 {
-                  alias = "Still down: restart HA, if allowed now";
+                  alias = "Toujours en panne : redémarrer HA, si c'est permis maintenant";
                   "if" = [
                     {
                       condition = "template";

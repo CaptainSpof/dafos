@@ -62,7 +62,7 @@ in
     {
       id = "dafos_household_vacuum_progress";
       alias = "Household · Vacuum Progress";
-      description = "dafspi's cycle as a sticky Live Update on dafphone (room, progress, area, time) with a button that sends it back to its dock; cleared once docked. Managed in Nix (modules/nixos/services/home-assistant/vacuum_progress.nix).";
+      description = "Le cycle de dafspi en Live Update persistante sur dafphone (pièce, progression, surface, durée), avec un bouton pour le renvoyer à sa station ; effacée une fois à la station. Géré dans Nix (modules/nixos/services/home-assistant/vacuum_progress.nix).";
       mode = "queued";
       max = 10;
       triggers = [
@@ -87,7 +87,7 @@ in
         {
           choose = [
             {
-              alias = "Cleaning or paused: progress, with the way home";
+              alias = "Nettoyage ou pause : progression, avec le retour à la station";
               conditions = [
                 (isState [
                   "cleaning"
@@ -109,7 +109,7 @@ in
               ];
             }
             {
-              alias = "On the way home";
+              alias = "En route vers la station";
               conditions = [ (isState "returning") ];
               sequence = [
                 (notify {
@@ -123,7 +123,7 @@ in
               ];
             }
             {
-              alias = "Stuck: say why, without the live update";
+              alias = "Bloqué : dire pourquoi, sans Live Update";
               conditions = [ (isState "error") ];
               sequence = [
                 (notify {
@@ -138,14 +138,14 @@ in
               ];
             }
             {
-              alias = "Docked or idle: nothing to follow any more";
+              alias = "À la station ou à l'arrêt : plus rien à suivre";
               conditions = [
                 (isState [
                   "docked"
                   "idle"
                 ])
                 {
-                  alias = "Only on dafspi's own change or a restart, not on every sensor update";
+                  alias = "Seulement sur un changement de dafspi lui-même ou un redémarrage, pas à chaque mise à jour de capteur";
                   condition = "template";
                   value_template = "{{ trigger.platform != 'state' or trigger.entity_id == '${vacuum}' }}";
                 }

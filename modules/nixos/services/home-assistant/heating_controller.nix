@@ -45,7 +45,7 @@ _:
 let
   rooms = [
     {
-      name = "Bedroom";
+      name = "Chambre";
       climate = "climate.bedroom_radiator_thermostat";
       presence = [
         "person.cedric_da_fonseca"
@@ -69,7 +69,7 @@ let
       eco = 16;
     }
     {
-      name = "Bathroom";
+      name = "Salle de bain";
       climate = "climate.bathroom_radiator";
       presence = [
         "person.cedric_da_fonseca"
@@ -84,7 +84,7 @@ let
       eco = 12;
     }
     {
-      name = "Kitchen";
+      name = "Cuisine";
       climate = "climate.kitchen_radiator_thermostat";
       ground_floor = true;
       presence = [
@@ -124,7 +124,7 @@ let
       eco = 12;
     }
     {
-      name = "Parents Bedroom";
+      name = "Chambre Parents";
       climate = "climate.parents_bedroom_radiator";
       presence = [
         "person.joaquim_da_fonseca"
@@ -146,7 +146,7 @@ let
       eco = 15;
     }
     {
-      name = "Desk";
+      name = "Bureau";
       climate = "climate.desk_radiator_thermostat";
       # Somebody at dafbox (./desk_presence.nix); device_tracker.dafbox
       # stayed home all day, so the desk was heated while nobody sat there.
@@ -176,7 +176,7 @@ let
 in
 {
   input_select.heating_mode = {
-    name = "Heating · Mode";
+    name = "Chauffage · Mode";
     icon = "mdi:home-switch-outline";
     options = [
       "Auto"
@@ -204,7 +204,7 @@ in
     {
       id = "dafos_heating_controller";
       alias = "Global · Heating Controller";
-      description = "Single owner of the heating: radiator valves, pellet stove, Netatmo away/schedule and boiler boosts. Managed in Nix (modules/nixos/services/home-assistant/heating_controller.nix), where the full behaviour is documented.";
+      description = "Seul maître du chauffage : vannes des radiateurs, poêle à granulés, absence/planning Netatmo et relances de la chaudière. Géré dans Nix (modules/nixos/services/home-assistant/heating_controller.nix), où tout le fonctionnement est documenté.";
       triggers = [
         {
           trigger = "time";
@@ -261,7 +261,7 @@ in
           ];
         }
         {
-          alias = "Nobody has been home for an hour (read from the recorder, so a restart does not reset the count)";
+          alias = "Personne à la maison depuis une heure (lu dans l'historique, un redémarrage ne remet donc pas le compteur à zéro)";
           trigger = "template";
           id = "house-empty";
           value_template = "{{ is_state('binary_sensor.global_home_is_occupied', 'off') and states('sensor.heating_home_occupied_last_hour') | float(1) < 0.02 }}";
@@ -347,7 +347,7 @@ in
         {
           trigger = "template";
           id = "stove-warm";
-          alias = "Living room 1 °C above the Netatmo target (at most 20 °C) for 10 min, and the stove has burned for at least 1 h; the veranda stands in while Netatmo is offline";
+          alias = "Salon 1 °C au-dessus de la consigne Netatmo (20 °C au plus) depuis 10 min, et le poêle a brûlé au moins 1 h ; la véranda prend le relais quand Netatmo est hors ligne";
           value_template = ''
             {% set last = states('input_datetime.heating_last_stove_command') | as_datetime(none) %}
             {% set temp = (states('sensor.living_room_current_temperature') | float(none) if has_value('sensor.living_room_current_temperature') else states('sensor.veranda_temperature_sensor_temperature') | float(none)) %}
@@ -362,7 +362,7 @@ in
         {
           trigger = "template";
           id = "stove-cold";
-          alias = "Living room cooled below 18.5 °C for 10 min, stove off, last command > 45 min ago (re-arms by itself once the cooldown has passed)";
+          alias = "Salon refroidi sous 18,5 °C depuis 10 min, poêle éteint, dernière commande il y a plus de 45 min (se réarme tout seul une fois le délai passé)";
           value_template = ''
             {% set last = states('input_datetime.heating_last_stove_command') | as_datetime(none) %}
             {{ (states('sensor.living_room_current_temperature') | float(none) if has_value('sensor.living_room_current_temperature') else states('sensor.veranda_temperature_sensor_temperature') | float(none)) | float(99) < 18.5
@@ -388,14 +388,14 @@ in
         {
           trigger = "template";
           id = "stove-morning";
-          alias = "Morning stove start: 06:00, or one hour before a dafphone alarm set between 06:00 and 10:00";
+          alias = "Allumage du poêle le matin : 06:00, ou une heure avant un réveil dafphone réglé entre 06:00 et 10:00";
           value_template = "{% set a = states('sensor.dafphone_next_alarm') | as_datetime(none) %}{% set a = a | as_local if a is not none else none %}{% set al = a.strftime('%H:%M') if a is not none and a.date() == now().date() else '' %}{% set start = ['06:00', (a - timedelta(hours=1)).strftime('%H:%M')] | max if '06:00' <= al <= '10:00' else '06:00' %}{{ now().strftime(\"%H:%M\") == start }}";
         }
       ];
       conditions = [ ];
       actions = [
         {
-          alias = "After a restart, wait for the occupancy history before deciding anything (until then the house would count as occupied)";
+          alias = "Après un redémarrage, attendre l'historique de présence avant de décider quoi que ce soit (d'ici là, la maison compterait comme occupée)";
           "if" = [
             {
               condition = "trigger";
@@ -413,7 +413,7 @@ in
           ];
         }
         {
-          alias = "Netatmo follows away: whenever it disagrees with the controller (a restart or a missed trigger must not leave the boiler on the schedule in an empty house). Only the away preset is touched, a manual Netatmo setting is left alone";
+          alias = "Netatmo suit l'absence : dès qu'il n'est pas d'accord avec le contrôleur (un redémarrage ou un déclencheur manqué ne doit pas laisser la chaudière sur le planning dans une maison vide). Seul le mode absence est touché, un réglage Netatmo manuel est laissé tel quel";
           "if" = [
             {
               condition = "template";
@@ -436,7 +436,7 @@ in
         {
           choose = [
             {
-              alias = "Stove changed state: its warnings (pas démarré / pas éteint) are no longer current";
+              alias = "Le poêle a changé d'état : ses avertissements (pas démarré / pas éteint) ne sont plus d'actualité";
               conditions = [
                 {
                   condition = "trigger";
@@ -459,14 +459,14 @@ in
               ];
             }
             {
-              alias = "Boiler boost — a valve wants heat but the boiler is idle";
+              alias = "Relance chaudière — une vanne demande de la chaleur mais la chaudière est à l'arrêt";
               conditions = [
                 {
                   condition = "trigger";
                   id = "boost";
                 }
                 {
-                  alias = "Still true now (the time_pattern retry does not imply it)";
+                  alias = "Toujours vrai maintenant (la relance time_pattern ne le garantit pas)";
                   condition = "template";
                   value_template = ''
                     ${valvesWantingHeat}
@@ -476,7 +476,7 @@ in
                        and ns.n > 0 }}'';
                 }
                 {
-                  alias = "At most one boost per hour";
+                  alias = "Au plus une relance par heure";
                   condition = "template";
                   value_template = "{% set last = states('input_datetime.heating_last_boiler_boost') | as_datetime(none) %} {{ last is none or now() - last | as_local > timedelta(hours=1) }}";
                 }
@@ -526,7 +526,7 @@ in
               ];
             }
             {
-              alias = "Stove idle — cut the plug's standby draw once the stove is off and cool";
+              alias = "Poêle au repos — couper la consommation de veille de la prise une fois le poêle éteint et froid";
               conditions = [
                 {
                   condition = "trigger";
@@ -559,7 +559,7 @@ in
               ];
             }
             {
-              alias = "Return soon, nobody back after 3 h: back to Auto (that change re-runs the controller, which goes back to away)";
+              alias = "Retour imminent, personne revenu après 3 h : retour en Auto (ce changement relance le contrôleur, qui repasse en absence)";
               conditions = [
                 {
                   condition = "trigger";
@@ -582,7 +582,7 @@ in
               ];
             }
             {
-              alias = "Boost / stove-idle checks with nothing to do: stop here, do not fall through to the room recompute (it would overwrite manual valve tweaks every 15 min)";
+              alias = "Vérifications relance / poêle au repos sans rien à faire : s'arrêter ici, sans passer au recalcul des pièces (il écraserait les réglages manuels des vannes toutes les 15 min)";
               conditions = [
                 {
                   condition = "trigger";
@@ -601,7 +601,7 @@ in
           ];
           default = [
             {
-              alias = "Someone is home: return soon has done its job";
+              alias = "Quelqu'un est là : le retour imminent a fait son travail";
               "if" = [
                 {
                   condition = "state";
@@ -627,7 +627,7 @@ in
               ];
             }
             {
-              alias = "Radiator valves";
+              alias = "Vannes des radiateurs";
               repeat = {
                 for_each = "{{ rooms }}";
                 sequence = [
@@ -681,7 +681,7 @@ in
               };
             }
             {
-              alias = "Pellet stove — what this trigger asks for";
+              alias = "Poêle à granulés — ce que demande ce déclencheur";
               variables = {
                 hm = "{{ now().strftime('%H:%M') }}";
                 stove = ''
@@ -701,7 +701,7 @@ in
               };
             }
             {
-              alias = "Pellet stove — driven through its IR remote (the on/off key needs a long press: 15 repeats, no delay). The same key toggles, so it is only sent when binary_sensor.living_room_stove_is_maybe_burning (plug >30 W in the last 10 min) says the stove is in the other state, and at most every 45 min so a stove that is still shutting down is never relit. The plug is only cut once the stove is off and cooled (idle draw), never while it burns.";
+              alias = "Poêle à granulés — piloté par sa télécommande IR (la touche marche/arrêt demande un appui long : 15 répétitions, sans délai). La même touche bascule, elle n'est donc envoyée que quand binary_sensor.living_room_stove_is_maybe_burning (prise > 30 W dans les 10 dernières min) dit que le poêle est dans l'autre état, et au plus toutes les 45 min pour ne jamais rallumer un poêle encore en cours d'extinction. La prise n'est coupée qu'une fois le poêle éteint et refroidi (consommation de veille), jamais pendant qu'il brûle.";
               choose = [
                 {
                   conditions = [
@@ -714,7 +714,7 @@ in
                     {
                       choose = [
                         {
-                          alias = "Burning -> proper shutdown through the remote; the stove-idle trigger cuts the plug once it has cooled";
+                          alias = "Allumé -> extinction propre par la télécommande ; le déclencheur poêle au repos coupe la prise une fois refroidi";
                           conditions = [
                             {
                               condition = "state";
@@ -729,10 +729,10 @@ in
                             {
                               condition = "template";
                               value_template = "{{ stove_cooldown_ok | bool or stove_manual_off_ok | bool }}";
-                              alias = "Cooldown passed, or a manual off right after an ignition";
+                              alias = "Délai passé, ou extinction manuelle juste après un allumage";
                             }
                             {
-                              alias = "Really burning, not the ~50 W spike a plug toggle produces: the plug has been steady for 10 min";
+                              alias = "Vraiment allumé, pas le pic d'environ 50 W d'une bascule de prise : la prise est stable depuis 10 min";
                               condition = "template";
                               value_template = "{{ now() - states.switch.living_room_stove_switch.last_changed > timedelta(minutes=10) }}";
                             }
@@ -762,7 +762,7 @@ in
                           ];
                         }
                         {
-                          alias = "Already off and cool -> cut the idle draw now";
+                          alias = "Déjà éteint et froid -> couper la veille tout de suite";
                           conditions = [
                             {
                               condition = "state";
@@ -785,7 +785,7 @@ in
                           ];
                         }
                         {
-                          alias = "Burning but a command was sent < 45 min ago (maybe still shutting down) -> tell me";
+                          alias = "Allumé mais une commande a été envoyée il y a moins de 45 min (peut-être encore en extinction) -> me prévenir";
                           conditions = [
                             {
                               condition = "state";
@@ -837,7 +837,7 @@ in
                           };
                         }
                         {
-                          alias = "Let the stove electronics boot before talking to it";
+                          alias = "Laisser l'électronique du poêle démarrer avant de lui parler";
                           delay = {
                             minutes = 3;
                           };
@@ -847,7 +847,7 @@ in
                     {
                       "if" = [
                         {
-                          alias = "Off = idle draw right now (the 10-min max may still hold the plug-on spike)";
+                          alias = "Éteint = consommation de veille en ce moment (le max sur 10 min peut encore contenir le pic de mise sous tension)";
                           condition = "template";
                           value_template = ''
                             {{ states('sensor.living_room_stove_power') | float(0) < 30
@@ -882,7 +882,7 @@ in
                           };
                         }
                         {
-                          alias = "Ignition draws ~320 W within a minute or two";
+                          alias = "L'allumage tire environ 320 W en une minute ou deux";
                           wait_template = "{{ states('sensor.living_room_stove_power') | float(0) > 100 }}";
                           timeout = {
                             minutes = 12;

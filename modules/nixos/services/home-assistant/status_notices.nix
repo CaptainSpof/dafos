@@ -66,7 +66,7 @@ in
     {
       id = "dafos_household_status_notices";
       alias = "Household · Status Notices";
-      description = "Mirrors the colour panel statuses (finished appliances, mail) as persistent notifications; dismissing one, or swiping the phone notification, turns the status off. Managed in Nix (modules/nixos/services/home-assistant/status_notices.nix).";
+      description = "Reprend les statuts du panneau couleur (appareils terminés, courrier) en notifications persistantes ; en fermer une, ou balayer la notification du téléphone, éteint le statut. Géré dans Nix (modules/nixos/services/home-assistant/status_notices.nix).";
       mode = "queued";
       triggers =
         concatMap (s: [
@@ -131,7 +131,7 @@ in
                 ];
               }
               {
-                alias = "${s.title}: dismissed, the status goes off";
+                alias = "${s.title} : fermée, le statut s'éteint";
                 conditions = [
                   {
                     condition = "trigger";
@@ -148,7 +148,7 @@ in
             ]) statuses
             ++ [
               {
-                alias = "After a restart: one notification per status still on";
+                alias = "Après un redémarrage : une notification par statut encore actif";
                 conditions = [
                   {
                     condition = "trigger";

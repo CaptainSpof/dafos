@@ -25,7 +25,7 @@ let
   automation = r: {
     id = "dafos_co2_${r.id}";
     alias = "Air · CO2 ${r.id}";
-    description = "Notifies when the CO2 ${r.article} stays above ${toString high} ppm, and clears it once back under ${toString fine} ppm. Managed in Nix (modules/nixos/services/home-assistant/co2.nix).";
+    description = "Prévient quand le CO2 ${r.article} reste au-dessus de ${toString high} ppm, et efface la notification une fois revenu sous ${toString fine} ppm. Géré dans Nix (modules/nixos/services/home-assistant/co2.nix).";
     mode = "single";
     triggers = [
       {
@@ -47,7 +47,7 @@ let
       {
         choose = [
           {
-            alias = "Too much CO2: air the room";
+            alias = "Trop de CO2 : aérer la pièce";
             conditions = [
               {
                 condition = "trigger";
@@ -71,7 +71,7 @@ let
             ];
           }
           {
-            alias = "Air renewed: drop the alert";
+            alias = "Air renouvelé : retirer l'alerte";
             conditions = [
               {
                 condition = "trigger";

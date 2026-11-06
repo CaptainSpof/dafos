@@ -11,11 +11,11 @@ _:
 {
   scripts.camera_privacy = {
     alias = "Camera · Privacy";
-    description = "Arms (watching) or disarms (privacy) the indoor camera through its controller.";
+    description = "Arme (surveillance) ou désarme (confidentialité) la caméra intérieure via son contrôleur.";
     mode = "queued";
     icon = "mdi:cctv";
     fields.privacy = {
-      description = "armed: the camera watches. disarmed: privacy preset, then privacy mode.";
+      description = "armed : la caméra surveille. disarmed : position de confidentialité, puis mode confidentialité.";
       example = "armed";
       selector.select.options = [
         "armed"

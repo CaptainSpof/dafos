@@ -90,7 +90,7 @@ let
       };
 
       button = name: single: double: {
-        alias = "${name} press";
+        alias = "Appui ${name}";
         conditions = [
           {
             condition = "template";
@@ -135,9 +135,9 @@ let
     {
       id = "dafos_rodret_${id}";
       alias = "${alias} · Extras";
-      description = "Double presses${
-        if off != [ ] then " and the second off press" else ""
-      } of the ${alias} RODRET; on/off and dimming are a direct Zigbee bind. Managed in Nix (modules/nixos/services/home-assistant/rodret.nix).";
+      description = "Doubles appuis${
+        if off != [ ] then " et second appui sur off" else ""
+      } du RODRET ${alias} ; marche/arrêt et variation passent par un bind Zigbee direct. Géré dans Nix (modules/nixos/services/home-assistant/rodret.nix).";
       mode = "single";
       max_exceeded = "silent";
       triggers = [
