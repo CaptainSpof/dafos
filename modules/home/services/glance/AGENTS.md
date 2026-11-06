@@ -139,3 +139,7 @@
 - **No dollar-brace anywhere in the config**, JS and comments included: Dynacat
   expands each one as an environment variable and refuses the whole config if it
   is unset.
+- `cinema.nix` (« Au cinéma », top of Médias): TMDB `movie/now_playing`, region
+  FR, French titles. Auth is TMDB's v4 read token (`tmdb/token` in
+  `secrets/dafoltop/glance.yaml`, env `TMDB_TOKEN`); the dafoltop build fails
+  ("key 'tmdb' cannot be found") until that entry exists in sops.

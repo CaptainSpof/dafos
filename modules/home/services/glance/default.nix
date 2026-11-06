@@ -530,6 +530,9 @@ in
       # PRIM (Île-de-France Mobilités) token for the RER widget, generated
       # under "Mon jeton d'API" on prim.iledefrance-mobilites.fr.
       { "prim/api-key".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance.yaml"; }
+      # TMDB read access token for the « Au cinéma » widget (cinema.nix), from
+      # themoviedb.org › Paramètres › API.
+      { "tmdb/token".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/glance.yaml"; }
       # Shared with the agents' hosts (flake-modules/services/glance-agent.nix).
       (lib.mkIf (agentPeers != [ ]) {
         # Same path value as the agent aspect declares it with (one definition).
@@ -544,6 +547,7 @@ in
         )
       ))
       { PRIM_API_KEY.fromFile = config.sops.secrets."prim/api-key".path; }
+      { TMDB_TOKEN.fromFile = config.sops.secrets."tmdb/token".path; }
       (lib.mkIf (agentPeers != [ ]) {
         GLANCE_AGENT_TOKEN.fromFile = config.sops.secrets."glance-agent/token".path;
       })
@@ -671,6 +675,26 @@ in
           .rer-refresh { border: 0; cursor: pointer; }
           .rer-refresh.is-loading img { animation: rer-spin 0.8s linear infinite; }
           @keyframes rer-spin { to { rotate: 360deg; } }
+
+          /* « Au cinéma » (cinema.nix): a strip of posters, scrolling when
+             the column is narrow. */
+          .cinema-strip {
+            display: flex;
+            gap: 1.4rem;
+            overflow-x: auto;
+            padding-bottom: 0.6rem;
+          }
+          .cinema-film { flex: 0 0 11rem; min-width: 0; }
+          .cinema-link { display: block; text-decoration: none; }
+          .cinema-poster {
+            display: block;
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            background: var(--color-widget-background-highlight);
+            margin-bottom: 0.6rem;
+          }
 
           /* Monitoring tab while an alert shows (monitoring-alert.js). */
           .nav-item.nav-item-alert {
@@ -956,7 +980,10 @@ in
           columns.main = {
             rank = 1000;
             size = "full";
-            widgets = widgetsFor "medias";
+            widgets = [
+              (liveWidget (import ./cinema.nix { title = "Au cinéma"; }))
+            ]
+            ++ widgetsFor "medias";
           };
         };
 
