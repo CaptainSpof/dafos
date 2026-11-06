@@ -86,6 +86,8 @@ let
   bedroomLights = import ./bedroom_lights.nix { };
   # Veranda lights off once nobody is around, unless daftv is on.
   verandaLights = import ./veranda_lights.nix { };
+  # Entry light on at door opening, whatever HA believes the light state is.
+  entryDoorLight = import ./entry_door_light.nix { };
   # Veranda lights off once nobody is around, unless daftv is on.
 
   # Zigbee/Matter devices that dropped off, with a phone alert.
@@ -529,6 +531,7 @@ in
             ++ deviceWatch.automations
             ++ bedroomLights.automations
             ++ verandaLights.automations
+            ++ entryDoorLight.automations
             ++ deskCube.automations
             ++ bilresa.automations
             ++ rodret.automations
