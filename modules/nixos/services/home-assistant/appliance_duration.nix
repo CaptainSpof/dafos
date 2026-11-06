@@ -2,7 +2,7 @@
 #
 # The plug cannot tell the programmes apart at the start (see
 # appliance_programs.nix), so dafphone gets a question at each start: reply
-# with the length (free text, quick buttons for the two most used programmes).
+# with the length (free text, or a button for the usual programmes).
 # The answer goes into input_number.<id>_declared_duration, which
 # Household · Appliance Programmes uses as the expected length of the running
 # cycle (Live Update, rings, Divoom). It is reset when the cycle ends.
@@ -17,34 +17,52 @@ let
       id = "laundry_washing_machine";
       name = "Lave-linge";
       icon = "mdi:washing-machine";
+      presets = [
+        {
+          minutes = 60;
+          title = "Quotidien · 1 h";
+        }
+      ];
     }
     {
       id = "laundry_dryer";
       name = "Sèche-linge";
       icon = "mdi:tumble-dryer";
+      presets = [
+        {
+          minutes = 45;
+          title = "Express · 45 min";
+        }
+        {
+          minutes = 230;
+          title = "Prêt à ranger · 3 h 50";
+        }
+      ];
     }
     {
       id = "kitchen_dishwasher";
       name = "Lave-vaisselle";
       icon = "mdi:dishwasher";
+      presets = [
+        {
+          minutes = 60;
+          title = "Express · 1 h";
+        }
+        {
+          minutes = 210;
+          title = "Éco · 3 h 30";
+        }
+      ];
     }
   ];
 
   active = a: "binary_sensor.${a.id}_active";
   declared = a: "input_number.${a.id}_declared_duration";
   expected = a: "input_number.${a.id}_expected_duration";
-  programs = a: "input_text.${a.id}_programs";
   tag = a: "appliance_duration_${a.id}";
   prefix = a: "DURATION_${a.id}_";
 
   timeout = 1800;
-
-  # Jinja: the two most used programmes as [minutes, cycles]
-  topPrograms = a: ''
-    {% set raw = states('${programs a}') %}
-    {% set progs = raw | from_json if raw.startswith('[') else [] %}
-    {% set top = (progs | sort(attribute='1', reverse=true))[:2] | sort(attribute='0') %}
-  '';
 
   # Jinja: minutes from free text ("90", "1h30", "1 h", "1.5h", "2h 05"), 0 when
   # not understood
@@ -62,53 +80,32 @@ let
     {% endif %}
   '';
 
-  ask =
-    a: lead:
-    {
-      action = "notify.mobile_app_dafphone";
+  ask = a: lead: {
+    action = "notify.mobile_app_dafphone";
+    data = {
+      title = "${a.name} : quelle durée ?";
+      message = "${lead}Durée du cycle en minutes (90, 1h30…). Sans réponse, cette question disparaît dans 30 min.";
       data = {
-        title = "${a.name} : quelle durée ?";
-        message = "${lead}Durée du cycle en minutes (90, 1h30…). Sans réponse, cette question disparaît dans 30 min.";
-        data = {
-          tag = tag a;
-          group = "Tâches";
-          notification_icon = a.icon;
-          inherit timeout;
-          actions = [
-            {
-              action = "${prefix a}REPLY";
-              title = "Durée…";
-              behavior = "textInput";
-              textInputButtonTitle = "Valider";
-              textInputPlaceholder = "90 ou 1h30";
-            }
-          ];
-        };
+        tag = tag a;
+        group = "Tâches";
+        notification_icon = a.icon;
+        inherit timeout;
+        actions = [
+          {
+            action = "${prefix a}REPLY";
+            title = "Durée…";
+            behavior = "textInput";
+            textInputButtonTitle = "Valider";
+            textInputPlaceholder = "90 ou 1h30";
+          }
+        ]
+        ++ map (p: {
+          action = "${prefix a}${toString p.minutes}";
+          inherit (p) title;
+        }) a.presets;
       };
     };
-
-  # The same question with the quick buttons added; templated, so the buttons
-  # follow the learned programmes.
-  askWithButtons =
-    a: lead:
-    let
-      base = ask a lead;
-    in
-    base
-    // {
-      data = base.data // {
-        data = base.data.data // {
-          actions = ''
-            ${topPrograms a}
-            {% set ns = namespace(out=[{'action': '${prefix a}REPLY', 'title': 'Durée…', 'behavior': 'textInput', 'textInputButtonTitle': 'Valider', 'textInputPlaceholder': '90 ou 1h30'}]) %}
-            {% for p in top %}
-              {% set ns.out = ns.out + [{'action': '${prefix a}' ~ p[0], 'title': (p[0] // 60 ~ ' h ' ~ '%02d' % (p[0] % 60)) if p[0] >= 60 else (p[0] ~ ' min')}] %}
-            {% endfor %}
-            {{ ns.out | to_json }}
-          '';
-        };
-      };
-    };
+  };
 
   clear = a: {
     action = "notify.mobile_app_dafphone";
@@ -124,7 +121,7 @@ in
       name = "${a.id}_declared_duration";
       value = {
         name = "${a.name} · Durée annoncée";
-        icon = a.icon;
+        inherit (a) icon;
         min = 0;
         max = 480;
         step = 1;
@@ -181,7 +178,7 @@ in
                   target.entity_id = declared a;
                   data.value = 0;
                 }
-                (askWithButtons a "")
+                (ask a "")
               ];
             }) appliances)
             ++ (map (a: {
@@ -244,7 +241,7 @@ in
                     (clear a)
                   ];
                   "else" = [
-                    (askWithButtons a "« {{ text | trim }} » n'est pas une durée valide. ")
+                    (ask a "« {{ text | trim }} » n'est pas une durée valide. ")
                   ];
                 }
               ];
