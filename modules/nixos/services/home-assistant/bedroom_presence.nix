@@ -13,7 +13,9 @@
 # - radar unavailable: on while latched, unavailable otherwise.
 #
 # Trigger-based, so HA restores the state and the `latched` attribute across
-# restarts. The minute tick catches the latch delay and the hold expiring.
+# restarts. Zigbee2MQTT republishes its states about a minute after HA starts;
+# until then the door is `unknown`, which keeps the latch (`unavailable`, a
+# dropped device, releases it). The minute tick catches the latch delay and the hold expiring.
 # Consumers: ./bedroom_lights.nix, ./light_triggers.nix, ./origami/rooms.nix.
 # "Global · Set Night State" (UI) keeps the raw radar on purpose: it wants a
 # fresh detection.
@@ -30,8 +32,9 @@ let
   latched = ''
     {% set d = states.${door} %}
     {% set closed = is_state('${door}', 'off') %}
-    {% set latched = closed and (this.attributes.get('latched', false)
-         or (is_state('${raw}', 'on') and now() - d.last_changed >= timedelta(minutes=${toString latchMinutes}))) %}
+    {% set keep = closed or is_state('${door}', 'unknown') %}
+    {% set latched = keep and (this.attributes.get('latched', false)
+         or (closed and is_state('${raw}', 'on') and now() - d.last_changed >= timedelta(minutes=${toString latchMinutes}))) %}
   '';
 in
 {
@@ -72,7 +75,7 @@ in
           '';
           availability = ''
             {{ has_value('${raw}')
-               or (is_state('${door}', 'off') and this.attributes.get('latched', false)) }}
+               or (states('${door}') in ['off', 'unknown'] and this.attributes.get('latched', false)) }}
           '';
           attributes.latched = ''
             ${latched}
