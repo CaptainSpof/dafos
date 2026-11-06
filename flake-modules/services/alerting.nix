@@ -132,8 +132,8 @@
         services.home-assistant.config."automation manual" = mkIf config.services.home-assistant.enable [
           {
             id = "dafos_server_alert";
-            alias = "Alerte serveur";
-            description = "Relays alerts posted by dafos-alert (smartd, failed units, gatus).";
+            alias = "Server · Alerts";
+            description = "Relaie les alertes envoyées par dafos-alert (smartd, unités en échec, gatus).";
             mode = "queued";
             triggers = [
               {

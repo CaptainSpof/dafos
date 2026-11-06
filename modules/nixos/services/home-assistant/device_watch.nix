@@ -68,7 +68,7 @@ in
   automations = [
     {
       id = "dafos_devices_offline";
-      alias = "Appareils hors ligne";
+      alias = "Global · Devices Offline";
       description = "Alerte quand un appareil Zigbee2MQTT ou Matter est hors ligne depuis 30 minutes. Géré dans Nix (modules/nixos/services/home-assistant/device_watch.nix).";
       mode = "queued";
       triggers = [

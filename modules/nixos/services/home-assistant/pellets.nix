@@ -131,7 +131,7 @@ in
   automations = [
     {
       id = "dafos_stove_pellets";
-      alias = "Poêle · Granulés";
+      alias = "Stove · Pellets";
       description = "Estime le réservoir de granulés à partir des heures de combustion depuis la dernière recharge, et alerte quand il reste environ ${toString warnHours} h. Géré dans Nix (modules/nixos/services/home-assistant/pellets.nix).";
       mode = "queued";
       triggers = [
