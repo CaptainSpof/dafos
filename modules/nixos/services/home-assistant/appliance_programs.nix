@@ -39,6 +39,7 @@ let
   active = a: "binary_sensor.${a.id}_active";
   startedAt = a: "input_datetime.${a.id}_started_at";
   expected = a: "input_number.${a.id}_expected_duration";
+  declared = a: "input_number.${a.id}_declared_duration";
   programs = a: "input_text.${a.id}_programs";
 
   # A cycle within 15 % of a known programme is that programme.
@@ -66,6 +67,9 @@ let
     {% set lengths = progs | map(attribute='0') | sort | list %}
     {% set fit = lengths | select('ge', (${elapsed}) / ${toString overrun}) | list %}
     {% set target = (fit | first) if fit else (lengths | last if lengths else states('${expected a}') | int(60)) %}
+    {# the length announced for the running cycle (Household · Appliance Duration) wins #}
+    {% set told = states('${declared a}') | int(0) %}
+    {% if told > 0 and is_state('${active a}', 'on') %}{% set target = told %}{% endif %}
   '';
   pick = a: elapsed: "${setTarget a elapsed}{{ target }}";
 

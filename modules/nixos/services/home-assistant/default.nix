@@ -32,6 +32,9 @@ let
   # Appliance programme lengths, learned from their cycles.
   appliancePrograms = import ./appliance_programs.nix { inherit lib; };
 
+  # Ask for the cycle length when an appliance starts.
+  applianceDuration = import ./appliance_duration.nix { inherit lib; };
+
   # dafspi's cycle as a Live Update notification.
   vacuumProgress = import ./vacuum_progress.nix { };
 
@@ -518,6 +521,7 @@ in
             ++ statusNotices.automations
             ++ printerInk.automations
             ++ appliancePrograms.automations
+            ++ applianceDuration.automations
             ++ vacuumProgress.automations
             ++ heatingUsage.automations
             ++ netatmoWatchdog.automations
@@ -573,6 +577,7 @@ in
           input_number =
             import ./sensors/input_numbers.nix
             // pellets.input_number
+            // applianceDuration.input_number
             // heatingCost.input_number
             // verandaLights.input_number;
           utility_meter = heatingCost.utility_meter // electricityCost.utility_meter;
