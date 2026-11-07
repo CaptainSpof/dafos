@@ -145,6 +145,10 @@ in
     # (flake-modules/services/desk-presence.nix).
     services.desk-presence = enabled;
 
+    # Nexus Mods "Mod manager download" links download straight to
+    # ~/Downloads/mods (flake-modules/programs/nxm-handler.nix).
+    programs.nxm-handler = enabled;
+
     services.sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafbox.pem" ];
 
     system.xdg = enabled;
