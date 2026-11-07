@@ -42,6 +42,14 @@ in
         Snippets = false;
       };
 
+      # nxm:// (Nexus Mods "Mod manager download") goes straight to the system
+      # handler, flake-modules/programs/nxm-handler.nix, with no prompt. Kept
+      # out of handlers.json, which pins a /nix/store path per build.
+      Handlers.schemes.nxm = {
+        action = "useSystemDefault";
+        ask = false;
+      };
+
       PasswordManagerEnabled = false;
       PromptForDownloadLocation = true;
 
@@ -133,6 +141,10 @@ in
             "browser.sessionstore.warnOnQuit" = true;
             "browser.shell.checkDefaultBrowser" = false;
             "browser.ssb.enabled" = true;
+
+            # No "Open link" prompt for nxm:// (see the Handlers policy above).
+            "network.protocol-handler.external.nxm" = true;
+            "network.protocol-handler.warn-external.nxm" = false;
             "browser.startup.homepage.abouthome_cache.enabled" = true;
             "browser.startup.page" = 3;
             "browser.translations.neverTranslateLanguages" = "fr";
