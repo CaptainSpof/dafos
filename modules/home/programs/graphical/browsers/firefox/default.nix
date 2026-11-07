@@ -147,6 +147,7 @@ in
                 # panel (the puzzle-piece popup). Anything not listed here gets
                 # appended at the bottom in registration order.
                 unified-extensions-area = [
+                  "addon_karakeep_app-browser-action" # Karakeep
                   "frankerfacez_frankerfacez_com-browser-action" # FrankerFaceZ
                   "gdpr_cavi_au_dk-browser-action" # Consent-O-Matic
                   "uget-integration_slgobinath-browser-action" # uGet Integration
