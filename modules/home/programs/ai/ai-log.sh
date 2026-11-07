@@ -28,6 +28,12 @@ shift $((OPTIND - 1))
 summary="$1"
 details="${2:-}"
 
+# The ticket goes into a URL path: refuse anything but KEY-12.
+if [ -n "$ticket" ] && ! [[ $ticket =~ ^[A-Za-z0-9]+-[0-9]+$ ]]; then
+    echo "ai-log: invalid ticket '$ticket' (expected KEY-12)" >&2
+    exit 2
+fi
+
 if [ -z "$project" ]; then
     project="$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")"
 fi
@@ -43,8 +49,11 @@ if [ ! -s "$journal" ]; then
 fi
 line="- $day $time · **$project**"
 [ -n "$ticket" ] && line="$line · $ticket"
-line="$line · $summary"
-[ -n "$details" ] && line="$line — $details"
+# The journal is one line per entry: fold newlines in the free text.
+journal_summary="${summary//$'\n'/ }"
+journal_details="${details//$'\n'/ }"
+line="$line · $journal_summary"
+[ -n "$journal_details" ] && line="$line — $journal_details"
 printf '%s\n' "$line" >>"$journal"
 echo "journal: $journal"
 

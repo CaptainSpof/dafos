@@ -88,7 +88,15 @@ in
       # which only the fhs wrapper provides. Host must also load vhost_vsock.
       (mkIf cfg.claude.desktop.enable [ pkgs.claude-desktop-fhs ])
       (mkIf cfg.antigravity.cli.enable [ pkgs.antigravity-cli ])
-      (mkIf anyClaude [ mcpNixosPkg ])
+      (mkIf anyClaude [
+        mcpNixosPkg
+        # Claude reaches for python3 constantly (JSON/YAML/HTTP scripting);
+        # keep it small: interpreter plus the two libs it asks for.
+        (pkgs.python3.withPackages (ps: [
+          ps.pyyaml
+          ps.requests
+        ]))
+      ])
       (mkIf cfg.claude.code.enable [ aiLog ])
     ];
 
