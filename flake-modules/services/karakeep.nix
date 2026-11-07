@@ -61,6 +61,11 @@
                   # Measured 2026-11-07: ~2 min 10 s per link, so a bulk
                   # re-tag of N bookmarks takes about 2·N minutes.
                   INFERENCE_JOB_TIMEOUT_SEC = "600";
+                  # Default context is 2048 tokens: Ollama then silently drops
+                  # the start of the prompt, i.e. the tagging rules, and the
+                  # model answers with dozens of English tags. Rules + page
+                  # need more room.
+                  INFERENCE_CONTEXT_LENGTH = "4096";
                   # The tagging rules (categories, hints) are set by hand in
                   # the web UI (Settings → AI), not here: the UI caps each
                   # rule at 500 characters, so split long ones.
