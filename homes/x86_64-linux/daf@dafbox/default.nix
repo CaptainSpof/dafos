@@ -203,6 +203,7 @@ in
       graphics = {
         enable = true;
         drawing = enabled;
+        vector = enabled;
         whiteboard = enabled;
       };
 
