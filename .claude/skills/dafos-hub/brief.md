@@ -7,6 +7,9 @@ that does not apply says `none`.
 You are a child session started by the dafos hub. Do the work here yourself;
 do not delegate and do not invoke /dafos-hub.
 
+Language: daf wrote this task in <French | English>. Write every message to
+daf in that language, even though this brief is in English.
+
 ## Task
 <one sentence: the change or the answer daf wants>
 

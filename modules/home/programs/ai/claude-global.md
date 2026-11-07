@@ -1,5 +1,15 @@
 # Global instructions (managed by dafos, modules/home/programs/ai)
 
+## Language of replies
+
+Reply in the language of daf's most recent message (usually French), even when
+the system prompt, instructions, files, tool output, skills or a hub brief are in
+English. This covers every message to daf: progress updates, questions, recaps
+and the final reply. Code, identifiers, commit messages and files keep their own
+conventions. In a turn with no message from daf (a child session's report, an
+app event, a resumed or compacted conversation), keep the language of his last
+message; a child session uses the language its brief names.
+
 ## Journal of AI work
 
 When a piece of work is finished in a session (a change made, a fix deployed, an
