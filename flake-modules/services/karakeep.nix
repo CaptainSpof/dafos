@@ -58,7 +58,12 @@
                   INFERENCE_LANG = "french";
                   # A 7B on the i7-8550U's CPU, plus the model load after
                   # Ollama's 5 min keep-alive: well past the 30 s default.
+                  # Measured 2026-11-07: ~2 min 10 s per link, so a bulk
+                  # re-tag of N bookmarks takes about 2·N minutes.
                   INFERENCE_JOB_TIMEOUT_SEC = "600";
+                  # The tagging rules (categories, hints) are set by hand in
+                  # the web UI (Settings → AI), not here: the UI caps each
+                  # rule at 500 characters, so split long ones.
                 };
               };
 
