@@ -19,7 +19,7 @@
 
 #define BASE 0
 #define QWERTY 1
-#define PLAIN 2
+#define GAMING 2
 #define NAV 3
 #define NUMPAD 4
 #define FUN 5
@@ -150,6 +150,27 @@
     };
 
     macros {
+        // Backlight only on the gaming layer: entering it sets solid white at
+        // 16 % and turns the underglow on; the other base layers turn it off.
+        sw_base: switch_base {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <0>; tap-ms = <20>;
+            bindings = <&to BASE &rgb_ug RGB_OFF>;
+        };
+        sw_qwerty: switch_qwerty {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <0>; tap-ms = <20>;
+            bindings = <&to QWERTY &rgb_ug RGB_OFF>;
+        };
+        sw_gaming: switch_gaming {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <0>; tap-ms = <20>;
+            bindings = <&to GAMING &rgb_ug RGB_COLOR_HSB(0,0,16) &rgb_ug RGB_ON>;
+        };
+
         // Accent compositions, as in defalias/ergol_accent.kbd: AltGr+Shift
         // on fr(ergol)'s real dead-key carrier, then the physical key that
         // types the base letter at level 1 (é = dead_acute + e = physical d).
@@ -231,15 +252,20 @@
             >;
         };
 
-        // deflayer/switcher.kbd: gaming / ergol-no-mods (plain keys).
-        plain_layer {
+        // Glove80-only (no kanata twin): games. The host types w/a/s/d under
+        // the Ergo-L o/s/e/n inverted-T, so each position sends the physical
+        // key whose Ergo-L letter is wanted (o -> w, s -> a, e -> s, n -> d;
+        // neighbours q/e/r/f/c, same trick as qwerty_layer). Games reading
+        // keysyms (not scancodes) see WASD. No mod-tap, layer-tap or combo,
+        // except Esc staying the switcher key so Esc + 3/4 toggles it off.
+        gaming_layer {
             bindings = <
             &trans  &trans  &trans  &trans  &trans                                                                          &trans  &trans  &trans  &trans  &trans
             &trans  &trans  &trans  &trans  &trans  &trans                                                          &trans  &trans  &trans  &trans  &trans  &trans
-            &trans  &kp Q   &kp W   &kp E   &kp R   &kp T                                                           &kp Y   &kp U   &kp I   &kp O   &kp P   &trans
-            &trans  &kp A   &kp S   &kp D   &kp F   &kp G                                                           &kp H   &kp J   &kp K   &kp L   &kp SEMI &trans
-            &trans  &kp Z   &kp X   &kp C   &kp V   &kp B   &trans   &trans   &trans     &trans   &trans   &trans   &kp N   &kp M   &kp COMMA &kp DOT &kp FSLH &trans
-            &trans  &trans  &trans  &trans  &trans          &kp BSPC &kp DEL  &kp LALT   &kp RALT &kp RET  &kp SPACE         &trans  &trans  &trans  &trans  &trans
+            &trans  &kp K   &kp Q   &kp T   &kp D   &kp J                                                           &kp Y   &kp U   &kp I   &kp O   &kp P   &trans
+            &trans  &kp LSHFT &kp A &kp S   &kp I   &kp G                                                           &kp H   &kp J   &kp K   &kp L   &kp SEMI &trans
+            &kp LCTRL &kp Z &kp X   &kp W   &kp V   &kp B   &trans   &trans   &trans     &trans   &trans   &trans   &kp N   &kp M   &kp COMMA &kp DOT &kp FSLH &trans
+            &trans  &trans  &trans  &trans  &trans          &kp SPACE &kp TAB &kp LALT   &kp RALT &kp RET  &kp BSPC         &trans  &trans  &trans  &trans  &trans
             >;
         };
 
@@ -293,11 +319,11 @@
             >;
         };
 
-        // deflayer/switcher.kbd: hold Esc, then 1 base, 2 qwerty, 3/4 plain.
+        // deflayer/switcher.kbd: hold Esc, then 1 base, 2 qwerty, 3 gaming (backlight on); 1/2 leave it (backlight off).
         switcher_layer {
             bindings = <
             &none   &none     &none       &none      &none                                                                       &none   &none   &none   &none   &none
-            &none   &to BASE  &to QWERTY  &to PLAIN  &to PLAIN  &none                                                    &none   &none   &none   &none   &none   &none
+            &none   &sw_base  &sw_qwerty  &sw_gaming  &none  &none                                                    &none   &none   &none   &none   &none   &none
             &none   &none     &none       &none      &none      &none                                                    &none   &none   &none   &none   &none   &none
             &trans  &none     &none       &none      &none      &none                                                    &none   &none   &none   &none   &none   &none
             &none   &none     &none       &none      &none      &none   &none   &none   &none     &none   &none   &none    &none   &none   &none   &none   &none   &none
