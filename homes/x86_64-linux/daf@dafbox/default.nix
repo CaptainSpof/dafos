@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  pkgs,
   namespace,
   ...
 }:
@@ -11,6 +12,9 @@ let
   firefox-pkg = config.${namespace}.programs.graphical.browsers.firefox.package;
 in
 {
+  # Reports outdated Nexus Mods archives (see packages/nexus-mod-check).
+  home.packages = [ pkgs.${namespace}.nexus-mod-check ];
+
   dafos = {
     user = {
       enable = true;
