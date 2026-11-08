@@ -16,10 +16,10 @@ in
 
   config = mkIf cfg.enable {
     programs.ssh = {
-      # Steam Deck (SteamOS, sshd enabled by hand). The address is a LAN IP:
-      # reserve it on the Freebox or switch to the tailnet name.
+      # Steam Deck (SteamOS). MagicDNS name: works on the LAN and away.
+      # See ./AGENTS.md for what can be done on it.
       matchBlocks."dafdeck deck" = {
-        hostname = "192.168.0.30";
+        hostname = "dafdeck";
         user = "deck";
         identityFile = "~/.ssh/daf@dafbox.pem";
         identitiesOnly = true;
