@@ -119,7 +119,14 @@
 
         environment.systemPackages = with pkgs; [
           deploy-rs
-          flake-checker
+          # nixpkgs now links zstd-sys against the system zstd: without these its
+          # build script panics. Backport of NixOS/nixpkgs#584990, here rather
+          # than in overlays/ because dafpi and dafrelay do not apply those.
+          # Drop once nixos-unstable contains it.
+          (flake-checker.overrideAttrs (old: {
+            nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkg-config ];
+            buildInputs = (old.buildInputs or [ ]) ++ [ zstd ];
+          }))
           nil
           nix-index
           nix-init
