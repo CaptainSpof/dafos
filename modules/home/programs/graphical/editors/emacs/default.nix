@@ -44,6 +44,19 @@ in
       mimeType = [ "x-scheme-handler/org-protocol" ];
     };
 
+    # The dock pins emacs.desktop, which ships no actions: add "New Window".
+    xdg.dataFile."applications/emacs.desktop".source = pkgs.runCommand "emacs.desktop" { } ''
+      cp ${cfg.package}/share/applications/emacs.desktop $out
+      chmod +w $out
+      cat >> $out <<'EOF'
+      Actions=new-window;
+
+      [Desktop Action new-window]
+      Name=New Window
+      Exec=emacsclient --alternate-editor= --create-frame %F
+      EOF
+    '';
+
     home = {
       packages =
         with pkgs;
