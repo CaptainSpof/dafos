@@ -68,9 +68,14 @@ When the child ends its turn:
    main...<branch> --stat`, or the live state for Home Assistant (skill API).
 2. Run the brief's `Check` line yourself, or confirm the child ran it and
    quote the output.
-3. Report to daf: what now works, the branch, what is not verified, and the
-   one decision left (merge, deploy, push), as a question.
-4. A failed check goes back to the same child with `SendMessage`, never to a
+3. After review, cherry-pick the child's commit into main of `~/.config/dafos`
+   without asking (standing go from daf, 2026-11-09; the one exception to
+   rule 1). Stop and tell daf if the cherry-pick conflicts or touches a file
+   daf has uncommitted. Never push without a separate go for that push.
+4. Report to daf: what now works, that the commit is in main, the switch
+   command, what is not verified, and the one decision left (deploy, push), as
+   a question.
+5. A failed check goes back to the same child with `SendMessage`, never to a
    new one.
 
 ## Status

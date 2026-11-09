@@ -27,6 +27,12 @@ Do NOT load: <unrelated hosts, other services, the whole tree>
 ## Deliver
 - <file(s) changed, or the answer written in your final message>
 - A local commit on your branch. Never push, merge or switch `dafoltop`.
+- Your commit stays on your worktree branch and is not in `~/.config/dafos`, so
+  a switch or deploy from there does not include it. Never give daf a switch or
+  deploy command as the next step: say the commit is on your branch and the hub
+  brings it into main, then give the test daf should do after the switch.
+- Never stage `flake.lock` unless the task is about it: nix commands rewrite it
+  in a worktree.
 
 ## Check
 <one concrete check: `nix eval …` / `nix build …` / an HA state read / daf
