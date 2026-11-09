@@ -12,9 +12,11 @@ Four non-obvious constraints:
   **working directory**, hence the wrapper's `--chdir`.
 - It calls `process.exit` when HA is unreachable at startup. `Restart=always`
   with `RestartSec=30` is the reconnect strategy — there is no internal retry to
-  fix.
-- The HA long-lived token lives in `secrets/dafoltop/everything-presence.yaml` and
-  reaches the service through systemd `LoadCredential`
+  fix. The `ExecStartPre` curl keeps a switch from seeing it in auto-restart
+  after that exit, which `switch-to-configuration` reports as failed (status 4,
+  so deploy-rs rolls back).
+- The HA long-lived token lives in `secrets/dafoltop/everything-presence.yaml`
+  and reaches the service through systemd `LoadCredential`
   (`HA_LONG_LIVED_TOKEN_FILE=%d/ha-token`), so `DynamicUser` never has to read
   `/run/secrets`.
 - The OTA LAN IP is pinned on dafoltop because upstream's auto-detection only

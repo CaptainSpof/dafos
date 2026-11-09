@@ -98,6 +98,10 @@ in
       };
 
       serviceConfig = {
+        # home-assistant reports "Started" before it listens. A switch restarting
+        # both would catch this unit in auto-restart after a non-zero exit, which
+        # switch-to-configuration counts as failed: status 4, deploy rolled back.
+        ExecStartPre = "${getExe pkgs.curl} --silent --output /dev/null --max-time 5 --retry 40 --retry-delay 2 --retry-all-errors ${cfg.homeAssistantUrl}";
         ExecStart = getExe pkgs.${namespace}.everything-presence-zone-configurator;
         LoadCredential = [ "ha-token:${tokenPath}" ];
 
