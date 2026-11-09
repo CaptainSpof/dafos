@@ -8,6 +8,40 @@
 
 with config.lib.niri.actions;
 let
+  # binds.nix is imported without `pkgs`; the module system exposes it here.
+  pkgs = config._module.args.pkgs;
+  # Region select -> OCR (French + English) -> text to the clipboard. The capture
+  # is upscaled x3: it fixes accents on small UI text. Cancelling the selection is
+  # silent and leaves the clipboard alone, as does an empty result.
+  screenshotOcr = pkgs.writeShellApplication {
+    name = "screenshot-ocr";
+    runtimeInputs = [
+      pkgs.grim
+      pkgs.slurp
+      pkgs.wl-clipboard
+      pkgs.libnotify
+      pkgs.coreutils
+      pkgs.gnused
+      (pkgs.tesseract.override {
+        enableLanguages = [
+          "fra"
+          "eng"
+        ];
+      })
+    ];
+    text = ''
+      # niri may spawn us with no UTF-8 locale; the preview must count characters.
+      export LC_ALL=C.UTF-8
+      region=$(slurp) || exit 0
+      text=$(grim -s 3 -g "$region" - | tesseract stdin stdout -l fra+eng 2>/dev/null | tr -d '\f' | sed -e 's/[[:space:]]*$//' || true)
+      if [ -z "$text" ]; then
+        notify-send -a screenshot-ocr "OCR" "Aucun texte reconnu"
+        exit 0
+      fi
+      printf '%s' "$text" | wl-copy
+      notify-send -a screenshot-ocr "Texte copié" "''${text:0:200}"
+    '';
+  };
   dms-call = spawn "dms";
   dms-ipc = spawn "dms" "ipc";
   # spawn execs a single binary with literal args (no shell), so pipes and
@@ -169,9 +203,11 @@ lib.mkForce {
   #   Print       region select (grim writes to stdout, satty reads stdin)
   #   Ctrl+Print  focused monitor
   #   Alt+Print   focused window
+  #   Shift+Print region select -> OCR (fra+eng) -> text copied to the clipboard
   "Print".action = shell ''grim -g "$(slurp)" - | satty -f -'';
   "Ctrl+Print".action = shotToSatty "screenshot-screen";
   "Alt+Print".action = shotToSatty "screenshot-window";
+  "Shift+Print".action = spawn (lib.getExe screenshotOcr);
 
   "XF86MonBrightnessUp" = {
     allow-when-locked = true;
