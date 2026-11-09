@@ -28,6 +28,11 @@ in
         package = pkgs.niri-unstable;
       };
       kdeconnect.enable = true;
+      # Handy pastes the transcription through ydotool (Wayland has no other
+      # synthetic-input path); it needs the ydotoold daemon and uinput access.
+      ydotool.enable = true;
     };
+
+    ${namespace}.user.extraGroups = [ config.programs.ydotool.group ];
   };
 }
