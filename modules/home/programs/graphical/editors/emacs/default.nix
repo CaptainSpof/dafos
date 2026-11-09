@@ -54,6 +54,7 @@ in
               fr
             ]
           ))
+          claude-agent-acp # ACP bridge for agent-shell
           enchant
           ffmpegthumbnailer
           hunspellDicts.en-us
