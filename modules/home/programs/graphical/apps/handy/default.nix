@@ -87,6 +87,30 @@ let
       done
     '';
   };
+
+  # Keybinding entry point: if Handy is not running, `handy --toggle-transcription`
+  # only launches it and the key must be pressed a second time. Start it hidden,
+  # wait for its single-instance bus name, then send the toggle.
+  toggle = pkgs.writeShellApplication {
+    name = "handy-toggle";
+    runtimeInputs = with pkgs; [
+      coreutils
+      procps
+      systemd
+      pkgs.handy
+    ];
+    text = ''
+      if ! pgrep -x .handy-wrapped >/dev/null; then
+        systemd-run --user --quiet --collect --unit="handy-$$" handy --start-hidden
+        for _ in $(seq 100); do
+          busctl --user status com.pais.handy.SingleInstance >/dev/null 2>&1 && break
+          sleep 0.2
+        done
+        sleep 1
+      fi
+      exec handy --toggle-transcription
+    '';
+  };
 in
 {
   options.${namespace}.programs.graphical.apps.handy = {
@@ -94,7 +118,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ pkgs.handy ];
+    home.packages = [
+      pkgs.handy
+      toggle
+    ];
 
     systemd.user.services.handy-recording-indicator = {
       Unit = {
