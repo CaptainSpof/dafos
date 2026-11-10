@@ -14,7 +14,8 @@
 # dashboard: off if burning, else on), so a manual change sticks. Automatic starts only happen below 19
 # °C in the living room (sensor.living_room_current_temperature, Netatmo);
 # once it has burned 1 h, the stove is stopped when the living room has been ≥
-# 20 °C for 10 min (stove-warm). During the day it is relit when the living
+# 19.5 °C for 10 min before 20:30, then 1 °C above the Netatmo night setpoint
+# (stove-warm). During the day it is relit when the living
 # room has been below 18.5 °C for 10 min (stove-cold), until 21:00; no
 # automatic start after 21:00 (too late in the evening), manual starts still
 # work. To save the idle draw the plug is cut once the stove has been off and
@@ -30,14 +31,26 @@
 # Retour imminent overrides away to preheat: Netatmo on its schedule, every
 # room heated as if occupied, stove left alone. It goes back to Auto once
 # someone is home, or after 3 h. Boiler boost:
-# a valve has been heating at least 0.5 °C below its target for 10 min while
-# the Netatmo is idle -> Netatmo +2°C for 30 min, at most once an hour. It
+# a valve has been heating at least 1 °C below its target for 10 min while
+# the Netatmo is idle on its schedule -> Netatmo +2°C for 30 min, at most once
+# every 2 h.
+#
+# Stove first, boiler as backup (2026-11-10, measured: the boiler ran ~46 h a
+# cold week, 54 % of it the morning schedule before the stove lit, 26 %
+# boosts): at 05:00 Netatmo is held at 16 °C until an hour after the stove's
+# morning start (stove_warmup_end), released early if the stove fails to light;
+# morning comfort windows start at "wake" (the stove start, not before
+# early_morning); the Netatmo app's day setpoint is 17 °C and the stove keeps
+# the living room at 18.5-19.5 °C. Before/after comparison: heating_cost.nix
+# (cost per degree-day). It
 # superseded the per-room Radiator Controllers, Living Room · Stove Controller
 # and Global · Notify When Thermostats Demand Heating (deleted 2026-10-20).
 #
 # Room table: valve, presence entities, comfort windows (input_datetime ids or
-# "HH:MM", wrapping past midnight; an optional third element overrides comfort
-# for that window, first match wins), comfort/eco temperatures; ground_floor
+# "HH:MM" or "wake", wrapping past midnight; an optional third element
+# overrides comfort for that window, first match wins), comfort/eco
+# temperatures, optional occupancy sensors (comfort windows then heat only while
+# the room itself is occupied, override windows only need presence); ground_floor
 # rooms stay on eco while only the desk is in use (ground_idle below). Change
 # heating behaviour here, not with per-room automations.
 _:
@@ -50,6 +63,11 @@ let
       presence = [
         "person.cedric_da_fonseca"
       ];
+      # Comfort only while he is in the room (radar, held while the door is
+      # shut: ./bedroom_presence.nix); the night set-back only needs him home.
+      occupancy = [
+        "binary_sensor.bedroom_presence"
+      ];
       windows = [
         [
           "input_datetime.early_evening"
@@ -57,15 +75,15 @@ let
         ]
         [
           "input_datetime.night"
-          "input_datetime.early_morning"
-          17
+          "wake"
+          16
         ]
         [
-          "input_datetime.early_morning"
+          "wake"
           "input_datetime.late_morning"
         ]
       ];
-      comfort = 18;
+      comfort = 16;
       eco = 16;
     }
     {
@@ -76,11 +94,11 @@ let
       ];
       windows = [
         [
-          "input_datetime.early_morning"
+          "wake"
           "input_datetime.noon"
         ]
       ];
-      comfort = 18;
+      comfort = 16;
       eco = 12;
     }
     {
@@ -92,7 +110,7 @@ let
       ];
       windows = [
         [
-          "input_datetime.early_morning"
+          "wake"
           "input_datetime.early_afternoon"
         ]
         [
@@ -112,7 +130,7 @@ let
       ];
       windows = [
         [
-          "input_datetime.early_morning"
+          "wake"
           "input_datetime.early_afternoon"
         ]
         [
@@ -142,7 +160,7 @@ let
         ]
       ];
       arrival_comfort = "person.johan";
-      comfort = 18;
+      comfort = 16;
       eco = 15;
     }
     {
@@ -159,19 +177,26 @@ let
           "input_datetime.night"
         ]
       ];
-      comfort = 19;
+      comfort = 16;
       eco = 15;
     }
   ];
 
   valves = map (r: r.climate) rooms;
 
-  # A valve wants heat when it is heating and its room is at least 0.5 °C below
+  # Netatmo setpoint from 05:00 until an hour after the stove's morning start
+  # (stove_warmup_end); its schedule used to go to 18 °C at 05:30 and ran the
+  # boiler until ~08:50 every day, half of all boiler hours.
+  morningHoldTemp = 16;
+
+  # A valve wants heat when it is heating and its room is at least 1 °C below
   # the valve's target: TRVs report `heating` 0.1 °C short, which alone would
-  # fire the whole Netatmo loop for one room all night.
+  # fire the whole Netatmo loop for one room all night. It was 0.5 °C until
+  # 2026-11-10; the bedroom then sat 0.6-1.7 °C short every morning and got a
+  # boost every hour.
   wantsHeat =
     c:
-    "(is_state_attr(${c}, 'hvac_action', 'heating') and state_attr(${c}, 'temperature') | float(0) - state_attr(${c}, 'current_temperature') | float(99) >= 0.5)";
+    "(is_state_attr(${c}, 'hvac_action', 'heating') and state_attr(${c}, 'temperature') | float(0) - state_attr(${c}, 'current_temperature') | float(99) >= 1)";
   valvesWantingHeat = "{% set ns = namespace(n=0) %}{% for c in ${builtins.toJSON valves} %}{% if ${wantsHeat "c"} %}{% set ns.n = ns.n + 1 %}{% endif %}{% endfor %}";
 in
 {
@@ -236,11 +261,17 @@ in
             "binary_sensor.heating_ground_floor_idle"
             "binary_sensor.global_maybe_home_occupied"
             "binary_sensor.global_home_is_occupied"
-          ];
+          ]
+          ++ builtins.concatMap (r: r.occupancy or [ ]) rooms;
           not_to = [
             "unavailable"
             "unknown"
           ];
+        }
+        {
+          trigger = "time";
+          id = "morning-hold";
+          at = "05:00:00";
         }
         {
           trigger = "state";
@@ -275,11 +306,21 @@ in
             hours = 3;
           };
         }
+        # A valve comes back. After an HA restart the valves stay `unknown`
+        # until Zigbee2MQTT republishes (~1 min), so the start recompute skips
+        # them all; leaving `unknown` must re-run it too.
         {
           trigger = "state";
           id = "valve-back";
           entity_id = valves;
-          from = "unavailable";
+          from = [
+            "unavailable"
+            "unknown"
+          ];
+          not_to = [
+            "unavailable"
+            "unknown"
+          ];
         }
         {
           trigger = "event";
@@ -347,12 +388,13 @@ in
         {
           trigger = "template";
           id = "stove-warm";
-          alias = "Salon 1 °C au-dessus de la consigne Netatmo (20 °C au plus) depuis 10 min, et le poêle a brûlé au moins 1 h ; la véranda prend le relais quand Netatmo est hors ligne";
+          alias = "Salon à 19,5 °C depuis 10 min avant 20:30 (le poêle tient le salon, Netatmo n'est qu'en secours), ensuite 1 °C au-dessus de la consigne Netatmo de nuit ; le poêle a brûlé au moins 1 h ; la véranda prend le relais quand Netatmo est hors ligne";
           value_template = ''
             {% set last = states('input_datetime.heating_last_stove_command') | as_datetime(none) %}
             {% set temp = (states('sensor.living_room_current_temperature') | float(none) if has_value('sensor.living_room_current_temperature') else states('sensor.veranda_temperature_sensor_temperature') | float(none)) %}
             {% set target = state_attr('climate.sejour', 'temperature') | float(19) %}
-            {{ temp is not none and temp >= [target + 1, 20] | min
+            {% set limit = 19.5 if now().strftime('%H:%M') < '20:30' else [target + 1, 19.5] | min %}
+            {{ temp is not none and temp >= limit
                and is_state('binary_sensor.living_room_stove_is_maybe_burning', 'on')
                and (last is none or now() - last | as_local > timedelta(hours=1)) }}'';
           for = {
@@ -459,6 +501,38 @@ in
               ];
             }
             {
+              alias = "Matin : Netatmo tenu à 16 °C jusqu'à une heure après l'allumage du poêle (réveil − 1 h, 06:00 sans réveil). Le poêle chauffe le salon, la chaudière ne prend le relais qu'ensuite ; Netatmo revient tout seul à son planning à la fin du maintien, et la relance chaudière attend jusque-là (elle exige le planning)";
+              conditions = [
+                {
+                  condition = "trigger";
+                  id = "morning-hold";
+                }
+                {
+                  condition = "template";
+                  value_template = ''
+                    {{ season and not away and not returning
+                       and state_attr('climate.sejour', 'preset_mode') == 'schedule'
+                       and now().strftime('%H:%M') < stove_warmup_end }}'';
+                }
+              ];
+              sequence = [
+                {
+                  action = "netatmo.set_temperature_with_time_period";
+                  continue_on_error = true;
+                  target = {
+                    entity_id = "climate.sejour";
+                  };
+                  data = {
+                    target_temperature = morningHoldTemp;
+                    time_period = "{% set s = (today_at(stove_warmup_end) - now()).total_seconds() | int %}{{ '%02d:%02d:00' % (s // 3600, (s % 3600) // 60) }}";
+                  };
+                }
+                {
+                  stop = "Morning hold set";
+                }
+              ];
+            }
+            {
               alias = "Relance chaudière — une vanne demande de la chaleur mais la chaudière est à l'arrêt";
               conditions = [
                 {
@@ -476,9 +550,9 @@ in
                        and ns.n > 0 }}'';
                 }
                 {
-                  alias = "Au plus une relance par heure";
+                  alias = "Au plus une relance toutes les 2 h";
                   condition = "template";
-                  value_template = "{% set last = states('input_datetime.heating_last_boiler_boost') | as_datetime(none) %} {{ last is none or now() - last | as_local > timedelta(hours=1) }}";
+                  value_template = "{% set last = states('input_datetime.heating_last_boiler_boost') | as_datetime(none) %} {{ last is none or now() - last | as_local > timedelta(hours=2) }}";
                 }
               ];
               sequence = [
@@ -582,13 +656,14 @@ in
               ];
             }
             {
-              alias = "Vérifications relance / poêle au repos sans rien à faire : s'arrêter ici, sans passer au recalcul des pièces (il écraserait les réglages manuels des vannes toutes les 15 min)";
+              alias = "Vérifications relance / poêle au repos / maintien du matin sans rien à faire : s'arrêter ici, sans passer au recalcul des pièces (il écraserait les réglages manuels des vannes toutes les 15 min)";
               conditions = [
                 {
                   condition = "trigger";
                   id = [
                     "boost"
                     "stove-idle"
+                    "morning-hold"
                   ];
                 }
               ];
@@ -635,14 +710,30 @@ in
                   # keys sorted, and HA renders a block in that order, so a
                   # variable can only use those sorting before it (target ran
                   # before window_temp and failed on every run).
-                  { variables.hm = "{{ now().strftime('%H:%M') }}"; }
                   {
                     variables = {
+                      hm = "{{ now().strftime('%H:%M') }}";
+                      # Somebody in the room itself; rooms without occupancy
+                      # sensors, or whose sensors are all down, count as
+                      # occupied (presence alone decides).
+                      occupied = ''
+                        {% set o = repeat.item.get('occupancy', []) %}
+                        {{ o | select('has_value') | list | count == 0
+                           or o | select('is_state', 'on') | list | count > 0 }}'';
+                    };
+                  }
+                  {
+                    variables = {
+                      # A window's start or end may be "wake" (see wake
+                      # below). A window without its own temperature heats to
+                      # comfort, and only while the room is occupied; one with
+                      # its own temperature (the bedroom's night set-back) only
+                      # needs presence.
                       window_temp = ''
                         {% set ns = namespace(t=0) %} {% for w in repeat.item.windows %}
-                          {% set s = states(w[0])[:5] if w[0].startswith('input_datetime.') else w[0] %}
-                          {% set e = states(w[1])[:5] if w[1].startswith('input_datetime.') else w[1] %}
-                          {% if ns.t == 0 and ((s <= e and s <= hm < e) or (s > e and (hm >= s or hm < e))) %}{% set ns.t = w[2] if w | count > 2 else repeat.item.comfort %}{% endif %}
+                          {% set s = wake if w[0] == 'wake' else (states(w[0])[:5] if w[0].startswith('input_datetime.') else w[0]) %}
+                          {% set e = wake if w[1] == 'wake' else (states(w[1])[:5] if w[1].startswith('input_datetime.') else w[1]) %}
+                          {% if ns.t == 0 and ((s <= e and s <= hm < e) or (s > e and (hm >= s or hm < e))) %}{% set ns.t = w[2] if w | count > 2 else (repeat.item.comfort if occupied | bool else -1) %}{% endif %}
                         {% endfor %} {{ ns.t }}'';
                       present = "{{ returning or (not (ground_idle and repeat.item.get('ground_floor', false)) and repeat.item.presence | select('is_state', ['home', 'on']) | list | count > 0) }}";
                       arrival = ''
@@ -898,6 +989,27 @@ in
                           ];
                           "then" = [
                             {
+                              alias = "Pas de poêle : lever le maintien du matin pour que la chaudière chauffe";
+                              "if" = [
+                                {
+                                  condition = "template";
+                                  value_template = "{{ state_attr('climate.sejour', 'preset_mode') == 'manual' and now().strftime('%H:%M') < stove_warmup_end }}";
+                                }
+                              ];
+                              "then" = [
+                                {
+                                  action = "climate.set_preset_mode";
+                                  continue_on_error = true;
+                                  target = {
+                                    entity_id = "climate.sejour";
+                                  };
+                                  data = {
+                                    preset_mode = "schedule";
+                                  };
+                                }
+                              ];
+                            }
+                            {
                               action = "notify.mobile_app_dafphone";
                               data = {
                                 title = "Poêle pas démarré";
@@ -947,6 +1059,14 @@ in
                   or (is_state('binary_sensor.global_home_is_occupied', 'off')
                       and states('sensor.heating_home_occupied_last_hour') | float(1) < 0.02)) }}'';
         stove_start = "{% set a = states('sensor.dafphone_next_alarm') | as_datetime(none) %}{% set a = a | as_local if a is not none else none %}{% set al = a.strftime('%H:%M') if a is not none and a.date() == now().date() else '' %}{% set start = ['06:00', (a - timedelta(hours=1)).strftime('%H:%M')] | max if '06:00' <= al <= '10:00' else '06:00' %}{{ start }}";
+        # The stove heats the living room alone for its first hour: the
+        # morning hold keeps Netatmo (so the boiler) at 16 °C until then.
+        # Keys render sorted, so this one may use stove_start and wake may
+        # use both.
+        stove_warmup_end = "{{ (today_at(stove_start) + timedelta(hours=1)).strftime('%H:%M') }}";
+        # Morning comfort starts at the stove start (alarm − 1 h), never
+        # before input_datetime.early_morning.
+        wake = "{{ [states('input_datetime.early_morning')[:5], stove_start] | max }}";
       };
       mode = "queued";
       max = 10;

@@ -19,6 +19,13 @@
 #
 # The _today sensors reset at midnight (total_increasing), so the dashboard's
 # statistics graphs sum them per day or month with the "change" stat.
+#
+# Before/after comparisons (heating_controller.nix's stove-first changes,
+# 2026-11-10): a colder week costs more whatever the controller does, so the
+# weekly cost is also divided by the week's heating degree-days (base 18 °C,
+# Météo-France's current temperature for Nanterre, summed every 10 min).
+# Reference week 2026-11-03 → 09: boiler 46.1 h, 64.6 €; stove 37.1 h, 13.8 €;
+# 80 degree-days (Open-Meteo daily means) → 0.98 €/DJ, boiler alone 0.81 €/DJ.
 _:
 
 let
@@ -28,6 +35,9 @@ let
   bagPrice = "input_number.stove_pellets_bag_price";
   autonomy = "input_number.stove_pellets_autonomy";
   stoveEnergyToday = "sensor.heating_stove_energy_today";
+  outdoor = "sensor.outdoor_temperature";
+  degreeDaysWeek = "sensor.heating_degree_days_week";
+  base = 18; # °C, the usual French DJU base
 
   price = name: icon: step: unit: {
     inherit name icon step;
@@ -62,9 +72,79 @@ in
       source = "sensor.heating_boiler_cost_today";
       cycle = "monthly";
     };
+    # Monday to Sunday, for the cost per degree-day
+    heating_boiler_cost_week = {
+      source = "sensor.heating_boiler_cost_today";
+      cycle = "weekly";
+    };
+    heating_stove_cost_week = {
+      source = "sensor.heating_stove_cost_today";
+      cycle = "weekly";
+    };
+    heating_degree_days_week = {
+      source = "sensor.heating_degree_days_today";
+      cycle = "weekly";
+    };
   };
 
   templates = [
+    {
+      sensor = [
+        # The weather entity's temperature as a sensor, so the recorder keeps
+        # long-term statistics of it
+        {
+          name = "Extérieur · Température";
+          unique_id = "dafos.sensor.outdoor_temperature";
+          default_entity_id = outdoor;
+          device_class = "temperature";
+          state_class = "measurement";
+          unit_of_measurement = "°C";
+          state = "{{ state_attr('weather.nanterre', 'temperature') }}";
+          availability = "{{ state_attr('weather.nanterre', 'temperature') is number }}";
+        }
+        {
+          name = "Chauffage · Coût par degré-jour (semaine)";
+          unique_id = "dafos.sensor.heating_cost_per_degree_day_week";
+          default_entity_id = "sensor.heating_cost_per_degree_day_week";
+          icon = "mdi:scale-balance";
+          unit_of_measurement = "€/DJ";
+          state_class = "measurement";
+          state = "{{ ((states('sensor.heating_boiler_cost_week') | float + states('sensor.heating_stove_cost_week') | float) / states('${degreeDaysWeek}') | float) | round(2) }}";
+          availability = "{{ has_value('sensor.heating_boiler_cost_week') and has_value('sensor.heating_stove_cost_week') and states('${degreeDaysWeek}') | float(0) >= 1 }}";
+          attributes = {
+            boiler = "{{ (states('sensor.heating_boiler_cost_week') | float(0) / [states('${degreeDaysWeek}') | float(0), 1] | max) | round(2) }}";
+            stove = "{{ (states('sensor.heating_stove_cost_week') | float(0) / [states('${degreeDaysWeek}') | float(0), 1] | max) | round(2) }}";
+          };
+        }
+      ];
+    }
+    {
+      # Degree-days so far today: every 10 min, add how far the outdoor
+      # temperature is below the base, over a 144th of a day. Restarts at
+      # midnight; trigger-based, so it survives HA restarts.
+      triggers = [
+        {
+          trigger = "time_pattern";
+          minutes = "/10";
+        }
+      ];
+      sensor = [
+        {
+          name = "Chauffage · Degrés-jours aujourd'hui";
+          unique_id = "dafos.sensor.heating_degree_days_today";
+          default_entity_id = "sensor.heating_degree_days_today";
+          icon = "mdi:thermometer-chevron-down";
+          unit_of_measurement = "DJ";
+          state_class = "total_increasing";
+          state = ''
+            {% set t = states('${outdoor}') | float(none) %}
+            {% set fresh = now().hour == 0 and now().minute < 10 %}
+            {% set prev = 0 if fresh or not has_value(this.entity_id) else this.state | float(0) %}
+            {{ (prev + ([${toString base} - t, 0] | max / 144 if t is not none else 0)) | round(3) }}
+          '';
+        }
+      ];
+    }
     {
       sensor = [
         {
