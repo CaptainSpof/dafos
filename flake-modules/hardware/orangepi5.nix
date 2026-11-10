@@ -3,48 +3,77 @@
 # (pkgs.ubootOrangePi5) lives in the SPI flash and boots the extlinux
 # entries written here; see flake-modules/hosts/dafpi/README.md.
 {
-  flake.modules.nixos.orangepi5 = {
-    nixpkgs.hostPlatform = "aarch64-linux";
+  flake.modules.nixos.orangepi5 =
+    { pkgs, ... }:
+    {
+      nixpkgs.hostPlatform = "aarch64-linux";
 
-    boot = {
-      loader = {
-        grub.enable = false;
-        generic-extlinux-compatible = {
-          enable = true;
-          # /boot is a 1 GB FAT partition (U-Boot reads it); 20 generations
-          # spanning four kernels filled it on 2026-10-28.
-          configurationLimit = 5;
+      # The GMAC (rk_gmac-dwmac, stmmac) wedges its TX queue a few times a
+      # week: "NETDEV WATCHDOG: transmit queue N timed out", adapter reset,
+      # ~10 s off the LAN. On dafpi that took the secondary DNS down with it
+      # and dafbox's builds failed Go module lookups (2026-11-10, IA-98).
+      # TSO is the first suspect on stmmac (unconfirmed for this board: check
+      # `journalctl -k -g WATCHDOG` a week on); the software GSO stays on.
+      #
+      # A oneshot, not a systemd .link file: a .link matching end0 would
+      # replace 99-default.link, losing the end0 name and the persistent MAC
+      # the Freebox static lease is keyed to. stmmac toggles TSO without resetting
+      # the adapter, and netdev features survive the driver's own resets.
+      systemd.services.gmac-tso-off = {
+        description = "Disable TSO on the Orange Pi 5 GMAC";
+        bindsTo = [ "sys-subsystem-net-devices-end0.device" ];
+        after = [ "sys-subsystem-net-devices-end0.device" ];
+        # multi-user.target too, so a switch starts it without a reboot.
+        wantedBy = [
+          "sys-subsystem-net-devices-end0.device"
+          "multi-user.target"
+        ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = "${pkgs.ethtool}/bin/ethtool -K end0 tso off";
         };
       };
 
-      # The M.2 slot hangs off the PCIe 2.0 combo PHY, which is a module.
-      initrd.availableKernelModules = [
-        "nvme"
-        "phy_rockchip_naneng_combphy"
-      ];
+      boot = {
+        loader = {
+          grub.enable = false;
+          generic-extlinux-compatible = {
+            enable = true;
+            # /boot is a 1 GB FAT partition (U-Boot reads it); 20 generations
+            # spanning four kernels filled it on 2026-10-28.
+            configurationLimit = 5;
+          };
+        };
 
-      kernelParams = [
-        # Debug UART (3-pin header) runs at 1.5 Mbaud; HDMI gets the console too.
-        "console=ttyS2,1500000"
-        "console=tty1"
-        # Without these the NVMe (seen with a Kingston OM3PDP3, Steam Deck
-        # OEM) drops into a power state it never leaves: read timeouts ~40 s
-        # after boot, failed reset, device disabled until the next power
-        # cycle. Tested 2026-10-06: steady 415 MB/s with both set.
-        "nvme_core.default_ps_max_latency_us=0"
-        "pcie_aspm=off"
-      ];
-    };
+        # The M.2 slot hangs off the PCIe 2.0 combo PHY, which is a module.
+        initrd.availableKernelModules = [
+          "nvme"
+          "phy_rockchip_naneng_combphy"
+        ];
 
-    hardware = {
-      deviceTree = {
-        name = "rockchip/rk3588s-orangepi-5.dtb";
-        # Copy this board's dtbs to /boot, not every arm64 board's (~118 MB
-        # per kernel).
-        filter = "rk3588s-orangepi-5*.dtb";
+        kernelParams = [
+          # Debug UART (3-pin header) runs at 1.5 Mbaud; HDMI gets the console too.
+          "console=ttyS2,1500000"
+          "console=tty1"
+          # Without these the NVMe (seen with a Kingston OM3PDP3, Steam Deck
+          # OEM) drops into a power state it never leaves: read timeouts ~40 s
+          # after boot, failed reset, device disabled until the next power
+          # cycle. Tested 2026-10-06: steady 415 MB/s with both set.
+          "nvme_core.default_ps_max_latency_us=0"
+          "pcie_aspm=off"
+        ];
       };
-      # Mali (panthor) CSF firmware, among others.
-      enableRedistributableFirmware = true;
+
+      hardware = {
+        deviceTree = {
+          name = "rockchip/rk3588s-orangepi-5.dtb";
+          # Copy this board's dtbs to /boot, not every arm64 board's (~118 MB
+          # per kernel).
+          filter = "rk3588s-orangepi-5*.dtb";
+        };
+        # Mali (panthor) CSF firmware, among others.
+        enableRedistributableFirmware = true;
+      };
     };
-  };
 }
