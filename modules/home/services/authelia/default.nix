@@ -27,6 +27,8 @@ in
       "jellyfin/authelia/client-secret".sopsFile =
         lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
       "immich/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich.yaml";
+      "smtp/username".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/smtp.yaml";
+      "smtp/password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/smtp.yaml";
     };
 
     nps.stacks.authelia = {
@@ -122,6 +124,12 @@ in
         traefik.subDomain = "auth";
         expose = true;
 
+        # Brevo login and key, read from files (never in the generated yaml).
+        fileEnvMount = {
+          AUTHELIA_NOTIFIER_SMTP_USERNAME_FILE = config.sops.secrets."smtp/username".path;
+          AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE = config.sops.secrets."smtp/password".path;
+        };
+
         # Secrets are read at start from paths that never change, so a
         # rotation left Authelia on the old session secret and the old lldap
         # readonly password (every new login failed). Hashing the encrypted
@@ -132,6 +140,7 @@ in
             [
               "authelia"
               "lldap"
+              "smtp"
             ];
       };
 
@@ -164,6 +173,17 @@ in
           ];
         };
         log.level = "info";
+
+        # Brevo relay; replaces nps' default filesystem notifier (password
+        # reset, 2FA registration). Credentials: fileEnvMount above.
+        # disable_startup_check: Authelia otherwise verifies the SMTP login at
+        # start and refuses to start when it fails (placeholder secret, Brevo
+        # down, DNS hiccup), taking every SSO login down with it.
+        notifier.disable_startup_check = true;
+        notifier.smtp = {
+          address = "submission://smtp-relay.brevo.com:587";
+          sender = "Authelia <noreply@daftdaf.dev>";
+        };
 
         # nps sets a month without mkDefault; fewer re-logins for the devices
         # that do tick "remember me".

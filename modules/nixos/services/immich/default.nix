@@ -106,12 +106,26 @@ in
       wantedBy = lib.optional (cfg.originalsPath != null) cfg.originalsMountUnit;
     };
 
-    sops.secrets = mkIf cfg.oidc.enable {
-      "immich/authelia/client-secret" = {
-        sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich.yaml";
-        restartUnits = [ "immich-server.service" ];
+    sops.secrets =
+      optionalAttrs cfg.oidc.enable {
+        "immich/authelia/client-secret" = {
+          sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/immich.yaml";
+          restartUnits = [ "immich-server.service" ];
+        };
+      }
+      // {
+        # Declared by the msmtp aspect (same secrets file); only the restart
+        # is added here.
+        "smtp/username".restartUnits = [ "immich-server.service" ];
+        "smtp/password".restartUnits = [ "immich-server.service" ];
       };
-    };
+
+    assertions = [
+      {
+        assertion = config.dafos.services.msmtp.enable;
+        message = "immich mails through the Brevo secrets declared by dafos.services.msmtp; enable it.";
+      }
+    ];
 
     services.immich = {
       enable = true;
@@ -126,6 +140,20 @@ in
 
       settings = {
         server.externalDomain = "https://${cfg.base-url}";
+
+        # Brevo relay. Login and key are read at unit start (LoadCredential).
+        notifications.smtp = {
+          enabled = true;
+          from = "Immich <noreply@daftdaf.dev>";
+          replyTo = "";
+          transport = {
+            host = "smtp-relay.brevo.com";
+            port = 587;
+            ignoreCert = false;
+            username._secret = config.sops.secrets."smtp/username".path;
+            password._secret = config.sops.secrets."smtp/password".path;
+          };
+        };
 
         oauth = optionalAttrs cfg.oidc.enable {
           enabled = true;

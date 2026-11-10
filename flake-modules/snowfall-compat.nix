@@ -33,6 +33,7 @@ let
         "services/blocky" = blocky;
         # New aspect, no legacy module behind it: the key only places it.
         "services/host-watch" = host-watch;
+        "services/msmtp" = msmtp;
         "services/ollama" = ollama;
         "services/openssh" = openssh;
         # New aspect, no legacy module behind it: the key only places it.

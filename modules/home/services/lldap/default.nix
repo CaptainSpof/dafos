@@ -183,11 +183,27 @@ in
       "lldap/users/joaquim-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
       "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
       "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
+      "smtp/username".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/smtp.yaml";
+      "smtp/password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/smtp.yaml";
     };
 
     services.podman.containers = {
       # Bind-mount the jpegs the bootstrap script points `avatar_url` at.
       lldap.volumeMap.avatars = "${avatarRoot}:${avatarDir}:ro";
+
+      # Password-reset mails through the Brevo relay. Login and key come from
+      # files (lldap reads <VAR>_FILE for its secrets).
+      lldap.environment = {
+        LLDAP_SMTP_OPTIONS__ENABLE_PASSWORD_RESET = "true";
+        LLDAP_SMTP_OPTIONS__SERVER = "smtp-relay.brevo.com";
+        LLDAP_SMTP_OPTIONS__PORT = "587";
+        LLDAP_SMTP_OPTIONS__SMTP_ENCRYPTION = "STARTTLS";
+        LLDAP_SMTP_OPTIONS__FROM = "LLDAP <noreply@daftdaf.dev>";
+      };
+      lldap.fileEnvMount = {
+        LLDAP_SMTP_OPTIONS__USER_FILE = config.sops.secrets."smtp/username".path;
+        LLDAP_SMTP_OPTIONS__PASSWORD_FILE = config.sops.secrets."smtp/password".path;
+      };
 
       # Authelia's `picture` attribute is a URL rather than a blob, so the same
       # jpegs are also served as plain static files. Public on purpose: Immich

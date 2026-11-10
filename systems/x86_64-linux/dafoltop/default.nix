@@ -113,6 +113,8 @@ in
         };
       };
       home-assistant = enabled;
+      # System sendmail through the Brevo relay (login and key in sops).
+      msmtp = enabled;
       # Disk and failed-unit alerts, relayed to the phones by home-assistant.
       alerting = {
         enable = true;

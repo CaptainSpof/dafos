@@ -14,6 +14,7 @@ in
       home
       locale
       matter-server
+      msmtp
       openthread-border-router
       networking
       nix
@@ -37,6 +38,7 @@ in
 
       services = {
         avahi.enable = true;
+        msmtp.enable = true;
         # Secondary LAN DNS (dafoltop is primary). The domain keeps resolving
         # to dafoltop, where Traefik runs. 192.168.0.15 is a static lease in
         # Freebox OS, keyed to the board's stable MAC 46:dc:f5:c3:82:84.
