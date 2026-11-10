@@ -16,17 +16,26 @@ in
 
   config = mkIf cfg.enable {
     programs.ssh = {
-      # Steam Deck (SteamOS). MagicDNS name: works on the LAN and away.
-      # See ./AGENTS.md for what can be done on it.
-      matchBlocks."dafdeck deck" = {
-        hostname = "dafdeck";
-        user = "deck";
-        identityFile = "~/.ssh/daf@dafbox.pem";
-        identitiesOnly = true;
+      # Without it Home Manager writes no ~/.ssh/config and everything below
+      # is silently dropped.
+      enable = true;
+      # Upstream's implicit "Host *" defaults are deprecated: only what is
+      # set below is written.
+      enableDefaultConfig = false;
+      # `settings` replaces the deprecated `matchBlocks`; keys are ssh_config
+      # directives. Global options go in "*" (extraConfig would land inside
+      # the last Host block).
+      settings = {
+        # Steam Deck (SteamOS). MagicDNS name: works on the LAN and away.
+        # See ./AGENTS.md for what can be done on it.
+        "dafdeck deck" = {
+          HostName = "dafdeck";
+          User = "deck";
+          IdentityFile = "~/.ssh/daf@dafbox.pem";
+          IdentitiesOnly = true;
+        };
+        "*".AddKeysToAgent = "yes";
       };
-      extraConfig = ''
-        AddKeysToAgent yes
-      '';
     };
   };
 }
