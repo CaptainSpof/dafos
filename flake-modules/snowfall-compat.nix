@@ -52,6 +52,8 @@ let
         # New aspect, no legacy module behind it: the key only places it.
         "programs/nxm-handler" = nxm-handler;
         # New aspect, no legacy module behind it: the key only places it.
+        "programs/amethyst" = amethyst;
+        # New aspect, no legacy module behind it: the key only places it.
         "services/authelia-peers" = authelia-peers;
         "services/backup-dumps" = backup-dumps;
         # New aspect, no legacy module behind it: the key only places it.
