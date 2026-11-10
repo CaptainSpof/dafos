@@ -50,7 +50,7 @@ let
       home = with config.flake.modules.homeManager; {
         "services/alerting" = alerting;
         # New aspect, no legacy module behind it: the key only places it.
-        "programs/nxm-handler" = nxm-handler;
+        "programs/modctl" = modctl;
         # New aspect, no legacy module behind it: the key only places it.
         "programs/amethyst" = amethyst;
         # New aspect, no legacy module behind it: the key only places it.

@@ -1,16 +1,6 @@
-{
-  lib,
-  writeShellApplication,
-  python3,
-  ...
-}:
+{ writeShellScriptBin, ... }:
 
-# Reports which downloaded Nexus Mods archives have a newer file online.
-# Stdlib-only Python; see the docstring in nexus-mod-check.py for usage.
-writeShellApplication {
-  name = "nexus-mod-check";
-  checkPhase = "";
-  text = ''
-    exec ${lib.getExe python3} -I ${./nexus-mod-check.py} "$@"
-  '';
-}
+# shortcut: thin alias kept while daf@dafbox still lists this package; the
+# check now lives in `modctl check DIR --game DOMAIN` (same arguments),
+# installed by dafos.programs.modctl (flake-modules/programs/modctl.nix).
+writeShellScriptBin "nexus-mod-check" ''exec modctl check "$@"''

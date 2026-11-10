@@ -168,6 +168,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Our own mod manager (Nexus collections, local or Steam Deck targets).
+    # Developed in ~/Projects/modctl, not on GitHub yet: switch to
+    # github:CaptainSpof/modctl once pushed. Only dafbox's home reads it.
+    modctl = {
+      url = "git+file:///home/daf/Projects/modctl";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Our own DMS plugin: tabbed side panel (Home Assistant dashboard).
     # Developed in ~/Projects/dms-sidebar.
     dms-sidebar = {

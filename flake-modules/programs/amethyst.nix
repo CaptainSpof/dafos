@@ -7,8 +7,8 @@
 # free account is enough); archives downloaded by hand are imported from the
 # UI. The nixpkgs build ships with the app self-update banner disabled.
 #
-# nxm:// stays with flake-modules/programs/nxm-handler.nix (it downloads to
-# ~/Downloads/mods with the personal API key, no manager running needed).
+# nxm:// stays with `modctl nxm` (flake-modules/programs/modctl.nix: downloads
+# with the personal API key into the game's archives, no manager running).
 # Amethyst can register itself as an nxm handler from its settings: don't, or
 # it takes the scheme over.
 _: {

@@ -43,7 +43,7 @@ in
       };
 
       # nxm:// (Nexus Mods "Mod manager download") goes straight to the system
-      # handler, flake-modules/programs/nxm-handler.nix, with no prompt. Kept
+      # handler, `modctl nxm` (flake-modules/programs/modctl.nix), with no prompt. Kept
       # out of handlers.json, which pins a /nix/store path per build.
       Handlers.schemes.nxm = {
         action = "useSystemDefault";
