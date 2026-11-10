@@ -65,7 +65,7 @@ let
       id = "daf";
       displayName = "daf";
       password_file = config.sops.secrets."lldap/users/daf-password".path;
-      email = "dafonseca.cedric@gmail.com";
+      email = "cedric@daftdaf.dev";
       avatar_url = avatarFileUrl "daf";
       picture = avatarUrl "daf";
       groups = [
@@ -92,26 +92,6 @@ let
         bookorbit.oidc.userGroup
       ];
     };
-    cedric = {
-      id = "cedric";
-      displayName = "cedric";
-      password_file = config.sops.secrets."lldap/users/cedric-password".path;
-      email = "cedric@${cfg.domain}";
-      groups = [
-        lldap.adminGroup
-
-        # No group-based admin access supported yet, just user-roles
-        "home-assistant_user"
-        streaming.jellyfin.oidc.userGroup
-        qbittorrent.qui.oidc.userGroup
-        grimmory.oidc.userGroup
-        papra.oidc.userGroup
-        donetick.oidc.userGroup
-        kitchenowl.oidc.userGroup
-        norish.oidc.userGroup
-        bookorbit.oidc.userGroup
-      ];
-    };
     joaquim = {
       id = "joaquim";
       displayName = "joaquim";
@@ -125,13 +105,6 @@ let
         norish.oidc.userGroup
         bookorbit.oidc.userGroup
       ];
-    };
-    test = {
-      id = "test";
-      displayName = "test";
-      password_file = config.sops.secrets."lldap/users/test-password".path;
-      email = "test@${cfg.domain}";
-      groups = [ ];
     };
   };
 
@@ -179,10 +152,8 @@ in
       "lldap/jwt-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
       "lldap/key-seed".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
       "lldap/users/daf-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
-      "lldap/users/cedric-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
       "lldap/users/joaquim-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
       "lldap/users/readonly-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
-      "lldap/users/test-password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/lldap.yaml";
       "smtp/username".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/smtp.yaml";
       "smtp/password".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/smtp.yaml";
     };

@@ -44,7 +44,7 @@
         };
         email = mkOption {
           type = types.str;
-          default = "dafonseca.cedric@gmail.com";
+          default = "cedric@daftdaf.dev";
           description = "The email of the user for git.";
         };
         home = mkOption {
@@ -208,7 +208,9 @@
         name = opt (types.nullOr types.str) (config.snowfallorg.user.name or "daf") "The user account.";
 
         fullName = opt types.str "Cédric Da Fonseca" "The full name of the user.";
-        email = opt types.str "dafonseca.cedric@gmail.com" "The email of the user.";
+        # Three addresses, three uses: personal (this one), Gmail, git.
+        email = opt types.str "cedric@daftdaf.dev" "The personal email of the user.";
+        gmailEmail = opt types.str "dafonseca.cedric@gmail.com" "The Gmail address of the user.";
         gitEmail = opt types.str "captain.spof@gmail.com" "The email of the user for git.";
         gitUsername = opt types.str "CaptainSpof" "The username for git.";
 

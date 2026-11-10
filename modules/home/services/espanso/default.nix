@@ -9,7 +9,12 @@
 let
   inherit (lib) mkIf;
   inherit (lib.${namespace}) mkBoolOpt;
-  inherit (config.${namespace}.user) email gitEmail fullName;
+  inherit (config.${namespace}.user)
+    email
+    gmailEmail
+    gitEmail
+    fullName
+    ;
 
   cfg = config.${namespace}.services.espanso;
 
@@ -65,6 +70,10 @@ in
                 "@daf"
               ];
               replace = email;
+            }
+            {
+              trigger = "@gm";
+              replace = gmailEmail;
             }
             {
               trigger = "@cs";
