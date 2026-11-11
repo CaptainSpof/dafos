@@ -62,6 +62,37 @@ let
         '.mcpServers.${name} = $server' ${config'} > "$tmp" \
         && mv "$tmp" ${config'}
     '';
+
+  # Claude Code plugins, declared here and merged into ~/.claude/settings.json
+  # (the CLI rewrites that file at runtime, so it can't be a store symlink).
+  # Claude fetches and installs them itself on the next start.
+  pluginMarketplaces = {
+    ponytail.source = {
+      source = "github";
+      repo = "DietrichGebert/ponytail";
+    };
+  };
+  enabledPlugins = {
+    "ponytail@ponytail" = true;
+  };
+
+  # Idempotently merge the declared marketplaces/plugins into settings.json,
+  # leaving every other key (and plugins enabled by hand) untouched.
+  registerPlugins =
+    let
+      settings = lib.escapeShellArg "${config.home.homeDirectory}/.claude/settings.json";
+    in
+    ''
+      mkdir -p "$(dirname ${settings})"
+      [ -e ${settings} ] || echo '{}' > ${settings}
+      tmp=$(mktemp)
+      ${jq} \
+        --argjson marketplaces ${lib.escapeShellArg (builtins.toJSON pluginMarketplaces)} \
+        --argjson plugins ${lib.escapeShellArg (builtins.toJSON enabledPlugins)} \
+        '.extraKnownMarketplaces += $marketplaces | .enabledPlugins += $plugins' \
+        ${settings} > "$tmp" \
+        && mv "$tmp" ${settings}
+    '';
 in
 {
   # nixpkgs marked gemini-cli for removal (Google replaced it with the
@@ -112,6 +143,7 @@ in
         mcpNixosClaudeCode = config.lib.dag.entryAfter [ "writeBoundary" ] (
           registerMcp "nixos" "${config.home.homeDirectory}/.claude.json" nixosServer
         );
+        claudeCodePlugins = config.lib.dag.entryAfter [ "writeBoundary" ] registerPlugins;
       })
       (mkIf cfg.claude.desktop.enable {
         mcpNixosClaudeDesktop = config.lib.dag.entryAfter [ "writeBoundary" ] (
