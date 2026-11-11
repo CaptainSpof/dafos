@@ -744,35 +744,22 @@ in
     #
     # Origami's Bubble Card modules are copied, not symlinked: Bubble Card
     # Tools resolve()s every module path and rejects one that lands outside
-    # /config/bubble_card. `C+` re-copies them on each activation, so the pinned
-    # version wins over edits made in the module editor; modules of our own sit
-    # beside them under other names and stay editable.
+    # /config/bubble_card. They are installed before each start (below), so the
+    # pinned version wins over edits made in the module editor; modules of our
+    # own sit beside them under other names and stay editable.
+    # Not tmpfiles `C+`: it never replaces a file that exists, so 2.0 stayed in
+    # place after the 3.0 bump. Runs as hass; mode 0644 so the next install,
+    # or the module editor, can overwrite the read-only store copy.
+    systemd.services.home-assistant.preStart = lib.mkAfter ''
+      install -m 0644 -t /var/lib/hass/bubble_card/modules ${pkgs.dafos.lovelace-origami.bubbleCardModules}/origami_*.yaml
+    '';
+
     systemd.tmpfiles.rules = [
       "d /var/lib/hass/scripts 0775 hass hass -"
       "d /var/lib/hass/custom_templates 0775 hass hass -"
       "d /var/lib/hass/bubble_card 0755 hass hass -"
       "d /var/lib/hass/bubble_card/modules 0755 hass hass -"
     ]
-    ++
-      map
-        (
-          name:
-          "C+ /var/lib/hass/bubble_card/modules/origami_${name}.yaml - - - - ${pkgs.dafos.lovelace-origami.bubbleCardModules}/origami_${name}.yaml"
-        )
-        # Listed by hand: readDir on the fetched source would be IFD.
-        [
-          "base"
-          "button"
-          "climate"
-          "fan"
-          "header"
-          "light"
-          "media"
-          "popup"
-          "slider"
-          "speaker"
-          "tiles"
-        ]
     # lsismeiro's light hook, patched for HA 2026.10's colour temperature in
     # kelvins (see the file's header). Linked over the UI-imported copy, so a
     # re-import from the UI cannot bring the broken version back.
