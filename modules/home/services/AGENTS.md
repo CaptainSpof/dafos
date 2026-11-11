@@ -54,6 +54,15 @@ See [../../../secrets/AGENTS.md](../../../secrets/AGENTS.md).
 `Obsolete option nps.stacks.ittools` appears on every dafbox and daftop build.
 It comes from nix-podman-stacks, not from dafos, and cannot be fixed here.
 
+## Running an image newer than nps ships
+
+`services.podman.containers.<name>.image = lib.mkForce "<repo>:<tag>"`, with a
+comment naming nps's tag and a Kaneo task to drop it. nps never takes back
+control on its own: a forgotten mkForce blocks its later bumps, and once nps
+passes it, ends in a downgrade (database migrations are one-way). Bump every
+container of a multi-container app together, and mark any config the newer image
+needs to leave with the pin.
+
 ## Local stacks
 
 A container that nps doesn't cover becomes an nps-style stack under

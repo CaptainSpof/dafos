@@ -35,6 +35,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Ahead of nps (3.7.0). Drop once nps ships >= 3.8.0 (Kaneo IA-133):
+    # left in place, this blocks nps's later bumps and can end in a downgrade.
+    services.podman.containers.bookorbit.image = mkForce "ghcr.io/bookorbit/bookorbit:3.8.0";
+
     # BookOrbit builds APP_URL and its OIDC redirect URI from `subDomain`, so a
     # second hostname has to be a redirect rather than an extra router rule.
     ${namespace}.services.traefik.redirects = lib.genAttrs cfg.aliases (_: {

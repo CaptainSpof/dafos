@@ -18,6 +18,29 @@
 
       config = lib.mkIf config.dafos.services.kitchenowl.enable (
         lib.mkMerge [
+          # Ahead of nps (v0.7.10; its v0.8.1 bump fails its VM test). Drop the
+          # images and the Sysctl once nps ships >= v0.8.1 (Kaneo IA-133):
+          # left in place, this blocks nps's later bumps and can end in a
+          # downgrade.
+          #
+          # 0.8 images are rootless, built for Docker's defaults. The web is
+          # nginx-unprivileged still listening on :80, which podman's netns
+          # (unlike Docker's) refuses to a non-root user. The backend needs
+          # nothing: started as root, its entrypoint chowns /data to its uid
+          # 1000 (a subuid on the host; restic runs as root). keep-id would
+          # avoid that, but podman then re-chowns the whole image on first
+          # start: >4 min in the VM test, long enough to fail the unit and
+          # leave kitchenowl-web dead on `dependency`.
+          {
+            services.podman.containers = {
+              kitchenowl-web = {
+                image = lib.mkForce "docker.io/tombursch/kitchenowl-web:v0.8.1";
+                extraConfig.Container.Sysctl = "net.ipv4.ip_unprivileged_port_start=80";
+              };
+              kitchenowl-backend.image = lib.mkForce "docker.io/tombursch/kitchenowl-backend:v0.8.1";
+            };
+          }
+
           {
             sops.secrets = lib.mkMerge [
               (secret "jwt-secret")
