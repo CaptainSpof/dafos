@@ -11,8 +11,6 @@ let
   inherit (lib.${namespace}) mkBoolOpt;
 
   cfg = config.${namespace}.desktop.dankcalendar;
-
-  dmsCfg = config.programs.dank-material-shell;
 in
 {
   options.${namespace}.desktop.dankcalendar = {
@@ -22,19 +20,6 @@ in
   config = mkIf cfg.enable {
     programs.dank-calendar = {
       enable = true;
-
-      # Upstream 07cd4c3 imports dux-go/wayland/client without refreshing its
-      # vendorHash, so the vendored modules lack that package. Drop this once
-      # upstream bumps the hash (the build then fails on a hash mismatch).
-      package = options.programs.dank-calendar.package.default.overrideAttrs {
-        vendorHash = "sha256-JT6mHK52mIJh4lzVWYVpqNY2S2oeinSWBIKaI3TiY34=";
-      };
-
-      # dcal launches its embedded QML UI with `qs`. DMS already installs a
-      # quickshell wrapped with QtWebSockets into home.packages; installing
-      # plain pkgs.quickshell alongside it would collide on bin/qs, so reuse
-      # whatever quickshell DMS settled on when DMS is enabled.
-      quickshell.package = lib.mkIf dmsCfg.enable dmsCfg.quickshell.package;
 
       systemd = {
         enable = true; # dcal.service, started with the wayland session

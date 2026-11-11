@@ -52,16 +52,11 @@ let
 
   cfg = config.${namespace}.desktop.dms;
 
-  quickshellWithWebSockets = pkgs.symlinkJoin {
-    name = "quickshell-with-qtwebsockets";
-    paths = [ pkgs.quickshell ];
-    nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
-    postBuild = ''
-      for b in quickshell qs; do
-        wrapProgram "$out/bin/$b" \
-          --prefix NIXPKGS_QT6_QML_IMPORT_PATH : ${pkgs.kdePackages.qtwebsockets}/lib/qt-6/qml
-      done
-    '';
+  # dms embeds its Quickshell runtime (dux-qt-base) and wraps itself with a
+  # fixed QML import path, so the Home Assistant plugin's `import QtWebSockets`
+  # needs the module added through the package's extraQtPackages.
+  dmsShellWithWebSockets = dmsShell.override {
+    extraQtPackages = [ pkgs.kdePackages.qtwebsockets ];
   };
 
   # The bar/dock building blocks hosts compose from; see ./bar.nix. Published
@@ -411,11 +406,9 @@ in
     programs.dank-material-shell = {
       enable = true;
 
-      package = dmsShell;
-
-      # Quickshell wrapped with the QtWebSockets QML module (see let binding) so
-      # the Home Assistant plugin can `import QtWebSockets`.
-      quickshell.package = quickshellWithWebSockets;
+      # dms with the QtWebSockets QML module (see let binding) so the Home
+      # Assistant plugin can `import QtWebSockets`.
+      package = dmsShellWithWebSockets;
 
       # Plugin sources, pinned in ./plugins.nix (symlinked into the plugins dir).
       # Enable-state/settings stay in DMS's runtime-owned plugin_settings.json.
