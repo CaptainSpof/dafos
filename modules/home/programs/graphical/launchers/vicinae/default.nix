@@ -36,16 +36,6 @@ let
   # as a flake input). Converts a time between timezones from the search bar.
   timezone-converter =
     inputs.vicinae-timezone-converter.packages.${pkgs.stdenv.hostPlatform.system}.default;
-
-  # vicinae is pinned to gcc15 upstream, but its numen dependency is built with
-  # the default stdenv, which is gcc16 on our nixpkgs: libnumen then needs a
-  # newer libstdc++ than vicinae links against. Build numen with gcc15 too.
-  vicinaePackage = inputs.vicinae.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
-    numen = inputs.vicinae.inputs.numen.packages.${pkgs.stdenv.hostPlatform.system}.numen.override {
-      withRepl = false;
-      stdenv = pkgs.gcc15Stdenv;
-    };
-  };
 in
 {
   options.${namespace}.programs.graphical.launchers.vicinae = {
@@ -64,7 +54,8 @@ in
 
     programs.vicinae = {
       enable = true;
-      package = vicinaePackage;
+      # nixpkgs' build is substituted from cache.nixos.org; the flake's is not cached.
+      package = pkgs.vicinae;
       systemd = {
         enable = true;
         autoStart = true;
