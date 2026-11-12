@@ -16,6 +16,10 @@ in
   # vsock transport for Claude Desktop's Cowork VM (claude-desktop-fhs)
   boot.kernelModules = [ "vhost_vsock" ];
 
+  # Memory history (sar -r) to size the replacement laptop's RAM: 16 vs 32 GB.
+  # shortcut: drop once the Framework is ordered.
+  services.sysstat.enable = true;
+
   dafos = {
     archetypes = {
       workstation = enabled;
