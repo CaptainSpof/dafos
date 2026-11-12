@@ -114,6 +114,13 @@ in
       };
       grammalecte = enabled;
     };
+    # KOReader's X-Ray plugin on the Kobo (LAN, OpenAI-compatible endpoint).
+    # Unloads after keepAlive (5m), so the VRAM is back for games.
+    services.ollama = {
+      enable = true;
+      host = "0.0.0.0";
+      models = [ "gemma4:12b" ];
+    };
 
     suites = {
       desktop = enabled;
@@ -136,6 +143,14 @@ in
         ];
       };
     };
+  };
+
+  services.ollama = {
+    package = pkgs.ollama-rocm; # RX 7800 XT (gfx1101, natively supported)
+    openFirewall = true; # no auth: anything on the LAN/tailnet can use it
+    # Ollama silently truncates prompts past its default window; X-Ray sends
+    # whole chapters.
+    environmentVariables.OLLAMA_CONTEXT_LENGTH = "32768";
   };
 
   # Pin HDMI/DP audio to the LG monitor (the only display with speakers).
