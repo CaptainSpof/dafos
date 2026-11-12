@@ -40,6 +40,23 @@
     };
     default-window-height = { };
   }
+  # Drop-down terminal (dropdown-terminal in binds.nix): floating, 70% of the output.
+  {
+    matches = [ { app-id = "^dropdown$"; } ];
+    open-floating = true;
+    default-column-width.proportion = 0.7;
+    default-window-height.proportion = 0.7;
+    background-effect = {
+      blur = true;
+    };
+  }
+  # Emacs pad (emacsPad in binds.nix): one frame with notes, clipboard, terminal.
+  {
+    matches = [ { title = "^daf-pad$"; } ];
+    open-floating = true;
+    default-column-width.proportion = 0.7;
+    default-window-height.proportion = 0.7;
+  }
   {
     matches = [
       { app-id = "^org\\.gnome\\.Loupe"; }

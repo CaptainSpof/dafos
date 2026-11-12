@@ -42,6 +42,96 @@ let
       notify-send -a screenshot-ocr "Texte copié" "''${text:0:200}"
     '';
   };
+  # Toggle a dux-shell named scratchpad. dux-shell only parks and shows existing
+  # windows (it never spawns), so on "empty" we run `start`, wait for a window
+  # matching the jq `match` filter, park it in the pad, then show it. `onShow`
+  # runs each time the pad is brought back.
+  mkPad =
+    {
+      name,
+      match,
+      start,
+      onShow ? "true",
+      inputs,
+    }:
+    lib.getExe (
+      pkgs.writeShellApplication {
+        name = "pad-${name}";
+        runtimeInputs = [
+          pkgs.jq
+          pkgs.niri
+        ]
+        ++ inputs;
+        text = ''
+          find_id() { niri msg -j windows | jq -r 'first(.[] | select(${match}) | .id) // empty'; }
+          out=$(dms ipc call scratchpad toggle ${name})
+          if [ "$out" = SCRATCHPAD_SHOWN ]; then ${onShow}; fi
+          [ "$out" = SCRATCHPAD_EMPTY ] || exit 0
+          id=$(find_id)
+          if [ -z "$id" ]; then
+            ${start}
+            for _ in $(seq 100); do id=$(find_id); [ -n "$id" ] && break; sleep 0.1; done
+            [ -n "$id" ] || exit 1
+          fi
+          niri msg action focus-window --id "$id"
+          dms ipc call scratchpad move ${name}
+          dms ipc call scratchpad toggle ${name}
+          ${onShow}
+        '';
+      }
+    );
+  dropdownTerminal = mkPad {
+    name = "dropdown";
+    match = ''.app_id == "dropdown"'';
+    start = "wezterm start --class dropdown >/dev/null 2>&1 &";
+    inputs = [ pkgs.wezterm ];
+  };
+  # Vicinae's clipboard history (30 latest text entries, pinned first, newest
+  # first) as plain text. Its db keeps only a 50-char preview; the full text is
+  # the file clipboard-data/<offer id>. Over-size entries are skipped.
+  clipboardHistory = pkgs.writeShellApplication {
+    name = "vicinae-clipboard-history";
+    runtimeInputs = [ pkgs.sqlite ];
+    text = ''
+      dir="$HOME/.local/share/vicinae"
+      n=0
+      hidden="''${XDG_STATE_HOME:-$HOME/.local/state}/emacs-pad/hidden-ids"
+      [ -e "$hidden" ] || hidden=/dev/null
+      sqlite3 -readonly -separator '|' "file:$dir/clipboard.db?mode=ro" \
+        "SELECT o.id, datetime(s.updated_at,'unixepoch','localtime'), s.id
+         FROM selection s JOIN data_offer o ON o.selection_id = s.id
+         WHERE o.mime_type LIKE 'text/plain%' AND o.size < 20000
+         GROUP BY s.id ORDER BY s.pinned_at IS NULL, s.updated_at DESC LIMIT 100" |
+        while IFS='|' read -r id ts sid; do
+          grep -qxF "$sid" "$hidden" && continue
+          [ $((n += 1)) -le 30 ] || break
+          printf '──── %s ──── %s\n' "$ts" "$sid"
+          cat "$dir/clipboard-data/$id"
+          printf '\n\n'
+        done
+    '';
+  };
+  # Hide one entry (selection id) from the pad's history. vicinae's db cannot be
+  # written from outside (its FTS table needs a custom sqlite tokenizer), so the id
+  # goes into a list the history dump skips; the entry stays in vicinae itself.
+  clipboardHide = pkgs.writeShellApplication {
+    name = "vicinae-clipboard-hide";
+    text = ''
+      case "$1" in "" | *[!0-9a-f-]*) exit 1 ;; esac
+      f="''${XDG_STATE_HOME:-$HOME/.local/state}/emacs-pad/hidden-ids"
+      mkdir -p "$(dirname "$f")"
+      echo "$1" >>"$f"
+    '';
+  };
+  # One emacsclient frame (title "daf-pad") laid out by `daf-pad-setup` (doom config, section daf-pad): notes,
+  # clipboard history and a vterm. The clipboard buffer is refreshed on each show.
+  emacsPad = mkPad {
+    name = "emacs";
+    match = ''.title == "daf-pad"'';
+    start = "emacsclient -c -n -F '((name . \"daf-pad\"))' --eval '(progn (setq daf-pad-wl-copy \"${lib.getExe' pkgs.wl-clipboard "wl-copy"}\" daf-pad-clip-hide \"${lib.getExe clipboardHide}\") (if (fboundp (quote daf-pad-setup)) (daf-pad-setup) (message \"daf-pad: missing from the doom config\")))' >/dev/null 2>&1";
+    onShow = ''f=$(mktemp); ${lib.getExe clipboardHistory} >"$f" 2>/dev/null || true; emacsclient -e "(progn (setenv \"WAYLAND_DISPLAY\" \"$WAYLAND_DISPLAY\") (daf-pad-refresh-clipboard \"$f\"))" >/dev/null 2>&1 || true; rm -f "$f"'';
+    inputs = [ config.programs.emacs.finalPackage ];
+  };
   dms-call = spawn "dms";
   dms-ipc = spawn "dms" "ipc";
   # spawn execs a single binary with literal args (no shell), so pipes and
@@ -75,6 +165,16 @@ lib.mkForce {
   "Mod+Shift+D" = {
     action = spawn "handy-toggle";
     hotkey-overlay.title = "Toggle Speech-to-Text (Handy)";
+  };
+  "Mod+E" = {
+    repeat = false;
+    action = spawn emacsPad;
+    hotkey-overlay.title = "Toggle Emacs Pad (notes, clipboard, terminal)";
+  };
+  "Mod+Shift+E" = {
+    repeat = false;
+    action = spawn dropdownTerminal;
+    hotkey-overlay.title = "Toggle Drop-down Terminal";
   };
   "Mod+M".action = spawn "dolphin";
   "Mod+Space" = {
