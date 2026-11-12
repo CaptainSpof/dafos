@@ -1115,13 +1115,14 @@ in
                     # config file, user.css, ...). It then hides listed mountpoints too,
                     # unless they say `hide = false`.
                     hide-mountpoints-by-default = true;
-                    mountpoints = lib.mapAttrs' (
-                      key: d:
-                      lib.nameValuePair "${hostfs}/${key}" {
-                        inherit (d) name;
-                        hide = false;
-                      }
-                    ) hostDisks;
+                    # The DISK bar is the size-weighted average of every visible
+                    # mountpoint: with the 4 TB data drives in it, a 90 % full
+                    # system partition read 27 %. Only the system one is shown;
+                    # « État des hôtes » still warns about every full disk.
+                    mountpoints."${hostfs}/root" = {
+                      inherit (hostDisks.root) name;
+                      hide = false;
+                    };
                   }
                 ]
                 # Through the peer's Traefik (private gate). The agent picks

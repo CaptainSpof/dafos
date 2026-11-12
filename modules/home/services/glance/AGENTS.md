@@ -52,6 +52,10 @@
   key). Freebox CIFS shares are left out: statfs on an unreachable share hangs.
   With `hide-mountpoints-by-default`, every listed mountpoint needs
   `hide = false` or it is hidden too.
+  server-stats' DISK bar is the size-weighted average of the *visible*
+  mountpoints, so it lists only the system partition on dafoltop (the data
+  drives averaged a 90 % full `/` down to 27 %); « État des hôtes » covers
+  the rest.
 - UI strings are in French. Glance has no i18n, so the built-in labels
   (calendar, weather, "x hours ago") stay English.
 - **`engine` picks the nps stack**: `nps.stacks.<engine>`, whose one container
