@@ -26,13 +26,20 @@ in
     # lib.optional cfg.enable pkgs.discord
     home.packages =
       lib.optional cfg.canary.enable pkgs.dafos.discord
-      ++ lib.optional cfg.vesktop.enable pkgs.vesktop
       ++ lib.optional cfg.firefox.enable pkgs.dafos.discord-firefox;
 
     programs.vesktop = {
       # Vesktop/Vencord documentation
       # See: https://vencord.dev/
-      enable = true;
+      enable = cfg.vesktop.enable;
+
+      # Vesktop/Vencord write their settings at startup; a read-only store
+      # symlink gives EROFS and a blank transparent window. Merge instead.
+      mutableSettings = true;
+      vencord.mutableSettings = true;
+      # The Vencord bundled in vesktop 1.6.9 breaks on the current Discord
+      # client ("i.A is not a constructor": blank window). nixpkgs' vencord is newer.
+      vencord.useSystem = true;
 
       settings = {
         discordBranch = "stable";
