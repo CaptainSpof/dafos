@@ -21,18 +21,32 @@ daf in that language, even though this brief is in English.
 Do NOT load: <unrelated hosts, other services, the whole tree>
 
 ## Do
-1. <step>
+1. First, build on daf's lock: `cp ~/.config/dafos/flake.lock flake.lock && git
+   update-index --skip-worktree flake.lock`. Main often builds only with daf's
+   uncommitted lock, so without this a build fails on stale hashes (DMS,
+   dankcalendar).
 2. <step>
+3. <step>
 
 ## Deliver
 - <file(s) changed, or the answer written in your final message>
 - A local commit on your branch. Never push, merge or switch `dafoltop`.
-- Your commit stays on your worktree branch and is not in `~/.config/dafos`, so
-  a switch or deploy from there does not include it. Never give daf a switch or
-  deploy command as the next step: say the commit is on your branch and the hub
-  brings it into main, then give the test daf should do after the switch.
-- Never stage `flake.lock` unless the task is about it: nix commands rewrite it
-  in a worktree.
+- Once your check passes, cherry-pick your commit(s) into daf's main checkout
+  yourself (standing go from daf, 2026-11-16):
+  `git -C ~/.config/dafos cherry-pick <sha>...`, then verify it is identical:
+  `git -C ~/.config/dafos diff HEAD~1 HEAD | diff - <(git show <sha> --format=)`
+  (empty output). Never cherry-pick a commit that touches `flake.lock` or a
+  file daf has uncommitted there (`git -C ~/.config/dafos status --short`);
+  treat that like a conflict. If an index.lock error shows, another session is
+  picking: wait a few seconds and retry once.
+- On a conflict: `git -C ~/.config/dafos cherry-pick --abort` at once (never
+  leave main mid-pick), then end with `wrap_up`, asking "Résoudre le conflit
+  de <sha> dans main ?" with a "Résoudre" button first. On daf's yes, rebase
+  your branch onto local `main`, resolve, re-run the check, and cherry-pick
+  again.
+- Then give daf the switch or deploy command and the test to do after it.
+- `flake.lock` stays `skip-worktree` and is never committed, unless the task is
+  about the lock itself (then `--no-skip-worktree` first).
 
 ## Check
 <one concrete check: `nix eval …` / `nix build …` / an HA state read / daf

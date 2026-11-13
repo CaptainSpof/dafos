@@ -54,6 +54,9 @@ every row stays reachable. When unsure between two rows, take the higher one.
   table, a short `name`.
 - `prompt` = the filled brief; `background` = daf's goal in two or three
   sentences (≥ 80 characters).
+- `source_branch: "main"` (the local ref, never `origin/main`), so the child
+  starts from daf's local state; the brief's first step copies his
+  uncommitted `flake.lock`.
 - `use_worktree: true` for any edit (the main checkout is often dirty);
   `false` only for read-only tasks.
 - `wake_when_done: true`, so the hub resumes to run the check.
@@ -68,14 +71,19 @@ When the child ends its turn:
    main...<branch> --stat`, or the live state for Home Assistant (skill API).
 2. Run the brief's `Check` line yourself, or confirm the child ran it and
    quote the output.
-3. After review, cherry-pick the child's commit into main of `~/.config/dafos`
-   without asking (standing go from daf, 2026-11-09; the one exception to
-   rule 1). Stop and tell daf if the cherry-pick conflicts or touches a file
-   daf has uncommitted. Never push without a separate go for that push.
-4. Report to daf: what now works, that the commit is in main, the switch
-   command, what is not verified, and the one decision left (deploy, push), as
-   a question.
-5. A failed check goes back to the same child with `SendMessage`, never to a
+3. The child cherry-picks its own commit into main once its check passes
+   (standing go from daf, 2026-11-16; brief "Deliver"). Confirm it landed:
+   `.claude/bin/unmerged-children` lists, per `claude/*` branch, commits whose
+   change is not in main. Run it on every turn a child report triggers, and at
+   any "where are we".
+4. A child commit still not in main: if the child reported a conflict, its own
+   `wrap_up` already offers "Résoudre"; relay that it waits on daf. Otherwise
+   (child forgot, or skipped because it touched a file daf has uncommitted)
+   send it back to the child with `SendMessage`. Never push without a separate
+   go for that push.
+5. Report to daf: what now works, that the commit is in main (or why not), the
+   switch/deploy command, and what is not verified.
+6. A failed check goes back to the same child with `SendMessage`, never to a
    new one.
 
 ## Status

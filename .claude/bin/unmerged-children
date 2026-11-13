@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+"""List claude/* branches that still hold commits not in main, and those commits.
+
+`git cherry` fails after a squash or a cherry-pick edit, so a commit is "in main" when:
+1. a commit with the same subject is in main's log, a backup/pre-squash* branch or
+   main's reflog (covers cherry-picks and later rewrites); else
+2. content fallback: for every file it touches, main's file equals the file at that
+   commit, or every non-trivial added line is in main's file and removed ones are gone.
+Branches with a tip older than DAYS (default 14) and the checked-out branch are skipped.
+shortcut: same-subject match can hide a reworked commit; judge by eye.
+Usage: unmerged-children [-d DAYS] [base=main]   (output: branch, sha, subject, age)
+"""
+import subprocess, sys, time
+
+args = sys.argv[1:]
+days = 14
+if args[:1] == ["-d"]:
+    days, args = int(args[1]), args[2:]
+base = args[0] if args else "main"
+
+
+def git(*a):
+    return subprocess.run(["git", *a], capture_output=True, text=True).stdout
+
+
+def lines(blob):
+    return {l.strip() for l in blob.splitlines() if len(l.strip()) > 3}
+
+
+def in_base(c):
+    for f in git("diff", "--name-only", f"{c}^", c).split("\n"):
+        if not f:
+            continue
+        at_c, at_b = git("show", f"{c}:{f}"), git("show", f"{base}:{f}")
+        if at_c == at_b:
+            continue
+        bl = lines(at_b)
+        for l in git("diff", "-U0", f"{c}^", c, "--", f).splitlines():
+            if l.startswith(("+++", "---")) or not l[:1] in "+-":
+                continue
+            if (l[1:].strip() in bl) != (l[0] == "+") and len(l[1:].strip()) > 3:
+                return False
+    return True
+
+
+known = set(git("log", "--format=%s", base).splitlines())
+for ref in ["reflog:" + base] + git("for-each-ref", "--format=%(refname)", "refs/heads/backup/pre-squash*").split():
+    out = git("log", "-g", "--format=%gs", base) if ref.startswith("reflog:") else git("log", "--format=%s", ref)
+    known |= set(out.splitlines())
+# reflog subjects are "commit: <subject>" / "cherry-pick: <subject>"
+known |= {x.split(": ", 1)[1] for x in list(known) if ": " in x}
+
+head = git("branch", "--show-current").strip()
+now = time.time()
+for br in git("for-each-ref", "--format=%(refname:short)", "refs/heads/claude/*").split():
+    if br == head or now - int(git("show", "-s", "--format=%ct", br)) > days * 86400:
+        continue
+    for c in git("rev-list", "--reverse", "--no-merges", f"{base}..{br}").split():
+        sha, subj, ts = git("show", "-s", "--format=%h%x09%s%x09%ct", c).strip().split("\t")
+        if subj in known or in_base(c):
+            continue
+        print(f"{br.removeprefix('claude/')}\t{sha}\t{subj}\t{int((now - int(ts)) / 86400)}d")
