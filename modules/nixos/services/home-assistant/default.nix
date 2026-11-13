@@ -96,6 +96,9 @@ let
   # dafbox in use at the desk, ground floor left empty (heating).
   deskPresence = import ./desk_presence.nix { };
 
+  # Weekly HelloFresh box status (Stream Deck HelloFresh menu).
+  hellofresh = import ./hellofresh.nix { };
+
   # Custom components must be built against the same interpreter/package set as
   # the home-assistant package itself (this is what buildHomeAssistantComponent
   # uses internally). Never hardcode pkgs.pythonXYPackages here — it silently
@@ -538,7 +541,8 @@ in
             ++ heatingController.automations
             ++ trvExternalSensors.automations
             ++ co2.automations
-            ++ divoom.automations;
+            ++ divoom.automations
+            ++ hellofresh.automations;
           "automation ui" = "!include automations.yaml";
           "scene ui" = "!include scenes.yaml";
           "script ui" = "!include_dir_merge_named scripts/";
@@ -573,7 +577,7 @@ in
 
           input_boolean =
             import ./sensors/input_booleans.nix // origami.input_boolean // airQuality.input_boolean;
-          inherit (heatingController) input_select;
+          input_select = heatingController.input_select // hellofresh.input_select;
           input_datetime =
             import ./sensors/input_datetimes.nix // netatmoWatchdog.input_datetime // pellets.input_datetime;
           inherit (pellets) input_button;

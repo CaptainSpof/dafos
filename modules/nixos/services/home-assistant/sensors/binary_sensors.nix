@@ -107,4 +107,24 @@
     state = "{{ is_state('binary_sensor.entry_door_sensor_opening', 'on') }}";
     delay_off.minutes = 60;
   }
+  {
+    name = "Maison · Autres présents";
+    unique_id = "dafos.binary_sensor.global_others_home";
+    default_entity_id = "binary_sensor.global_others_home";
+    device_class = "presence";
+    # Someone other than Cédric is home (Stream Deck presence key). Same person
+    # filter as global_maybe_home_occupied above.
+    state = ''
+      {{ states.person
+         | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf', 'person.cedric_da_fonseca'])
+         | selectattr('state', 'in', ['home', 'House'])
+         | list | count > 0 }}
+    '';
+    attributes.who = ''
+      {{ states.person
+         | rejectattr('entity_id', 'in', ['person.kiosk', 'person.daf', 'person.cedric_da_fonseca'])
+         | selectattr('state', 'in', ['home', 'House'])
+         | map(attribute='name') | join(', ') }}
+    '';
+  }
 ]

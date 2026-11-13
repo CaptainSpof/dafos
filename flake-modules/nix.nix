@@ -106,6 +106,9 @@
             "https://vicinae.cachix.org" = {
               key = "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=";
             };
+            "https://nix-opendeck.cachix.org" = {
+              key = "nix-opendeck.cachix.org-1:twvVjvv6Xm9H/m9sD2YQfIDoeUZLWEX5CpokN2An9L8=";
+            };
           };
           description = "Extra substituters to configure.";
         };

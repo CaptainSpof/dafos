@@ -456,6 +456,7 @@ let
     dank-calendar.homeModules.dank-calendar
     dms-proofreader.homeModules.default
     dms-sidebar.homeModules.default
+    opendeck.homeManagerModules.default
   ];
 
   # homes/<system>/<user>@<host>

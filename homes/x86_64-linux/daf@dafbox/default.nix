@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  inputs,
   pkgs,
   namespace,
   ...
@@ -239,6 +240,33 @@ in
   dafos.desktop.dms.sidebar = {
     enable = true;
     rer = true;
+  };
+
+  # Elgato Stream Deck MK.2 (15 keys), github:missmoode/nix-opendeck (udev rules
+  # in the dafbox system config). Plugins are store links; profiles, icons and
+  # the HA plugin's token stay in ~/.config/opendeck, edited in place.
+  programs.opendeck = {
+    enable = true;
+    plugins = [
+      inputs.opendeck.legacyPackages.${pkgs.stdenv.hostPlatform.system}.opendeck-plugins.cgiesche.homeassistant
+      pkgs.${namespace}.opendeck-dafos
+    ];
+  };
+  systemd.user.services.opendeck = {
+    Unit = {
+      Description = "OpenDeck (Stream Deck)";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${lib.getExe config.programs.opendeck.package} --hide";
+      # Key commands are bare names (dms, wpctl, screenshot-ocr).
+      Environment = [
+        "PATH=/etc/profiles/per-user/${config.home.username}/bin:/run/current-system/sw/bin"
+      ];
+      Restart = "on-failure";
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 
   programs.niri.settings.input = {

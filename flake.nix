@@ -223,6 +223,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # OpenDeck (Stream Deck on dafbox) built from source, plus store-installed
+    # plugins and a Home Manager module. No nixpkgs.follows: its own pin is
+    # what nix-opendeck.cachix.org has built (Rust + Deno otherwise).
+    opendeck.url = "github:missmoode/nix-opendeck";
+
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs = {

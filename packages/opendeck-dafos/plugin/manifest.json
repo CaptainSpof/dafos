@@ -1,0 +1,23 @@
+{
+	"Name": "dafos",
+	"UUID": "me.daf.dafos",
+	"Author": "daf",
+	"Description": "Keys whose image follows a Home Assistant entity, and that switch page or call a service.",
+	"Version": "1.0.0",
+	"SDKVersion": 2,
+	"Icon": "icon",
+	"Category": "dafos",
+	"CodePathLin": "bin/dafos-plugin",
+	"OS": [{ "Platform": "linux", "MinimumVersion": "0" }],
+	"Software": { "MinimumVersion": "6.0" },
+	"Actions": [
+		{
+			"Name": "HA key",
+			"UUID": "me.daf.dafos.hakey",
+			"Icon": "icon",
+			"Tooltip": "Image follows a Home Assistant entity",
+			"DisableAutomaticStates": true,
+			"States": [{ "Image": "icon" }]
+		}
+	]
+}

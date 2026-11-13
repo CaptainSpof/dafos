@@ -10,38 +10,9 @@ with config.lib.niri.actions;
 let
   # binds.nix is imported without `pkgs`; the module system exposes it here.
   pkgs = config._module.args.pkgs;
-  # Region select -> OCR (French + English) -> text to the clipboard. The capture
-  # is upscaled x3: it fixes accents on small UI text. Cancelling the selection is
-  # silent and leaves the clipboard alone, as does an empty result.
-  screenshotOcr = pkgs.writeShellApplication {
-    name = "screenshot-ocr";
-    runtimeInputs = [
-      pkgs.grim
-      pkgs.slurp
-      pkgs.wl-clipboard
-      pkgs.libnotify
-      pkgs.coreutils
-      pkgs.gnused
-      (pkgs.tesseract.override {
-        enableLanguages = [
-          "fra"
-          "eng"
-        ];
-      })
-    ];
-    text = ''
-      # niri may spawn us with no UTF-8 locale; the preview must count characters.
-      export LC_ALL=C.UTF-8
-      region=$(slurp) || exit 0
-      text=$(grim -s 3 -g "$region" - | tesseract stdin stdout -l fra+eng 2>/dev/null | tr -d '\f' | sed -e 's/[[:space:]]*$//' || true)
-      if [ -z "$text" ]; then
-        notify-send -a screenshot-ocr "OCR" "Aucun texte reconnu"
-        exit 0
-      fi
-      printf '%s' "$text" | wl-copy
-      notify-send -a screenshot-ocr "Texte copié" "''${text:0:200}"
-    '';
-  };
+  # Region select -> OCR -> clipboard; packaged in packages/screenshot-ocr so the
+  # Stream Deck can run it too.
+  screenshotOcr = pkgs.dafos.screenshot-ocr;
   # Toggle a dux-shell named scratchpad. dux-shell only parks and shows existing
   # windows (it never spawns), so on "empty" we run `start`, wait for a window
   # matching the jq `match` filter, park it in the pad, then show it. `onShow`

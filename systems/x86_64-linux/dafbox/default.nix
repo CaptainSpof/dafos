@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   namespace,
@@ -178,8 +179,15 @@ in
   };
 
   # Vial remaps the Binepad BNR1 knob; the package's udev rule grants hidraw access.
-  environment.systemPackages = [ pkgs.vial ];
-  services.udev.packages = [ pkgs.vial ];
+  environment.systemPackages = [
+    pkgs.vial
+    pkgs.dafos.screenshot-ocr # run by a Stream Deck key
+  ];
+  services.udev.packages = [
+    pkgs.vial
+    # OpenDeck (Home Manager, homes/…/daf@dafbox) talks to the Stream Deck over hidraw.
+    inputs.opendeck.packages.${pkgs.stdenv.hostPlatform.system}.opendeck.udev
+  ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
