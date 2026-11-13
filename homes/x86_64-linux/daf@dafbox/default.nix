@@ -14,7 +14,10 @@ let
 in
 {
   # Reports outdated Nexus Mods archives (see packages/nexus-mod-check).
-  home.packages = [ pkgs.${namespace}.nexus-mod-check ];
+  home.packages = [
+    pkgs.${namespace}.nexus-mod-check
+    pkgs.${namespace}.deck-audio # Stream Deck Audio page
+  ];
 
   dafos = {
     user = {
