@@ -125,6 +125,8 @@ in
         health-push
         kaneo
         kitchenowl
+        litellm
+        litellm-stack
         it-tools
         karakeep
         norish
@@ -172,6 +174,8 @@ in
           kaneo.enable = true;
           karakeep.enable = true;
           kitchenowl.enable = true;
+          # llm.daftdaf.dev: X-Ray (Kobo) → dafbox Ollama, with a request log.
+          litellm.enable = true;
           bar-assistant.enable = true;
           norish = {
             enable = true;

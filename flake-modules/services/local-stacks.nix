@@ -16,8 +16,16 @@ let
     name:
     let
       file = "${dir}/${name}/default.nix";
+    
+      module = import file;
     in
-    lib.setDefaultModuleLocation file (args: import file (args // { inherit inputs; }));
+    # Keep the stack's formal args visible: the module system only passes the
+    # ones a function names (pkgs, …), so a bare `args:` would get none.
+    lib.setDefaultModuleLocation file (
+      lib.setFunctionArgs (args: module (args // { inherit inputs; })) (
+        removeAttrs (lib.functionArgs module) [ "inputs" ]
+      )
+    );
 in
 {
   flake.modules.homeManager = lib.genAttrs' names (
