@@ -52,7 +52,10 @@ in
                 "sbc"
                 "sbc_xq"
                 "aac"
+                "ldac"
               ];
+              # adaptive bitrate (330/660/990 kbit/s by link quality); "hq" locks 990 and stutters on a weak link
+              "bluez5.a2dp.ldac.quality" = "auto";
             };
           };
         };
