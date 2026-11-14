@@ -178,6 +178,14 @@ in
     ];
   };
 
+  # Big substitutions (30 GB between two switches) decompress and write to
+  # /nix at normal priority and made the desktop stutter. Run the daemon
+  # behind the desktop and cap the parallel downloads.
+  nix.daemonCPUSchedPolicy = "idle";
+  nix.daemonIOSchedClass = "idle";
+  nix.settings.max-substitution-jobs = 4;
+  nix.settings.http-connections = mkForce 25;
+
   # Vial remaps the Binepad BNR1 knob; the package's udev rule grants hidraw access.
   environment.systemPackages = [
     pkgs.vial
