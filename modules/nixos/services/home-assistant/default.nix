@@ -518,6 +518,11 @@ in
             temperature_unit = "C";
           };
 
+          # Unused and empty (ui-lovelace.yaml does not exist). Since 2026.11 HA
+          # logs "Failed to create dashboard entry during migration"
+          # (url_already_exists) on every start: it tries to turn the old UI
+          # Overview in .storage/lovelace into a storage dashboard at this url.
+          # Harmless; dropping this entry would bring that old dashboard back.
           lovelace.dashboards.lovelace = {
             title = "Overview";
             icon = "mdi:view-dashboard";
