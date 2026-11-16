@@ -110,7 +110,7 @@
     # string in modules/nixos/services/home-assistant) only move deliberately —
     # tracking `main` broke the build when 7.1.27 moved to `pytapo==3.4.19`.
     hass-tapo-control = {
-      url = "github:JurajNyiri/homeAssistant-Tapo-Control/7.1.27";
+      url = "github:JurajNyiri/homeAssistant-Tapo-Control/7.2.14";
       flake = false;
     };
 

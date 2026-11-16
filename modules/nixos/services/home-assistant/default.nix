@@ -105,16 +105,16 @@ let
   # splits the package set the day HA moves to a new interpreter.
   hassPythonPkgs = pkgs.home-assistant.python3Packages;
 
-  # tapo_control 7.1.27 pins `pytapo==3.4.19`; nixpkgs still ships 3.4.18, so
-  # manifestRequirementsCheckHook fails the component build. 3.4.19 has the same
-  # dependency set as 3.4.18 (requests, urllib3, pycryptodome, rtp, python-kasa),
-  # so a version+src bump is enough. Drop this once nixpkgs catches up.
+  # tapo_control 7.2.14 pins `pytapo==3.4.31`; nixpkgs ships 3.4.19, so
+  # manifestRequirementsCheckHook fails the component build. 3.4.31 has the same
+  # dependency set (requests, urllib3, pycryptodome, rtp, python-kasa), so a
+  # version+src bump is enough. Drop this once nixpkgs catches up.
   pytapo = hassPythonPkgs.pytapo.overrideAttrs (old: rec {
-    version = "3.4.19";
+    version = "3.4.31";
     src = pkgs.fetchPypi {
       inherit (old) pname;
       inherit version;
-      hash = "sha256-iwF7f5pwcYFBw6mPQw2YgRIcElqrcTMpzGCNJsttJY8=";
+      hash = "sha256-LJtXLFrM18nO3Kvq5PGjaRWQx1jcf7rR77BuPo/j78M=";
     };
   });
 
@@ -376,17 +376,13 @@ in
             domain = "tapo_control";
             # Keep in sync with the tag `inputs.hass-tapo-control` is pinned to
             # in flake.nix (and with the version in its manifest.json).
-            version = "7.1.27";
+            version = "7.2.14";
             src = inputs.hass-tapo-control;
-            # manifest.json pins `python-kasa==0.10.2`, nixpkgs ships 0.11. No
-            # module of 7.1.27 imports kasa; upstream relaxed the pin to
-            # `>=0.10.2` in 7.2.8. Drop this when bumping past it.
-            ignoreVersionRequirement = [ "python-kasa" ];
             dontConfigure = true;
             dontBuild = true;
             doCheck = false;
 
-            # `pytapo` here is the let-bound 3.4.19 override, not
+            # `pytapo` here is the let-bound 3.4.31 override, not
             # hassPythonPkgs.pytapo — see the comment on it above.
             propagatedBuildInputs = [
               pytapo

@@ -718,16 +718,16 @@
     "hass-tapo-control": {
       "flake": false,
       "locked": {
-        "lastModified": 1788869357,
-        "narHash": "sha256-sirYqNpY3+nC3Pek8P0Vs/XEr87iO77jWUp1kN0QkRQ=",
+        "lastModified": 1794565199,
+        "narHash": "sha256-n7df1soMwDWCzmanxwttP/nFLz44x3JLjIZ/d2pwRRw=",
         "owner": "JurajNyiri",
         "repo": "homeAssistant-Tapo-Control",
-        "rev": "1b7a7d6fa671047d04c092fee4f0e7bed1b8ee58",
+        "rev": "416f25c068b92aa1381f3652563e4d3ea9f12983",
         "type": "github"
       },
       "original": {
         "owner": "JurajNyiri",
-        "ref": "7.1.27",
+        "ref": "7.2.14",
         "repo": "homeAssistant-Tapo-Control",
         "type": "github"
       }
