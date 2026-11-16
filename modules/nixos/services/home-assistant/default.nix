@@ -298,7 +298,6 @@ in
           "mqtt"
           "netatmo"
           "onvif"
-          "openai_conversation"
           "ollama"
           "radarr"
           "roborock"
