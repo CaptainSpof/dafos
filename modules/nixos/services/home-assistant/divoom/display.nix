@@ -375,7 +375,16 @@ in
       conditions = [
         "{{ trigger.id != 'dst' or (now() - timedelta(hours=2)).utcoffset() != now().utcoffset() }}"
       ];
-      actions = [ (divoom "datetime" { }) ];
+      actions = [
+        # Bluetooth is not up yet when Home Assistant has just started: the
+        # first attempt at 15:11 gave up after 3 tries
+        {
+          alias = "Attendre que le Bluetooth du Divoom soit prêt après le démarrage";
+          "if" = [ "{{ trigger.platform == 'homeassistant' }}" ];
+          "then" = [ { delay.seconds = 60; } ];
+        }
+        (divoom "datetime" { })
+      ];
     }
   ];
 }
