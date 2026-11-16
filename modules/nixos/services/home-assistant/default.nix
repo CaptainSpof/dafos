@@ -321,7 +321,6 @@ in
         # isal python package, so the module pulls it in on its own.
 
         customComponents = with pkgs.home-assistant-custom-components; [
-          average
           alarmo
           adaptive_lighting
           # nixpkgs' auth_oidc runs `npm run css` to build the login page
@@ -336,7 +335,6 @@ in
               "test_login_without_person_create_does_not_create_person"
             ];
           }))
-          better_thermostat
           # Events, snapshots and sensors from Frigate (modules/home/services/
           # frigate). Config flow, URL http://127.0.0.1:5000.
           frigate
