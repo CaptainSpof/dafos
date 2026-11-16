@@ -6,24 +6,23 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "lovelace-origami-weather";
-  version = "1.6";
+  version = "1.6.1";
 
   src = fetchFromGitHub {
     owner = "hazymorning";
     repo = "origami_weather";
     rev = "V${version}";
-    hash = "sha256-ymtSQRfvdWf+XUjqIQ+QD5WxUs0L1znRRHGp0Uboxgk=";
+    hash = "sha256-U24zKC63wxiAWAwMkwC58pCMhD1W0lC/k7m+8I/ztVY=";
   };
 
   dontBuild = true;
 
-  # The card imports its assets, presets and editor by relative URL, so they
-  # sit next to it, nested under one subdir like lovelace-idf-mobilite.
+  # Since 1.6.1 the card ships as one bundle in dist/. It keeps its subdir so
+  # the registered resource URL does not change.
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/origami-weather
-    cp -v *.js $out/origami-weather/
+    install -Dm644 dist/origami-weather.js $out/origami-weather/origami-weather.js
 
     runHook postInstall
   '';

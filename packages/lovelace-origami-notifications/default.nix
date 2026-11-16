@@ -6,13 +6,13 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "lovelace-origami-notifications";
-  version = "1.4.1";
+  version = "1.6.0";
 
   src = fetchFromGitHub {
     owner = "hazymorning";
     repo = "origami_notifications";
     rev = "v${version}";
-    hash = "sha256-T+YexlqyMYXiIxjLLFLkBEqDDOeLfsxM0br0vUKJNkM=";
+    hash = "sha256-5lO+CDgVOXo5+MzS2cjf88HfWvvcupPOs08D36vzDBs=";
   };
 
   dontBuild = true;

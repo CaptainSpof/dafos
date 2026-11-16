@@ -356,12 +356,12 @@ in
           (pkgs.buildHomeAssistantComponent rec {
             owner = "d03n3rfr1tz3";
             domain = "divoom";
-            version = "1.5.1";
+            version = "1.5.2";
             src = pkgs.fetchFromGitHub {
               inherit owner;
               repo = "hass-divoom";
               rev = "v${version}";
-              hash = "sha256-Gt8OQtEi2bidALCz6sQ8Z0Tcc7Aqww3sa1PSbUoR1JU=";
+              hash = "sha256-e6y3Joo4U/57J4VVNa0PByRWAQ6gzrwRvH6sU7/I694=";
             };
             dontConfigure = true;
             dontBuild = true;
