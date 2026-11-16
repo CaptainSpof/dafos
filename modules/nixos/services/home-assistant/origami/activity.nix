@@ -89,7 +89,9 @@ let
           icon = "mdi:account";
           state = "on";
           auto_off = "00:${toString holdMinutes}:00";
-          attributes.source = "{{ state_attr(trigger.entity_id, 'friendly_name') or trigger.entity_id }}";
+          # State triggers only, so to_state is set; .name avoids the friendly_name
+          # attribute that HA 2026.11 plans to deprecate.
+          attributes.source = "{{ trigger.to_state.name }}";
         }
       ];
     };
