@@ -454,6 +454,8 @@ in
           mushroom
           navbar-card
           pkgs.dafos.lovelace-auto-entities
+          # Agenda pop-up on Maison (Google calendars + donetick chores).
+          pkgs.dafos.lovelace-eventide
           pkgs.dafos.lovelace-idf-mobilite
           pkgs.dafos.lovelace-layout-card
           pkgs.dafos.lovelace-origami
