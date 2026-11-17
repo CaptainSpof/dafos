@@ -11,7 +11,7 @@ let
   inherit (lib) mkIf;
   inherit (lib.${namespace}) mkBoolOpt mkOpt;
 
-  dmsShell = inputs.dank-material-shell.packages.${pkgs.stdenv.hostPlatform.system}.dms-shell;
+  dmsShell = lib.${namespace}.mkDmsShell pkgs inputs;
 
   matugenConfigDir = "${config.xdg.configHome}/matugen";
 
