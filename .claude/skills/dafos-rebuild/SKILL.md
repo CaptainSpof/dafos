@@ -39,7 +39,7 @@ To inspect what an option actually resolved to across the archetype/suite chain:
 
 ```bash
 nix eval '.#nixosConfigurations.<host>.config.dafos.services.foo' --json | jq
-nix eval '.#homeConfigurations."daf@<host>".config.dafos.programs.ai' --json | jq
+nix eval '.#nixosConfigurations.<host>.config.home-manager.users.daf.dafos.programs.ai' --json | jq
 ```
 
 ## 3. Build
@@ -54,7 +54,7 @@ them only when the change is in a shared module or in `lib/`.
 Home Manager alone:
 
 ```bash
-nix build '.#homeConfigurations."daf@<host>".activationPackage'
+nix build '.#nixosConfigurations.<host>.config.home-manager.users.daf.home.activationPackage'
 ```
 
 ## 4. Prove it changed something

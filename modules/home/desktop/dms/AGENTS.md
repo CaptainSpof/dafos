@@ -114,8 +114,8 @@ dafbox and daftop do not share a bar layout, and **this module holds no host
 names**. [bar.nix](bar.nix) publishes building blocks — `mainBar`, `sideBar`,
 `controlCenterWidgets`, `dockConfigs` — as `dafos.desktop.dms.bar.parts`. Each
 host assembles its own `bar.configs` from those in its
-`homes/daf@<host>/default.nix`, which is also where the display names and panel
-models live.
+[`homes/x86_64-linux/daf@<host>/default.nix`](../../../../homes/AGENTS.md),
+which is also where the display names and panel models live.
 
 `sideBar` deliberately ships without `screenPreferences`: which panel it belongs
 on is precisely what the hosts disagree about. When a second field starts to

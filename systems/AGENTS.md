@@ -2,7 +2,8 @@
 
 `systems/<arch>/<host>/default.nix` owns hardware facts, hostname and network
 identity, boot configuration, archetype selection, and host-only overrides.
-Anything reusable belongs in `modules/`. Generated hardware output stays in the
+Anything reusable belongs in `modules/`; daf's per-host Home Manager choices
+live in [../homes](../homes/AGENTS.md). Generated hardware output stays in the
 host's `hardware.nix`; where a host uses disko, the filesystem declarations live
 in its `disko.nix` and `hardware.nix` must not also declare them.
 

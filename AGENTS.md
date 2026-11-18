@@ -83,6 +83,8 @@ the `enabled`/`disabled` shortcuts and `mkDeploy`. See
   and the Snowfall compat layer
 - [modules/AGENTS.md](modules/AGENTS.md) — module conventions, option ownership
 - [systems/AGENTS.md](systems/AGENTS.md) — host configuration and validation
+- [homes/AGENTS.md](homes/AGENTS.md) — per-host Home Manager config (suites,
+  service toggles, DMS layout)
 - [lib/AGENTS.md](lib/AGENTS.md) — custom library namespaces
 - [packages/AGENTS.md](packages/AGENTS.md) — local package discovery and
   vendoring
