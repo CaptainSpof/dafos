@@ -1,0 +1,115 @@
+# dafoltop: disks and network
+
+Rationale and procedures behind the rules in [AGENTS.md](AGENTS.md). Read the
+section for the part you are touching.
+
+## Disks
+
+`/`, `/boot` and `/home` are on the internal NVMe and stay hand-written UUID
+entries in [hardware.nix](hardware.nix) — the inverse of dafbox. That is
+deliberate: adopting the live ext4 root into disko would be a destructive
+reinstall of the live house. disko owns only the two USB disks, which sit in a
+FIDECO dual-bay dock:
+
+| File                                 | Disk                         | Mount         |
+| ------------------------------------ | ---------------------------- | ------------- |
+| [disko.nix](disko.nix)               | 4 TB IronWolf, btrfs `media` | `/mnt/data`   |
+| [disko-backup.nix](disko-backup.nix) | 1 TB Samsung, btrfs `backup` | `/mnt/backup` |
+
+- **Run disko in file mode, one file at a time** (`--mode destroy|format` on
+  `disko.nix` or `disko-backup.nix` alone, with `--dry-run` first). Pointed at
+  the flake, destroy and format act on _every_ disk in the config, and the flake
+  mode ignores `--root-mountpoint`. Only the intended `by-id` path may appear in
+  the printed script.
+- **Never hot-add, hot-remove or GUI-eject a drive while the other is in use.**
+  The dock drops both. `/mnt/data` unmounts and the nine media containers keep
+  running on stale mounts: `systemctl start mnt-data.mount`, then
+  `systemctl --user restart` them. `/mnt/backup` needs
+  `systemctl start mnt-backup.mount` too; the NFS and REST servers follow their
+  mount by themselves.
+- **Identify disks by `by-id`, never `sdX`** (the names swap when the dock
+  re-enumerates). The bridge reports an all-zero serial, so `usb-ASMT…-0:0` and
+  `-0:1` name the bays, not the drives; the Samsung uses its `ata-` id.
+- **Both mounts are `nofail`**, with a 10 s device timeout on `/mnt/data` and 60
+  s on `/mnt/backup` (the Samsung spins up slowly: at 10 s the boot-time mount
+  gave up before the disk appeared, 2026-10-02). Booting without the dock is
+  tested: the nine media containers (jellyfin, sonarr, radarr, qbittorrent,
+  bazarr, qui, prowlarr, bookorbit, grimmory) fail closed with `start-limit-hit`
+  and everything else comes up. After the dock returns:
+  `systemctl start mnt-data.mount`, `systemctl --user reset-failed` the nine (a
+  plain start is refused), then start them.
+- **One btrfs subvolume holds all media.** `link()` returns EXDEV across
+  subvolumes and across bind mounts, so Sonarr/Radarr cannot hardlink between
+  `/mnt/data/yahrr` and `/mnt/data/Shows` as mounted today; the plan relies on
+  reflinks (same filesystem, shared extents). The one import since the move
+  (Radarr, 2026-10-03) left no duplicate: the download was gone and the library
+  file was fully exclusive. Reflink sharing itself has never been observed.
+- **No redundancy.** A scrub on a single device detects bad data but cannot
+  repair it, so the backups are the recovery path.
+- Nothing is backed up from `/mnt/data` (re-acquirable media). State is backed
+  up nightly to `/mnt/backup`: see
+  [../../../flake-modules/services/backup/README.md](../../../flake-modules/services/backup/README.md).
+- `/mnt/backup` is also **dafpi's backup target**: its restic REST server
+  (`/mnt/backup/rest-server`, append-only, tailnet only, see
+  [backup-server.nix](../../../flake-modules/services/backup/backup-server.nix))
+  lives on the Samsung, so that one 15-year-old disk now carries two hosts'
+  backups and there is no second copy yet. The server is `WantedBy` the mount
+  (not `multi-user.target`): it stops when the disk drops and starts when the
+  mount returns, tested 2026-10-09.
+- `/mnt/data` is exported read-only over NFSv4 to dafbox
+  ([media-export](../../../modules/nixos/services/media-export/default.nix)):
+  TCP 2049 is open only to the listed LAN addresses (dafbox's depends on a DHCP
+  lease, so pin it in Freebox OS), plus the tailnet. The server is tied to the
+  `/mnt/data` mount, so it stops when the dock drops and starts when the mount
+  returns.
+- **Immich's data is split by bind mounts over `/var/lib/immich`** (module
+  options `originalsPath` and `derivedPath`; `IMMICH_MEDIA_LOCATION` and every
+  path in its database are unchanged): `upload/` and `library/` (the originals)
+  come from `/mnt/data/immich`, `thumbs/`, `encoded-video/` and `backups/` from
+  `/home/immich-data` on the NVMe (thumbnails are ~0.7 MB per photo), `profile/`
+  and Postgres stay on the root. `immich-server` requires the mounts, so with
+  the dock missing it fails and alerts instead of writing to the root, and it is
+  wanted by `mnt-data.mount`, so it returns after a drop. Create the source
+  directories by hand, never with tmpfiles: on a missing disk that would
+  recreate them on the root and defeat the guard. Moved 2026-10-12; the old
+  copies sit in `/var/lib/immich/*.old` until a backup night has passed.
+- The Freebox is no longer primary storage. Its CIFS mounts in `hardware.nix`
+  are still declared but nothing uses them. The share is `sec=none`, readable by
+  anyone on the LAN, so never put anything unencrypted on it.
+
+## Network identity
+
+- The address `192.168.0.10` is keyed on the Freebox DHCP lease for the USB
+  ethernet adapter's MAC. blocky binds it and dafbox uses it as its DNS server.
+  `hardware.nix` clones that MAC onto whichever ethernet device NetworkManager
+  brings up, so replacing the adapter keeps the address.
+- The LAN link is the declared NetworkManager profile `lan` (interface
+  `enp0s20f0u1u2`), whose only addition is the `~daftdaf.dev` routing domain:
+  resolved sends `*.daftdaf.dev` to the link's blocky servers only. Do not
+  replace the global public resolvers with blocky here: the rootless containers'
+  DNS forwards to the host's upstream list, and from inside them `192.168.0.10`
+  is their own address, so they would depend on dafpi alone.
+- **No IPv6 on this host** (qbittorrent must only leave through gluetun's VPN),
+  and `enableIPv6 = false` does not enforce it: NetworkManager re-enables it per
+  link, and that option also leaves the firewall without any ip6tables rule, so
+  a link with IPv6 is **unfiltered**. Every NetworkManager profile here sets
+  `ipv6.method = disabled` (the `lan` profile does; the auto-generated
+  `Wired connection 1` still in use until the next reboot and the undeclared
+  `DafWifi - 5Ghz` were changed by hand). A new profile (another Wi-Fi, a new
+  adapter) defaults to `auto` and reopens the hole. Check with
+  `ip -6 addr | grep global` (must be empty). blocky's IPv6 listener is dafpi's
+  alone.
+- **blocky waits for the address in its own oneshot**
+  (`blocky-wait-for-address`), not in `ExecStartPre`: blocky's sandbox has no
+  netlink, so `ip` inside the unit fails forever. This once took DNS down for 19
+  minutes. Test readiness changes under the unit's own restrictions
+  (`systemd-run -p RestrictAddressFamilies=…`).
+- Every `podman-*` user unit is ordered after `sops-nix.service` by a prefix
+  drop-in (`podman-.service.d`, in `flake-modules/security/sops.nix`), because
+  containers reading secrets raced it at boot. sd-switch does not see prefix
+  drop-ins, so a switch never restarts containers because of it. It is
+  `Wants=` + `After=`: on a switch, sd-switch starts new containers before the
+  `sops-nix` activation step, so `After=` alone ordered against nothing and a
+  new secret came out empty; `Wants=` runs the decryption first. Behind it, each
+  container that reads a sops path checks its files in a first `ExecStartPre`
+  (`wait-for-sops-secrets`, 60 s, then fails) rather than start with empty ones.
