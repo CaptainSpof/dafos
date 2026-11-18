@@ -47,15 +47,9 @@ built only from it). The rest is the legacy Snowfall layout: `systems/`,
 `homes/`, `modules/{nixos,home}/`, `packages/`, `overlays/`, `lib/`, `secrets/`,
 `shells/`, `checks/`. Read the tree rather than a description of it.
 
-Configuration composes in one direction:
-
-`archetypes` (workstation/gaming/server) → `suites` (common, desktop,
-development, games, graphics, music, office, photo, social, video, yahrr,
-common-slim) → `services`/`programs`/`apps`.
-
-Host `default.nix` files mostly toggle suites and override specifics with
-`lib.mkForce`. To find out what a host actually enables, follow the
-archetype/suite chain — never just the host file.
+Configuration composes archetypes → suites → services/programs/apps, so a host
+file alone never tells what a host enables: see
+[modules/AGENTS.md](modules/AGENTS.md), "Composition".
 
 ## Workflow
 
@@ -65,6 +59,11 @@ sudo nixos-rebuild switch --flake .#<host>         # local
 deploy -s .#<host> --interactive-sudo true         # remote (deploy-rs CLI; -s: checks.pre-commit-hooks is broken)
 ```
 
+**Switching and deploying are daf's to run.** Agents have no sudo on the fleet:
+build and check the change (`dafos-rebuild` skill), then hand daf the exact
+command above. Without `--interactive-sudo true`, sudo cannot prompt and
+deploy-rs rolls back.
+
 **Never push without the user's explicit go for that push.** Committing locally
 is fine; `git push` (any branch, any remote) waits until the user says to push
 those commits. An earlier "push" does not cover later commits.
@@ -72,10 +71,6 @@ those commits. An earlier "push" does not cover later commits.
 `direnv`/`use flake` is set up, so `nix develop` auto-activates here. Pre-commit
 hooks (git-hooks.nix) run treefmt (non-blocking), clang-tidy, luacheck and a
 sops-encryption check inside that shell.
-
-Custom helpers live under `lib.dafos.*`: option builders (`mkOpt`, `mkBoolOpt`),
-the `enabled`/`disabled` shortcuts and `mkDeploy`. See
-[lib/AGENTS.md](lib/AGENTS.md).
 
 ## Scoped guidance
 
@@ -85,7 +80,8 @@ the `enabled`/`disabled` shortcuts and `mkDeploy`. See
 - [systems/AGENTS.md](systems/AGENTS.md) — host configuration and validation
 - [homes/AGENTS.md](homes/AGENTS.md) — per-host Home Manager config (suites,
   service toggles, DMS layout)
-- [lib/AGENTS.md](lib/AGENTS.md) — custom library namespaces
+- [lib/AGENTS.md](lib/AGENTS.md) — `lib.dafos.*` helpers (`mkOpt`, `enabled`,
+  `mkDeploy`)
 - [packages/AGENTS.md](packages/AGENTS.md) — local package discovery and
   vendoring
 - [secrets/AGENTS.md](secrets/AGENTS.md) — sops-nix key groups and secret
@@ -100,6 +96,8 @@ the `enabled`/`disabled` shortcuts and `mkDeploy`. See
   aspects, where new services go
 - [modules/home/services/AGENTS.md](modules/home/services/AGENTS.md) —
   self-hosted service stack (nps, OIDC, storage)
+- [modules/home/stacks/AGENTS.md](modules/home/stacks/AGENTS.md) — local nps
+  stacks (Renovate pins, `vm-test.nix`)
 
 Deeper `AGENTS.md` files cover individual hosts and modules; the directory you
 are editing owns its own rules.
