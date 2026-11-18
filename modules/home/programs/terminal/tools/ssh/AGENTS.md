@@ -19,3 +19,12 @@ Freebox). Not a Nix host: SteamOS, configured by hand.
   command to run in his own session.
 - The Deck suspends and drops SSH; ask daf to wake it, or disable sleep while
   working.
+
+## From an agent session
+
+Inside a Claude session the `~/.ssh/config` symlink target in `/nix/store` shows
+as owned by `nobody` (user namespace), so OpenSSH refuses it: "Bad owner or
+permissions", exit 255. It is not a real permission problem; do not "fix" it
+here. Bypass the file:
+`ssh -F /dev/null -o IdentitiesOnly=yes -i ~/.ssh/daf@dafbox.pem deck@dafdeck`.
+Tools that call plain `ssh dafdeck` (modctl) fail the same way from a session.

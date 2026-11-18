@@ -24,3 +24,13 @@ is not the cause.
 `/etc/subgid` the namespace maps exactly one id, every file owned by anyone else
 is stored as 65534, and crun fails with `fchownat: Invalid argument` as soon as
 a container reproduces that ownership.
+
+## Podman majors: check for a leftover BoltDB first
+
+Podman 6 dropped BoltDB and refuses to start any container while
+`~/.local/share/containers/storage/libpod/bolt_state.db` exists, even when the
+live database is already `db.sql`. deploy-rs still reports success. On dafoltop
+(2026-11-01) every `podman-*` user unit failed. Before a podman major bump
+reaches a host, check for that file; if `db.sql` is the recent one, rename the
+bolt files, then `systemctl --user reset-failed` and start the units. daftop was
+never checked.
