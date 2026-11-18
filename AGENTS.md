@@ -26,6 +26,10 @@ any agent. Put provider-neutral rules in `AGENTS.md`, never in the importer.
 to the module or host it describes. Longer rationale goes in that directory's
 `README.md`, with a one-line rule plus a pointer in its `AGENTS.md`.
 
+Moving or renaming a file that guidance cites? `.claude/bin/check-agent-links`
+lists every link and backticked path in `AGENTS.md`, `README.md` and skills that
+no longer resolves; the pre-commit hook runs it on any `.md` commit.
+
 ## The fleet
 
 | Host       | System        | Role                                                                 | Desktop                           |

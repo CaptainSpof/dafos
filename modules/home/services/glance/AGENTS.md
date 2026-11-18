@@ -43,19 +43,19 @@
   child's status only shows in the parent's hover popover.
 - **nps's own docker-containers widgets are discarded** with `lib.mkForce` on
   `pages.home.columns.center.widgets`. Our widgets copy the shape of nps's
-  `modules/glance/extension.nix` (`modules/dynacat/extension.nix` generates the
-  same); recheck it after an nps bump.
+  [`modules/glance/extension.nix`](https://github.com/Tarow/nix-podman-stacks/blob/main/modules/glance/extension.nix)
+  ([`modules/dynacat/extension.nix`](https://github.com/Tarow/nix-podman-stacks/blob/main/modules/dynacat/extension.nix)
+  generates the same); recheck it after an nps bump.
 - **Page order is attribute-name order** (nps applies `attrValues`). `home`
   stays first, the rest are `p<N>-<slug>`.
 - **Disk usage = statfs on a bind-mounted directory.** Mount an empty or
   harmless directory from each filesystem, never `/` (it would expose daf's sops
   key). Freebox CIFS shares are left out: statfs on an unreachable share hangs.
   With `hide-mountpoints-by-default`, every listed mountpoint needs
-  `hide = false` or it is hidden too.
-  server-stats' DISK bar is the size-weighted average of the *visible*
-  mountpoints, so it lists only the system partition on dafoltop (the data
-  drives averaged a 90 % full `/` down to 27 %); « État des hôtes » covers
-  the rest.
+  `hide = false` or it is hidden too. server-stats' DISK bar is the
+  size-weighted average of the _visible_ mountpoints, so it lists only the
+  system partition on dafoltop (the data drives averaged a 90 % full `/` down to
+  27 %); « État des hôtes » covers the rest.
 - UI strings are in French. Glance has no i18n, so the built-in labels
   (calendar, weather, "x hours ago") stay English.
 - **`engine` picks the nps stack**: `nps.stacks.<engine>`, whose one container
