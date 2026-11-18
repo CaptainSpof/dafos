@@ -48,8 +48,11 @@ nix eval '.#nixosConfigurations.<host>.config.home-manager.users.daf.dafos.progr
 nix build '.#nixosConfigurations.<host>.config.system.build.toplevel'
 ```
 
-Hosts: `dafbox`, `dafoltop`, `daftop`. Build the host you changed. Build all of
-them only when the change is in a shared module or in `lib/`.
+Hosts: `dafbox`, `dafoltop`, `daftop` (legacy, x86_64) and `dafpi`, `dafrelay`
+(dendritic, aarch64; built on dafbox through binfmt, slower). Build the host you
+changed. Build all of them only when the change is in a shared module, an aspect
+several hosts import, or `lib/`. dafrelay's deliverable is also the image
+`.#packages.aarch64-linux.dafrelay-image` (see its `AGENTS.md`).
 
 Home Manager alone:
 
@@ -80,6 +83,10 @@ cleanup".
 
 ## 5. Apply
 
+**daf runs these, not you.** Agents have no sudo on the fleet: stop after the
+build and the closure check, and hand daf the exact command for the host,
+`--interactive-sudo true` included.
+
 ```bash
 sudo nixos-rebuild switch --flake .#<host>          # local
 deploy -s .#<host> --interactive-sudo true          # remote, deploy-rs CLI; -s skips `nix flake check`, whose pre-commit check fails repo-wide
@@ -89,7 +96,9 @@ deploy -s .#<host> --interactive-sudo true          # remote, deploy-rs CLI; -s 
 `dafos.security.doas.enable` is set. daf has no passwordless sudo, so remote
 deploys need `--interactive-sudo true`: without it activation cannot prompt,
 sudo fails and deploy-rs rolls back. The prompt also means a deploy stalls if
-run unattended.
+run unattended. dafpi builds on the Pi itself during a deploy (`remoteBuild`);
+dafrelay is off-site and unattended, so a change there must keep it reachable
+over Tailscale after a reboot.
 
 Prefer `nixos-rebuild test` when the change is risky and a reboot would recover
 it, and `nixos-rebuild build-vm` when the change touches boot or display
