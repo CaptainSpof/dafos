@@ -14,26 +14,30 @@ not as the plan.
 
 ## Pick the file first
 
-The path decides who can decrypt. From `.sops.yaml`:
+The path decides who can decrypt. The per-path key groups are listed in
+[secrets/AGENTS.md](../../../secrets/AGENTS.md) (rules in `.sops.yaml`); read
+that list rather than any copy of it. In short:
 
-| Path                             | Decryptable by                                                              |
-| -------------------------------- | --------------------------------------------------------------------------- |
-| `secrets/<name>.yaml`            | admin key only                                                              |
-| `secrets/dafoltop/<name>.yaml`   | admin + the dafoltop user and root keys + the dafbox user key (for editing) |
-| `secrets/daf/<name>.yaml`        | admin + all three user keys + all three host root keys                      |
-| `secrets/daftop/daf/<name>.yaml` | admin + the daftop user key                                                 |
+- only dafoltop reads it → `secrets/dafoltop/<name>.yaml`;
+- a dafpi app whose OIDC secret dafoltop's Authelia also hashes, or any file
+  both servers read → `secrets/dafoltop/<name>.yaml` **and** add `<name>` to the
+  shared list in the first `secrets/dafoltop/` rule of `.sops.yaml`;
+- only dafpi reads it → `secrets/dafpi/<name>.yaml`;
+- several hosts genuinely share it → `secrets/daf/<name>.yaml`.
 
-A secret consumed by a **NixOS** service must live somewhere the host root key
-can open. For anything that only runs on dafoltop that is `secrets/dafoltop/`;
-keep `secrets/daf/` for what several hosts genuinely share. A secret shared
-between a home-manager stack and a NixOS service — the Authelia/Immich and Home
-Assistant OIDC client secrets, for instance — must be readable by both the user
-key and the host key, which again means `secrets/dafoltop/`.
+`.sops.yaml` has no catch-all rule: a file anywhere else (`secrets/<name>.yaml`
+included) fails to encrypt, on purpose, because it would land on the lost admin
+key alone. Never add a rule that sends a file to `admin_daf` only.
+
+A secret consumed by a **NixOS** service must be in a file the host root key can
+open. A secret shared between a home-manager stack and a NixOS service (the
+Authelia/Immich and Home Assistant OIDC client secrets, for instance) must be
+readable by both the user key and the host key: `secrets/dafoltop/` is.
 
 ## Add or edit
 
 ```bash
-sops secrets/daf/<name>.yaml
+sops secrets/dafoltop/<name>.yaml
 ```
 
 sops decrypts into `$EDITOR` and re-encrypts on save. It picks the key group
@@ -43,11 +47,14 @@ configuration step.
 Then declare it on the consuming side:
 
 ```nix
-sops.secrets."<name>" = {
-  sopsFile = lib.snowfall.fs.get-file "secrets/daf/<name>.yaml";
-  # owner/mode only when the unit cannot use LoadCredential
-};
+# dendritic aspect (flake-modules/), the form for anything new
+sops.secrets."<name>".sopsFile = inputs.self + "/secrets/dafoltop/<name>.yaml";
+
+# legacy module (modules/), Snowfall helper
+sops.secrets."<name>".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/<name>.yaml";
 ```
+
+Add `owner`/`mode` only when the unit cannot use `LoadCredential`.
 
 Prefer systemd `LoadCredential` over pointing a service at `/run/secrets`
 directly — it is what lets a unit keep `DynamicUser`:
