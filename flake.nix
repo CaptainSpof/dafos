@@ -119,6 +119,12 @@
       flake = false;
     };
 
+    # Agent skill (ICM workspaces), linked into ~/.claude/skills by programs.ai.
+    icm-architect = {
+      url = "github:RinDig/icm-architect";
+      flake = false;
+    };
+
     donetick-hass = {
       url = "github:donetick/donetick-hass-integration/3f3d27b3b46750bfba83b3c7ff6786d0581fe567";
       flake = false;

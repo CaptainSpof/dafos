@@ -135,6 +135,11 @@ in
       source = ./claude-global.md;
     };
 
+    # The directory name must match the skill's `name` (icm-architect).
+    home.file.".claude/skills/icm-architect" = mkIf cfg.claude.code.enable {
+      source = inputs.icm-architect;
+    };
+
     # Register the nixos MCP server with each enabled Claude client. The config
     # files are rewritten by the apps at runtime, so we can't symlink them from
     # the store; instead we merge our entry in on activation.

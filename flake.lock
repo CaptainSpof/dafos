@@ -752,6 +752,22 @@
         "type": "github"
       }
     },
+    "icm-architect": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792808383,
+        "narHash": "sha256-cWdUgG8R+b+eanioSQ1Ovf+i4YEwimegqGHUPC3TMkE=",
+        "owner": "RinDig",
+        "repo": "icm-architect",
+        "rev": "8bc2f5610d3843b3ffa31a142effe6b6337fef3c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "RinDig",
+        "repo": "icm-architect",
+        "type": "github"
+      }
+    },
     "idf-mobilite-assistant": {
       "flake": false,
       "locked": {
@@ -1408,6 +1424,7 @@
         "git-hooks-nix": "git-hooks-nix",
         "hass-tapo-control": "hass-tapo-control",
         "home-manager": "home-manager",
+        "icm-architect": "icm-architect",
         "idf-mobilite-assistant": "idf-mobilite-assistant",
         "import-tree": "import-tree",
         "kwin-effects-better-blur-dx": "kwin-effects-better-blur-dx",
