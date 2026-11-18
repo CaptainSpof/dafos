@@ -19,29 +19,32 @@ its task needs, and ends at a check the hub runs before calling it done.
    knows nothing of this conversation.
 4. **Nothing is done until the hub's check passes** (section below). A child's
    report is a claim, not proof.
-5. **Never push, merge or deploy to `dafoltop` without daf's explicit go** for
-   that exact change (root [AGENTS.md](../../../AGENTS.md), Workflow).
+5. **Never push, or deploy to `dafoltop`, without daf's explicit go** for that
+   exact change (root [AGENTS.md](../../../AGENTS.md), Workflow). The one
+   standing exception is the child's cherry-pick of its own checked commit into
+   local `main` (Check, step 3); any other merge waits for daf.
 
 ## Route the task
 
-| Task touches | The child reads first | Skill to name in the brief |
-|---|---|---|
-| Home Assistant: entities, automations, dashboards, Zigbee, presence | `systems/x86_64-linux/dafoltop/AGENTS.md` | `dafos-home-assistant` |
-| A new or exposed self-hosted service | `modules/home/services/AGENTS.md` | `dafos-add-service` |
-| A password, token or key | `secrets/AGENTS.md` | `dafos-secrets` |
-| A host's configuration | `systems/AGENTS.md` + that host's `AGENTS.md` | `dafos-rebuild` |
-| A module, option or suite | `modules/AGENTS.md` (+ `flake-modules/AGENTS.md` if dendritic) | `dafos-rebuild` |
-| `lib/`, `packages/`, `templates/`, `esphome/`, `glove80/` | that folder's `AGENTS.md` | `dafos-rebuild` when Nix changes |
+| Task touches                                                        | The child reads first                                                  | Skill to name in the brief       |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------- |
+| Home Assistant: entities, automations, dashboards, Zigbee, presence | `systems/x86_64-linux/dafoltop/AGENTS.md`                              | `dafos-home-assistant`           |
+| A new or exposed self-hosted service                                | `flake-modules/services/AGENTS.md` + `modules/home/services/AGENTS.md` | `dafos-add-service`              |
+| A password, token or key                                            | `secrets/AGENTS.md`                                                    | `dafos-secrets`                  |
+| A host's configuration                                              | `systems/AGENTS.md` + that host's `AGENTS.md`                          | `dafos-rebuild`                  |
+| Desktop on a host: DMS, Niri, bars, per-host home settings          | `homes/AGENTS.md` + `modules/home/desktop/<dms\|niri>/AGENTS.md`       | `dafos-rebuild`                  |
+| A module, option or suite                                           | `modules/AGENTS.md` (+ `flake-modules/AGENTS.md` if dendritic)         | `dafos-rebuild`                  |
+| `lib/`, `packages/`, `templates/`, `esphome/`, `glove80/`           | that folder's `AGENTS.md`                                              | `dafos-rebuild` when Nix changes |
 
 Anything that changes Nix ends with `dafos-rebuild` (format, eval, build).
 
 ## Pick the model
 
-| Task | Model id | Effort |
-|---|---|---|
-| Read-only: audit, explain, list states, find where X is set | `claude-haiku-5-5` | low |
-| Routine change: toggle an option, add an automation, edit a dashboard, bump a package | `claude-sonnet-5-5` | medium |
-| Design, multi-host change, migration, debugging an unknown failure, anything live on `dafoltop` | `claude-opus-5-5` | high |
+| Task                                                                                            | Model id            | Effort |
+| ----------------------------------------------------------------------------------------------- | ------------------- | ------ |
+| Read-only: audit, explain, list states, find where X is set                                     | `claude-haiku-5-5`  | low    |
+| Routine change: toggle an option, add an automation, edit a dashboard, bump a package           | `claude-sonnet-5-5` | medium |
+| Design, multi-host change, migration, debugging an unknown failure, anything live on `dafoltop` | `claude-opus-5-5`   | high   |
 
 A child can only get the hub's model or a cheaper one: run the hub on Opus so
 every row stays reachable. When unsure between two rows, take the higher one.
@@ -55,10 +58,10 @@ every row stays reachable. When unsure between two rows, take the higher one.
 - `prompt` = the filled brief; `background` = daf's goal in two or three
   sentences (≥ 80 characters).
 - `source_branch: "main"` (the local ref, never `origin/main`), so the child
-  starts from daf's local state; the brief's first step copies his
-  uncommitted `flake.lock`.
-- `use_worktree: true` for any edit (the main checkout is often dirty);
-  `false` only for read-only tasks.
+  starts from daf's local state; the brief's first step copies his uncommitted
+  `flake.lock`.
+- `use_worktree: true` for any edit (the main checkout is often dirty); `false`
+  only for read-only tasks.
 - `wake_when_done: true`, so the hub resumes to run the check.
 
 Tell daf in one line: task, model, child name.
@@ -67,10 +70,12 @@ Tell daf in one line: task, model, child name.
 
 When the child ends its turn:
 
-1. Read what it left: `git -C <worktree> log --oneline -5` and `git diff
-   main...<branch> --stat`, or the live state for Home Assistant (skill API).
-2. Run the brief's `Check` line yourself, or confirm the child ran it and
-   quote the output.
+1. Read what it left: `git -C <worktree> log --oneline -5` and
+   `git diff
+   main...<branch> --stat`, or the live state for Home Assistant
+   (skill API).
+2. Run the brief's `Check` line yourself, or confirm the child ran it and quote
+   the output.
 3. The child cherry-picks its own commit into main once its check passes
    (standing go from daf, 2026-11-16; brief "Deliver"). Confirm it landed:
    `.claude/bin/unmerged-children` lists, per `claude/*` branch, commits whose
@@ -78,16 +83,16 @@ When the child ends its turn:
    any "where are we".
 4. A child commit still not in main: if the child reported a conflict, its own
    `wrap_up` already offers "Résoudre"; relay that it waits on daf. Otherwise
-   (child forgot, or skipped because it touched a file daf has uncommitted)
-   send it back to the child with `SendMessage`. Never push without a separate
-   go for that push.
+   (child forgot, or skipped because it touched a file daf has uncommitted) send
+   it back to the child with `SendMessage`. Never push without a separate go for
+   that push.
 5. Report to daf: what now works, that the commit is in main (or why not), the
    switch/deploy command, and what is not verified.
-6. A failed check goes back to the same child with `SendMessage`, never to a
-   new one.
+6. A failed check goes back to the same child with `SendMessage`, never to a new
+   one.
 
 ## Status
 
 "Where are we?" is answered from what exists, not from memory: the linked
-sessions list, each child worktree and branch (`git worktree list`), and Kaneo via the
-entries children wrote with `ai-log -t`.
+sessions list, each child worktree and branch (`git worktree list`), and Kaneo
+via the entries children wrote with `ai-log -t`.
