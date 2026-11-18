@@ -94,8 +94,10 @@ the `enabled`/`disabled` shortcuts and `mkDeploy`. See
   first flash, board quirks)
 - [glove80/AGENTS.md](glove80/AGENTS.md) — Glove80 ZMK keymap mirroring the
   kanata config (build, flash)
+- [flake-modules/services/AGENTS.md](flake-modules/services/AGENTS.md) — service
+  aspects, where new services go
 - [modules/home/services/AGENTS.md](modules/home/services/AGENTS.md) —
-  self-hosted service stack
+  self-hosted service stack (nps, OIDC, storage)
 
 Deeper `AGENTS.md` files cover individual hosts and modules; the directory you
 are editing owns its own rules.
