@@ -1,120 +1,144 @@
 ---
 name: dafos-add-service
-description: Add a new self-hosted service to the dafos homelab. Use when asked to host, install or expose an app on dafoltop, when wiring a service behind traefik or Authelia SSO, when a new container stack or NixOS service module needs creating, or when an existing service needs a domain, OIDC login or an lldap group.
+description: Add a new self-hosted service to the dafos homelab. Use when asked to host, install or expose an app on dafoltop or dafpi, when wiring a service behind traefik or Authelia SSO, when a new container stack or NixOS service module needs creating, or when an existing service needs a domain, OIDC login or an lldap group.
 ---
 
 # Adding a self-hosted service
 
-Everything self-hosted lands on `dafoltop`. Read
-`systems/x86_64-linux/dafoltop/AGENTS.md` and `modules/home/services/AGENTS.md`
-first — this skill is the ordered procedure, those hold the reasoning.
+Services run on `dafoltop` (the live house) or `dafpi` (lighter apps, relayed by
+dafoltop's Traefik and served by its Authelia/lldap). Read
+`systems/x86_64-linux/dafoltop/AGENTS.md` (or
+`flake-modules/hosts/dafpi/AGENTS.md`) and `modules/home/services/AGENTS.md`
+first: this skill is the ordered procedure, those hold the reasoning.
 
 ## 1. Decide where it lives
 
-| Situation                               | Where                                                        | Shape                     |
-| --------------------------------------- | ------------------------------------------------------------ | ------------------------- |
-| nix-podman-stacks has a stack           | `modules/home/services/<name>`                               | `nps.stacks.<name>`       |
-| Container exists, nps does not cover it | `modules/home/stacks/<name>` + wrapper in `services/<name>`  | local `nps.stacks.<name>` |
-| A maintained NixOS module exists        | `modules/nixos/services/<name>`                              | upstream options          |
-| Neither; it is a plain program          | package in `packages/`, service in `modules/nixos/services/` | systemd unit              |
+New modules are dendritic aspects in `flake-modules/`, never new directories in
+`modules/` (see `modules/AGENTS.md`).
 
-Most of the fleet is the first row. The choice matters for OIDC — see step 4.
+| Situation                               | Module                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| nix-podman-stacks has a stack           | `flake-modules/services/<name>.nix`, `flake.modules.homeManager.<name>` over `nps.stacks.<name>` |
+| Container exists, nps does not cover it | stack in `modules/home/stacks/<name>` + wrapper aspect `flake-modules/services/<name>.nix`       |
+| A maintained NixOS module exists        | `flake-modules/services/<name>.nix`, `flake.modules.nixos.<name>`                                |
+| Neither; it is a plain program          | package in `packages/<name>`, NixOS aspect as above                                              |
 
-## 2. Write the module
+Most of the fleet is the first row. The choice matters for OIDC (step 5).
 
-Follow the shape in `modules/AGENTS.md`. A stack module looks like
-[modules/home/services/norish/default.nix](../../../modules/home/services/norish/default.nix):
+## 2. Write the aspect
+
+Follow `flake-modules/AGENTS.md`: plain `lib.mkOption` / `mkEnableOption`, no
+`lib.dafos` helpers, no `namespace`. The option path stays
+`dafos.services.<name>`. Worked example:
+[flake-modules/services/norish.nix](../../../flake-modules/services/norish.nix)
+(nps stack, sops secrets, OIDC, alias redirects, Authelia-peer fallback).
 
 ```nix
-{ lib, config, namespace, ... }:
-let
-  inherit (lib) mkEnableOption mkIf types;
-  inherit (lib.${namespace}) mkOpt;
-  cfg = config.${namespace}.services.<name>;
-in
+{ inputs, ... }:
 {
-  options.${namespace}.services.<name> = {
-    enable = mkEnableOption "Whether or not to configure <name>.";
-    subDomain = mkOpt types.str "<name>" "Subdomain under the traefik base url.";
-  };
+  flake.modules.homeManager.<name> =
+    { config, lib, ... }:
+    let
+      cfg = config.dafos.services.<name>;
+    in
+    {
+      options.dafos.services.<name> = {
+        enable = lib.mkEnableOption "<name>";
+        subDomain = lib.mkOption { type = lib.types.str; default = "<name>"; description = "Subdomain under the traefik base url."; };
+      };
 
-  config = mkIf cfg.enable {
-    sops.secrets."<name>/db-password".sopsFile =
-      lib.snowfall.fs.get-file "secrets/dafoltop/<name>.yaml";
+      config = lib.mkIf cfg.enable {
+        sops.secrets."<name>/db-password".sopsFile = inputs.self + "/secrets/dafoltop/<name>.yaml";
 
-    nps.stacks.<name> = {
-      enable = true;
-      # ...
+        nps.stacks.<name> = {
+          enable = true;
+          db.passwordFile = config.sops.secrets."<name>/db-password".path;
+          containers.<name> = {
+            expose = true; # public; leave false for LAN/tailnet only
+            traefik.subDomain = cfg.subDomain;
+          };
+        };
+      };
     };
-  };
 }
 ```
 
-Pin container images by digest when upstream is known to re-push tags, and say
-why in a comment — the norish module is the reference for how much detail that
-deserves.
+An image ahead of nps: `services.podman.containers.<name>.image = lib.mkForce …`
+with the Kaneo task that drops it (rule in `modules/home/services/AGENTS.md`).
+Pin images by digest only when upstream re-pushes tags, and say why.
 
 A local stack (row two) follows `modules/home/stacks/AGENTS.md`, with
-bar-assistant as the worked example. The stack takes secret
-_file_ options and never touches sops; the wrapper in `services/<name>` feeds it
-sops paths. Pin images as inline `image = "repo:tag";` so Renovate can see them,
-and ship a `vm-test.nix`. Build that test before you commit; it catches images
-that exit at startup.
+[bar-assistant](../../../flake-modules/services/bar-assistant.nix) as the worked
+example. The stack takes secret _file_ options and never touches sops; the
+wrapper aspect feeds it sops paths. Pin images as inline `image = "repo:tag";`
+for Renovate, and ship a `vm-test.nix`; build that test before you commit.
 
-## 3. Secrets
+## 3. Wire the aspect into its host
 
-Create `secrets/dafoltop/<name>.yaml` (services only run on dafoltop) and
-reference it with `lib.snowfall.fs.get-file`. Use the `dafos-secrets` skill for
-the mechanics and for which key group applies.
+An aspect nobody imports evaluates and does nothing.
 
-## 4. Authelia SSO
+- **dafoltop** (and the other legacy hosts): add `"services/<name>" = <name>;`
+  to the `migrated.home` (or `migrated.nixos`) map in
+  [flake-modules/snowfall-compat.nix](../../../flake-modules/snowfall-compat.nix),
+  under the comment
+  `# New aspect, no legacy module behind it: the key only places it.`
+- **dafpi**: add `<name>` to the `homeManager` (or `nixos`) imports in
+  [flake-modules/hosts/dafpi/default.nix](../../../flake-modules/hosts/dafpi/default.nix),
+  plus `<name>-stack` for a local stack (see
+  `flake-modules/services/local-stacks.nix`).
 
-**If the service is an nps stack**, use `nps.stacks.<name>.oidc` and let it
-generate the client.
+## 4. Secrets
 
-**If the service is a native NixOS service, it cannot use that** — authelia and
-lldap are home-manager stacks, so there is nothing for the NixOS module to hook
-into. Register it by hand, keeping both halves in sync:
+Create `secrets/dafoltop/<name>.yaml`. A dafpi service whose OIDC secret is
+hashed on dafoltop needs its file readable by both hosts: add it to the shared
+list in `.sops.yaml` (`secrets/AGENTS.md` names it). Use the `dafos-secrets`
+skill for the mechanics; never create a file only the admin key opens.
 
-- client, `claims_policies` and `authorization_policies` →
+## 5. Authelia SSO
+
+**nps stack**: `nps.stacks.<name>.oidc` generates the client, policies and lldap
+group. On dafpi that lands in a stack that is not running there;
+`authelia-peers` on dafoltop picks it up from dafpi's config, nothing to copy.
+The app usually needs its issuer restated when Authelia is a peer's: see the
+`mkIf (!config.nps.stacks.authelia.enable)` block in `norish.nix`.
+
+**Native NixOS service**: it cannot use that, since Authelia and lldap are
+home-manager stacks. Register it by hand and keep both halves in sync:
+
+- client, `claims_policies`, `authorization_policies` →
   `modules/home/services/authelia`
 - group → `modules/home/services/lldap`
-- app-side config → `modules/nixos/services/<name>`
-- one shared secrets entry in `secrets/dafoltop/`, decryptable by both the user
-  key and the host key
+- app-side config → the NixOS aspect
+- one shared `secrets/dafoltop/` entry, readable by the user _and_ the host key
 
-`clients.home-assistant` (public + PKCE) and `clients.immich` (confidential,
-mirroring what `nps.stacks.immich.oidc` would generate) are the two worked
-examples in the authelia module.
+`clients.home-assistant` (public + PKCE) and `clients.immich` (confidential) are
+the worked examples. lldap: **one freeform custom attribute per user**.
 
-lldap caveat: **one freeform custom attribute per user**. A second one errors
-with "defined multiple times".
+## 6. Expose it
 
-## 5. Expose it
+nps stacks get their router from their container labels (`expose`,
+`traefik.subDomain`). Extra hostnames go through
+`dafos.services.traefik.redirects.<alias> = { to = cfg.subDomain; expose = true; };`.
 
-Add a router to `modules/home/services/traefik`:
+A native service of the host (not a container) is routed with
+`dafos.services.traefik.hostRoutes.<subdomain> = { port = …; expose = …; };` in
+the home of the host it runs on (example: `hostRoutes.gatus` in
+`flake-modules/hosts/dafpi/default.nix`); its port must be open to the podman
+networks. Both options live in
+[flake-modules/services/traefik.nix](../../../flake-modules/services/traefik.nix).
+A dafpi hostname is relayed by dafoltop's Traefik through `traefik.peers`.
 
-```nix
-dynamicConfig.http.routers.<name>-nix = {
-  rule = "Host(`${cfg.subDomain}.${base-url}`)";
-  service = "<name>-service";
-  entryPoints = [ "websecure" ];
-  middlewares = [ "public@file" ];      # or the authelia middleware
-  tls.certResolver = "letsencrypt";
-};
-```
+## 7. Enable and verify
 
-nps stacks usually get their router from the stack itself; the `-nix` suffixed
-routers exist for native NixOS services traefik cannot discover.
-
-## 6. Enable and verify
-
-Turn it on in `homes/x86_64-linux/daf@dafoltop/default.nix` (or the host file
-for a NixOS service), then follow `dafos-rebuild`.
+Turn it on with `dafos.services.<name>.enable = true;` in
+`homes/x86_64-linux/daf@dafoltop/default.nix` (dafoltop) or in the
+`home-manager.users.daf` block of `flake-modules/hosts/dafpi/default.nix`
+(dafpi); a NixOS aspect is enabled in the host's own file. An image with an
+embedded database is not picked up by `backup-dumps`; handle it before deploy.
+Then follow `dafos-rebuild` and hand daf the deploy command.
 
 Container that cannot resolve a hostname
-(`dial tcp: lookup <host> on 10.89.x.1:53: i/o
-timeout`)? That is the
-root-podman firewall issue, already fixed fleet-wide — see
-`modules/nixos/virtualisation/podman/AGENTS.md`. Rootless stacks are never
-affected by it, so look elsewhere.
+(`dial tcp: lookup <host> on 10.89.x.1:53: i/o timeout`)? That is the
+root-podman firewall issue, already fixed fleet-wide: see
+[flake-modules/virtualisation/AGENTS.md](../../../flake-modules/virtualisation/AGENTS.md).
+Rootless stacks are never affected by it, so look elsewhere.

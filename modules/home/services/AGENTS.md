@@ -9,12 +9,11 @@ before deploying.
 
 ## Choosing where a service lives
 
-| Situation                                      | Where                                                |
-| ---------------------------------------------- | ---------------------------------------------------- |
-| Upstream ships a container and nps has a stack | nps stack here                                       |
-| Upstream ships a container, nps has no stack   | stack in `../stacks/<name>` + dafos wrapper here     |
-| Upstream has a maintained NixOS module         | `modules/nixos/services/<name>`                      |
-| Neither, and it is a plain program             | package it in `packages/`, run it as a NixOS service |
+New services are dendritic aspects in `flake-modules/services/`, not new
+directories here; this tree keeps the services not yet migrated (authelia,
+lldap, streaming, glance, …). The placement table (nps stack, local stack, NixOS
+module, plain package), the worked examples and the step that wires an aspect
+into its host are in the `dafos-add-service` skill.
 
 ## OIDC: native NixOS services must be wired by hand
 
