@@ -175,10 +175,10 @@
     };
 
     # Our own mod manager (Nexus collections, local or Steam Deck targets).
-    # Developed in ~/Projects/modctl, not on GitHub yet: switch to
-    # github:CaptainSpof/modctl once pushed. Only dafbox's home reads it.
+    # Developed in ~/Projects/modctl. Private repo: fetched with the
+    # access-tokens set by suites/common. Only dafbox's home reads it.
     modctl = {
-      url = "git+file:///home/daf/Projects/modctl";
+      url = "github:CaptainSpof/modctl";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
