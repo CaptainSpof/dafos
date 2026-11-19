@@ -29,7 +29,11 @@ let
       type = types.bool;
     };
 
-  flakes = filterAttrs (_name: value: value ? outputs) inputs;
+  # dafbox's private modctl stays out of every host's registry and
+  # /etc/nix/inputs (it would also be fetched for every host).
+  linked = builtins.removeAttrs inputs [ "modctl" ];
+
+  flakes = filterAttrs (_name: value: value ? outputs) linked;
 
   nixRegistry = builtins.mapAttrs (_name: v: { flake = v; }) flakes;
 
@@ -59,7 +63,7 @@ in
         value = {
           source = value.outPath;
         };
-      }) inputs
+      }) linked
     );
 
     nix.nixPath = mkIf cfg.generateNixPathFromInputs [ "/etc/nix/inputs" ];

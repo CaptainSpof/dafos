@@ -64,7 +64,10 @@ let
   # `inputs` includes `self` (flake.nix hands the whole outputs argument
   # through) — snowfall's specialArg `inputs` did too.
   user-inputs = inputs;
-  inputs-no-self = builtins.removeAttrs inputs [ "self" ];
+  # Inputs only one host reads (dafbox's private modctl): the Snowfall scans
+  # below force every input they see, which would fetch them on every host.
+  host-only-inputs = [ "modctl" ];
+  inputs-no-self = builtins.removeAttrs inputs ([ "self" ] ++ host-only-inputs);
 
   # ------------------------------------------------------------------
   # channels-config (was the `channels-config` argument to mkFlake)
@@ -253,7 +256,7 @@ let
   channel-inputs = filterAttrs (_: v: (v.legacyPackages.x86_64-linux or { }) ? nix) inputs-no-self;
 
   # non-flake inputs, exposed as pkgs.srcs by FUP
-  srcs = filterAttrs (_: v: !(v ? outputs)) inputs;
+  srcs = filterAttrs (_: v: !(v ? outputs)) (builtins.removeAttrs inputs host-only-inputs);
 
   srcs-overlay = _final: _prev: {
     __dontExport = true;
@@ -735,23 +738,24 @@ let
   call-dir =
     { dir, channels }:
     listToAttrs (
-      map (
-        file:
-        nameValuePair (builtins.unsafeDiscardStringContext (baseNameOf (dirOf file))) (
-          lib0.callPackageWith (
-            channels.nixpkgs
-            // {
-              inherit channels namespace;
-              lib = system-lib;
-              inputs = user-inputs;
-            }
-          ) file { }
+      map
+        (
+          file:
+          nameValuePair (builtins.unsafeDiscardStringContext (baseNameOf (dirOf file))) (
+            lib0.callPackageWith (
+              channels.nixpkgs
+              // {
+                inherit channels namespace;
+                lib = system-lib;
+                inputs = user-inputs;
+              }
+            ) file { }
+          )
         )
-      )
-      # Path values, not the interpolated strings get-files returns: those copy
-      # `dir` alone into the store, and a relative import such as
-      # checks/pre-commit-hooks' `../../treefmt.nix` then resolves outside it.
-      (builtins.filter (p: baseNameOf p == "default.nix") (lib0.filesystem.listFilesRecursive dir))
+        # Path values, not the interpolated strings get-files returns: those copy
+        # `dir` alone into the store, and a relative import such as
+        # checks/pre-commit-hooks' `../../treefmt.nix` then resolves outside it.
+        (builtins.filter (p: baseNameOf p == "default.nix") (lib0.filesystem.listFilesRecursive dir))
     );
 in
 {
