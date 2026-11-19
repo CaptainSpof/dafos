@@ -33,6 +33,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Ahead of nps (0.18.2). Drop once nps ships >= 0.18.3 (Kaneo IA-133).
+    # 0.18.3 fixes an unauthenticated RCE in the bundled nginx (CVE-2026-123007).
+    services.podman.containers.frigate.image = lib.mkForce "ghcr.io/blakeblackshear/frigate:0.18.3";
+
     sops.secrets = lib.genAttrs [ "frigate/mqtt-password" "frigate/rtsp-password" ] (_: {
       sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/frigate.yaml";
     });

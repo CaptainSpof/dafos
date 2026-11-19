@@ -198,6 +198,9 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Ahead of nps (2.7.0). Drop once nps ships >= 3.0.2 (Kaneo IA-133).
+    services.podman.containers.prowlarr.image = lib.mkForce "lscr.io/linuxserver/prowlarr:3.0.2";
+
     sops.secrets = {
       "qui/authelia/client-secret".sopsFile = lib.snowfall.fs.get-file "secrets/dafoltop/streaming.yaml";
       "jellyfin/authelia/client-secret".sopsFile =

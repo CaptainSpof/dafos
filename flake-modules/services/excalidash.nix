@@ -25,6 +25,12 @@
               (secret "authelia/client-secret")
             ];
 
+            # Ahead of nps (0.6.7). Drop once nps ships >= 0.6.9 (Kaneo IA-133).
+            services.podman.containers = {
+              excalidash.image = lib.mkForce "docker.io/zimengxiong/excalidash-frontend:0.6.9";
+              excalidash-backend.image = lib.mkForce "docker.io/zimengxiong/excalidash-backend:0.6.9";
+            };
+
             nps.stacks.excalidash = {
               enable = true;
 
