@@ -172,6 +172,7 @@ in
         claude.code = enabled;
         claude.desktop = enabled;
         antigravity.cli = enabled;
+        pi = enabled;
       };
 
       graphical = {

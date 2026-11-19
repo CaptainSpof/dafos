@@ -110,6 +110,8 @@ in
     claude.code.enable = mkBoolOpt false "Whether or not to enable Claude Code CLI.";
     claude.desktop.enable = mkBoolOpt false "Whether or not to enable Claude Desktop.";
     antigravity.cli.enable = mkBoolOpt false "Whether or not to enable Antigravity CLI.";
+    # Needs secrets/dafpi/litellm.yaml, which only the dafbox user key opens.
+    pi.enable = mkBoolOpt false "Whether or not to enable pi, wired to dafpi's LiteLLM (local models).";
   };
 
   config = mkIf cfg.enable {
@@ -129,7 +131,51 @@ in
         ]))
       ])
       (mkIf cfg.claude.code.enable [ aiLog ])
+      (mkIf cfg.pi.enable [ pkgs.pi-coding-agent ])
     ];
+
+    # shortcut: pi uses LiteLLM's master key; mint a virtual key in LiteLLM
+    # (per-client logs/limits) if anything other than daf's own pi uses it.
+    sops.secrets."litellm/master-key" = mkIf cfg.pi.enable {
+      sopsFile = inputs.self + "/secrets/dafpi/litellm.yaml";
+    };
+
+    # The local models behind dafpi's LiteLLM (flake-modules/services/litellm),
+    # under the same names as on Ollama.
+    home.file.".pi/agent/models.json" = mkIf cfg.pi.enable {
+      text = builtins.toJSON {
+        "$schema" = "https://pi.dev/schemas/models.schema.json";
+        providers.litellm = {
+          baseUrl = "https://llm.daftdaf.dev/v1";
+          api = "openai-completions";
+          apiKey = "!cat ${config.sops.secrets."litellm/master-key".path}";
+          models = [
+            # dafbox GPU, 32k context set in its Ollama.
+            {
+              id = "gemma4:12b";
+              contextWindow = 32768;
+              maxTokens = 8192;
+            }
+            # dafoltop CPU, Ollama's default 4k context.
+            {
+              id = "qwen2.5:7b";
+              contextWindow = 4096;
+              maxTokens = 2048;
+            }
+            {
+              id = "qwen2.5:3b";
+              contextWindow = 4096;
+              maxTokens = 2048;
+            }
+          ];
+        };
+      };
+    };
+
+    # Claude Code subagent that hands a task to a local model through pi.
+    home.file.".claude/agents/local-worker.md" = mkIf (cfg.pi.enable && cfg.claude.code.enable) {
+      source = ./local-worker.md;
+    };
 
     home.file.".claude/CLAUDE.md" = mkIf cfg.claude.code.enable {
       source = ./claude-global.md;
