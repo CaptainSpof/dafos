@@ -28,13 +28,11 @@ in
             # the input can't carry (see flake.nix). Bump both together.
             polarisSrc = pkgs.fetchgit {
               url = "https://github.com/papi-ux/polaris";
-              rev = "a8db09c70ac147d1512e2b7d64dba2ddf95a01e8"; # v1.5.0-beta.2
+              rev = "5d29d3c17d58e70968276ac1adcb2e068338b8a3"; # v1.5.0
               fetchSubmodules = true;
-              hash = "sha256-UqhKYxnVfOM0VStHr0y49UzCPlZ8LYUyfp4VhIx4814=";
+              hash = "sha256-fGF5Jszqay85dRZLaJaciiG/sZ04O+jzCLa51PPleEs=";
             };
             cudaSupport = false;
-            # Removed from nixpkgs (EOL); listed upstream but never used, pcre2 stays.
-            pcre = null;
           }).overrideAttrs
             (old: {
               # Upstream only adds vulkan-headers alongside CUDA, but cmake

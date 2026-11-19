@@ -221,7 +221,7 @@
     # No submodules here (Granite's nested SPIRV-Tools rev is off-branch and
     # the flake fetcher can't reach it); the aspect fetchgits the build source.
     polaris = {
-      url = "github:papi-ux/polaris/v1.5.0-beta.2";
+      url = "github:papi-ux/polaris/v1.5.0";
       flake = false;
     };
 
