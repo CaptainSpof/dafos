@@ -43,8 +43,10 @@ in
       };
     };
 
+    # isatty: apps that read the login env with `fish -ilc` (OpenDeck) have no
+    # terminal; zellij would hang them.
     programs.fish.interactiveShellInit = ''
-      if not test -n "$INSIDE_EMACS"; and test "$TERM" != 'wezterm'
+      if isatty stdin; and not test -n "$INSIDE_EMACS"; and test "$TERM" != 'wezterm'
         eval (${getExe config.programs.zellij.package} setup --generate-auto-start fish | string collect)
       end
     '';
