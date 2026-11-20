@@ -20,10 +20,11 @@ in
   config = mkIf cfg.enable {
     programs.zed-editor = {
       enable = true;
-      # Kept on Zed's PATH only: the ACP bridge and the Nix extension's server.
+      # Kept on Zed's PATH only: the ACP bridge and nil (same Nix server as Doom) and its formatter.
       extraPackages = with pkgs; [
         claude-agent-acp
-        nixd
+        nil
+        nixfmt
       ];
       extensions = [ "nix" ];
 
@@ -31,6 +32,13 @@ in
 
       userSettings = {
         vim_mode = true;
+
+        # The Nix extension prefers nixd; use nil like Doom does.
+        languages.Nix.language_servers = [
+          "nil"
+          "!nixd"
+        ];
+        lsp.nil.initialization_options.formatting.command = [ "nixfmt" ];
 
         # Claude Code over ACP: the bridge reuses the existing `claude` login
         # (subscription), so no key lives in this file.
