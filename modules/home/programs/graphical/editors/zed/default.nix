@@ -20,8 +20,12 @@ in
   config = mkIf cfg.enable {
     programs.zed-editor = {
       enable = true;
-      # ACP bridge, kept on Zed's PATH only.
-      extraPackages = [ pkgs.claude-agent-acp ];
+      # Kept on Zed's PATH only: the ACP bridge and the Nix extension's server.
+      extraPackages = with pkgs; [
+        claude-agent-acp
+        nixd
+      ];
+      extensions = [ "nix" ];
 
       userKeymaps = import ./keymap.nix;
 
