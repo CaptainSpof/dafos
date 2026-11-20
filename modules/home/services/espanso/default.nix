@@ -10,6 +10,7 @@ let
   inherit (lib) mkIf;
   inherit (lib.${namespace}) mkBoolOpt;
   inherit (config.${namespace}.user)
+    domain
     email
     gmailEmail
     gitEmail
@@ -65,11 +66,12 @@ in
         email = {
           matches = [
             {
-              triggers = [
-                "@me"
-                "@daf"
-              ];
+              trigger = "@me";
               replace = email;
+            }
+            {
+              trigger = "@daf";
+              replace = "@${domain}";
             }
             {
               trigger = "@gm";
