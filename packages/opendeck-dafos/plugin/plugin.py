@@ -12,6 +12,10 @@ One action, me.daf.dafos.hakey. Its settings (written by
   services [service, ...]; a service with "when": [entity, state] only runs
            while that entity is in that state
   clock    true: the key shows dafbox's local time and date instead
+  timers   kitchen timer suffixes (["", "_2", "_3"]): while one runs or is
+           paused (and none has finished) the key shows its live countdown
+  A conditional service that ran replaces the key's profile switch: the
+  notification key stops a finished timer instead of opening its page.
 
 The plugin reads the HA server and token from the Home Assistant plugin's
 global settings (settings/de.perdoctus.streamdeck.homeassistant.sdPlugin.json)
@@ -21,6 +25,7 @@ and polls the REST API: a handful of keys, a few seconds of latency is fine.
 import asyncio
 import base64
 import time
+from datetime import datetime
 import json
 import os
 import sys
@@ -84,6 +89,19 @@ def clock_svg(t=None):
     return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
 
 
+def timer_svg(seconds, paused):
+    s = max(0, int(seconds))
+    text = f"{s // 3600}:{s // 60 % 60:02d}" if s >= 3600 else f"{s // 60:02d}:{s % 60:02d}"
+    tile, label = ("#5a524b", "PAUSE") if paused else ("#d98a12", "MINUTEUR")
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+<rect width="144" height="144" rx="16" fill="#1a1410"/>
+<rect x="5" y="5" width="134" height="134" rx="13" fill="{tile}"/>
+<text x="72" y="84" text-anchor="middle" font-family="Liberation Sans, sans-serif" font-weight="bold" font-size="46" fill="#fbefd9" stroke="#1a1410" stroke-width="3" paint-order="stroke">{text}</text>
+<text x="72" y="116" text-anchor="middle" font-family="Liberation Sans, sans-serif" font-weight="bold" font-size="16" fill="#fbefd9">{label}</text>
+</svg>"""
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
+
+
 def data_uri(path):
     ext = os.path.splitext(path)[1].lstrip(".").replace("svg", "svg+xml") or "png"
     with open(path, "rb") as f:
@@ -124,11 +142,34 @@ class Plugin:
             out.add(st.get("entity"))
             out.update(r[0] for r in st.get("rules", []))
             out.update(svc["when"][0] for svc in services(st) if svc.get("when"))
+            for sfx in st.get("timers", []):
+                out.update(f"sensor.minuteur_{n}{sfx}" for n in ("etat", "fin", "restant"))
         return out - {None, ""}
+
+    def countdown(self, timers):
+        """(seconds left, paused) of the timer ending first, None if none runs
+        or one has finished (the finished rule image wins then)."""
+        left = []
+        for sfx in timers:
+            state = self.states.get(f"sensor.minuteur_etat{sfx}")
+            if state == "finished":
+                return None
+            if state == "running":
+                try:
+                    end = datetime.fromisoformat(self.states[f"sensor.minuteur_fin{sfx}"])
+                    left.append((end.timestamp() - time.time(), False))
+                except (KeyError, ValueError):
+                    pass
+            elif state == "paused":
+                left.append((float(self.states.get(f"sensor.minuteur_restant{sfx}") or 0), True))
+        return min(left, default=None)
 
     def image_for(self, settings):
         if settings.get("clock"):
             return clock_svg()
+        timer = self.countdown(settings.get("timers", []))
+        if timer:
+            return timer_svg(*timer)
         for entity, state, image in settings.get("rules", []):
             if self.states.get(entity) == state:
                 return image
@@ -157,15 +198,25 @@ class Plugin:
             await self.refresh()
             await asyncio.sleep(POLL_SECONDS)
 
+    async def tick(self):
+        # Redraw every second between polls for the countdown; show() skips
+        # unchanged images, so idle keys cost nothing.
+        while True:
+            await asyncio.sleep(1)
+            for context, key in list(self.keys.items()):
+                await self.show(context, self.image_for(key["settings"]))
+
     async def key_down(self, context):
         key = self.keys.get(context)
         if not key:
             return
         s = key["settings"]
+        handled = False
         for svc in services(s):
             when = svc.get("when")
             if when and self.states.get(when[0]) != when[1]:
                 continue
+            handled = handled or bool(when)
             try:
                 await asyncio.to_thread(
                     ha_request,
@@ -177,7 +228,7 @@ class Plugin:
                 await self.send({"event": "showAlert", "context": context})
         if services(s):
             await self.refresh()
-        if s.get("profile"):
+        if s.get("profile") and not handled:
             await self.send(
                 {
                     "event": "switchProfile",
@@ -212,12 +263,13 @@ async def main():
             json.dumps({"event": a["registerEvent"], "uuid": a["pluginUUID"]})
         )
         plugin = Plugin(ws, a["pluginUUID"])
-        poller = asyncio.create_task(plugin.poll())
+        tasks = [asyncio.create_task(plugin.poll()), asyncio.create_task(plugin.tick())]
         try:
             async for raw in ws:
                 await plugin.handle(json.loads(raw))
         finally:
-            poller.cancel()
+            for t in tasks:
+                t.cancel()
 
 
 if __name__ == "__main__":
