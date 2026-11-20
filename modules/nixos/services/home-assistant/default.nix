@@ -487,7 +487,7 @@ in
           # `lldap_admin` members additionally become HA admins.
           auth_oidc = {
             client_id = "home-assistant";
-            discovery_url = "https://auth.daftdaf.dev/.well-known/openid-configuration";
+            discovery_url = "https://auth.${config.${namespace}.user.domain}/.well-known/openid-configuration";
             display_name = "MaisonDaf SSO";
             features.automatic_person_creation = true;
             claims = {

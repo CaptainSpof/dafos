@@ -15,6 +15,7 @@ let
   inherit (lib.${namespace}) mkOpt mkBoolOpt;
 
   cfg = config.${namespace}.services.immich;
+  inherit (config.${namespace}.user) domain;
 
   mediaRoot = "/var/lib/immich";
 
@@ -57,7 +58,7 @@ in
 
   options.${namespace}.services.immich = {
     enable = mkEnableOption "Whether or not to configure immich.";
-    base-url = mkOpt types.str "immich.daftdaf.dev" "The base url";
+    base-url = mkOpt types.str "immich.${domain}" "The base url";
     port = mkOpt types.int 2283 "The port";
 
     originalsPath = mkOpt (types.nullOr types.str) null ''
@@ -90,7 +91,7 @@ in
       # registered there by hand, mirroring what `nps.stacks.immich.oidc` does
       # for the containerised stack; both halves share the same sops secret.
       enable = mkBoolOpt true "Whether or not to configure OIDC login through Authelia.";
-      issuer-url = mkOpt types.str "https://auth.daftdaf.dev" "The Authelia OIDC issuer url";
+      issuer-url = mkOpt types.str "https://auth.${domain}" "The Authelia OIDC issuer url";
       client-id = mkOpt types.str "immich" "The OIDC client id registered in Authelia";
     };
   };
@@ -144,7 +145,7 @@ in
         # Brevo relay. Login and key are read at unit start (LoadCredential).
         notifications.smtp = {
           enabled = true;
-          from = "Immich <noreply@daftdaf.dev>";
+          from = "Immich <noreply@${domain}>";
           replyTo = "";
           transport = {
             host = "smtp-relay.brevo.com";
@@ -185,7 +186,7 @@ in
         reverse_proxy "http://0.0.0.0:${toString cfg.port}"
         import cloudflare
       '';
-      "photos.daftdaf.dev".extraConfig = ''
+      "photos.${domain}".extraConfig = ''
         reverse_proxy "http://0.0.0.0:${toString cfg.port}"
         import cloudflare
       '';

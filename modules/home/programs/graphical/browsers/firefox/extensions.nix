@@ -70,7 +70,7 @@ in
           force = true;
           settings = {
             type = "custom_url";
-            url = "https://fp.daftdaf.dev";
+            url = "https://fp.${config.dafos.user.domain}";
           };
         };
       } "Settings to apply to the extensions.";

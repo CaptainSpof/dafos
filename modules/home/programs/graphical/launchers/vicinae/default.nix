@@ -83,7 +83,7 @@ in
         # "@tonka3000/homeassistant" (not the raycast-store path). The token is
         # a password pref and lives in the SQLite store instead (see below).
         providers."@tonka3000/homeassistant".preferences = {
-          instance = "https://home.daftdaf.dev";
+          instance = "https://home.${config.dafos.user.domain}";
         };
       };
       extensions = [

@@ -78,7 +78,7 @@
 
         url = mkOption {
           type = types.str;
-          default = "https://home.daftdaf.dev";
+          default = "https://home.${config.dafos.user.domain}";
           description = "Home Assistant instance holding the webhook.";
         };
         idleSeconds = mkOption {

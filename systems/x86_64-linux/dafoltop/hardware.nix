@@ -147,7 +147,7 @@ in
   # negative trust anchor turns validation off for this one zone, our own,
   # answered on the LAN by our own blocky; every other name stays validated.
   # resolved only reads anchors at start, hence the restart trigger.
-  environment.etc."dnssec-trust-anchors.d/daftdaf.negative".text = "daftdaf.dev\n";
+  environment.etc."dnssec-trust-anchors.d/daftdaf.negative".text = "${config.dafos.user.domain}\n";
   systemd.services.systemd-resolved.restartTriggers = [
     config.environment.etc."dnssec-trust-anchors.d/daftdaf.negative".text
   ];
@@ -175,7 +175,7 @@ in
       ethernet = { };
       ipv4 = {
         method = "auto";
-        dns-search = "~daftdaf.dev";
+        dns-search = "~${config.dafos.user.domain}";
       };
       ipv6.method = "disabled";
     };

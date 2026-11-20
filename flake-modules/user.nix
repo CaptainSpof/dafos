@@ -1,6 +1,11 @@
 # The single user (daf) on both sides: the NixOS account and its
 # home-manager profile. Both declare `dafos.user.*`, each in its own
 # option namespace.
+let
+  # daf's domain, the one place it is spelled out: everything else reads
+  # `config.dafos.user.domain` (NixOS or home-manager side).
+  domain = "daftdaf.dev";
+in
 {
   flake.modules.nixos.user =
     {
@@ -42,9 +47,14 @@
           default = "Cédric Da Fonseca";
           description = "The full name of the user.";
         };
+        domain = mkOption {
+          type = types.str;
+          default = domain;
+          description = "The user's domain: service hostnames, mail senders, OIDC issuers.";
+        };
         email = mkOption {
           type = types.str;
-          default = "cedric@daftdaf.dev";
+          default = "cedric@${cfg.domain}";
           description = "The email of the user for git.";
         };
         home = mkOption {
@@ -209,7 +219,8 @@
 
         fullName = opt types.str "Cédric Da Fonseca" "The full name of the user.";
         # Three addresses, three uses: personal (this one), Gmail, git.
-        email = opt types.str "cedric@daftdaf.dev" "The personal email of the user.";
+        domain = opt types.str domain "The user's domain: service hostnames, mail senders, OIDC issuers.";
+        email = opt types.str "cedric@${cfg.domain}" "The personal email of the user.";
         gmailEmail = opt types.str "dafonseca.cedric@gmail.com" "The Gmail address of the user.";
         gitEmail = opt types.str "captain.spof@gmail.com" "The email of the user for git.";
         gitUsername = opt types.str "CaptainSpof" "The username for git.";

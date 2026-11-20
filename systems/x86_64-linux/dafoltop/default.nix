@@ -130,7 +130,7 @@ in
         enable = true;
         targets.dafpi = {
           address = "192.168.0.15";
-          dnsName = "home.daftdaf.dev";
+          dnsName = "home.${config.dafos.user.domain}";
         };
       };
       # Nightly encrypted restic backup of the state that cannot be regenerated, to

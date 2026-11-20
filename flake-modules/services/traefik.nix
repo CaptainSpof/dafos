@@ -85,7 +85,7 @@
 
       options.dafos.services.traefik = {
         enable = mkEnableOption "Whether or not to configure traefik.";
-        base-url = opt types.str "daftdaf.dev" "The base url";
+        base-url = opt types.str config.dafos.user.domain "The base url";
 
         # For apps that cannot be served on a second hostname. norish's OIDC
         # callback always lands on AUTH_URL, but better-auth's state cookie was set

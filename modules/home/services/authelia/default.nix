@@ -8,6 +8,7 @@
 let
   inherit (lib) mkEnableOption mkIf;
   inherit (config.${namespace}.services) lldap;
+  inherit (config.${namespace}.user) domain;
 
   cfg = config.${namespace}.services.authelia;
 in
@@ -73,7 +74,7 @@ in
           require_pkce = true;
           pkce_challenge_method = "S256";
           pre_configured_consent_duration = config.nps.stacks.authelia.oidc.defaultConsentDuration;
-          redirect_uris = [ "https://home.daftdaf.dev/auth/oidc/callback" ];
+          redirect_uris = [ "https://home.${domain}/auth/oidc/callback" ];
           scopes = [
             "openid"
             "profile"
@@ -101,12 +102,12 @@ in
             # Every hostname Traefik routes to the native immich (see the
             # traefik module), since Immich derives its redirect uri from the
             # origin it was opened on.
-            "https://immich.daftdaf.dev/auth/login"
-            "https://immich.daftdaf.dev/user-settings"
-            "https://photos.daftdaf.dev/auth/login"
-            "https://photos.daftdaf.dev/user-settings"
-            "https://photo.daftdaf.dev/auth/login"
-            "https://photo.daftdaf.dev/user-settings"
+            "https://immich.${domain}/auth/login"
+            "https://immich.${domain}/user-settings"
+            "https://photos.${domain}/auth/login"
+            "https://photos.${domain}/user-settings"
+            "https://photo.${domain}/auth/login"
+            "https://photo.${domain}/user-settings"
             "app.immich:///oauth-callback"
           ];
           token_endpoint_auth_method = "client_secret_post";
@@ -155,19 +156,19 @@ in
           # tailnet. Without Tailscale it falls back to the login.
           rules = [
             {
-              domain = "kiosk.daftdaf.dev";
+              domain = "kiosk.${domain}";
               policy = "bypass";
               networks = [ "100.66.200.80/32" ];
             }
             # Frigate (modules/home/services/frigate) has no accounts of its
             # own and shows the indoor camera: admins only.
             {
-              domain = "frigate.daftdaf.dev";
+              domain = "frigate.${domain}";
               policy = "one_factor";
               subject = [ "group:lldap_admin" ];
             }
             {
-              domain = "frigate.daftdaf.dev";
+              domain = "frigate.${domain}";
               policy = "deny";
             }
           ];
@@ -182,7 +183,7 @@ in
         notifier.disable_startup_check = true;
         notifier.smtp = {
           address = "submission://smtp-relay.brevo.com:587";
-          sender = "Authelia <noreply@daftdaf.dev>";
+          sender = "Authelia <noreply@${domain}>";
         };
 
         # nps sets a month without mkDefault; fewer re-logins for the devices

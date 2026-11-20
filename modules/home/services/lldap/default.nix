@@ -65,7 +65,7 @@ let
       id = "daf";
       displayName = "daf";
       password_file = config.sops.secrets."lldap/users/daf-password".path;
-      email = "cedric@daftdaf.dev";
+      email = "cedric@${cfg.domain}";
       avatar_url = avatarFileUrl "daf";
       picture = avatarUrl "daf";
       groups = [
@@ -135,7 +135,7 @@ in
 
   options.${namespace}.services.lldap = {
     enable = mkEnableOption "Whether or not to configure lldap.";
-    domain = mkOpt types.str "daftdaf.dev" "The base domain url";
+    domain = mkOpt types.str config.${namespace}.user.domain "The base domain url";
     avatarSubDomain =
       mkOpt types.str "avatars"
         "Subdomain the user avatars are served from, for Authelia's `picture` claim.";
@@ -169,7 +169,7 @@ in
         LLDAP_SMTP_OPTIONS__SERVER = "smtp-relay.brevo.com";
         LLDAP_SMTP_OPTIONS__PORT = "587";
         LLDAP_SMTP_OPTIONS__SMTP_ENCRYPTION = "STARTTLS";
-        LLDAP_SMTP_OPTIONS__FROM = "LLDAP <noreply@daftdaf.dev>";
+        LLDAP_SMTP_OPTIONS__FROM = "LLDAP <noreply@${cfg.domain}>";
       };
       lldap.fileEnvMount = {
         LLDAP_SMTP_OPTIONS__USER_FILE = config.sops.secrets."smtp/username".path;
@@ -198,7 +198,7 @@ in
       lldap = {
         enable = true;
 
-        baseDn = "DC=daftdaf,DC=dev";
+        baseDn = "DC=${lib.concatStringsSep ",DC=" (lib.splitString "." cfg.domain)}";
 
         adminPasswordFile = config.sops.secrets."lldap/admin-password".path;
         jwtSecretFile = config.sops.secrets."lldap/jwt-secret".path;

@@ -119,7 +119,7 @@
 
         domain = mkOption {
           type = types.str;
-          default = "daftdaf.dev";
+          default = config.dafos.user.domain;
           description = "Domain resolved locally to domainAddress.";
         };
 

@@ -146,7 +146,7 @@ in
       text = builtins.toJSON {
         "$schema" = "https://pi.dev/schemas/models.schema.json";
         providers.litellm = {
-          baseUrl = "https://llm.daftdaf.dev/v1";
+          baseUrl = "https://llm.${config.dafos.user.domain}/v1";
           api = "openai-completions";
           apiKey = "!cat ${config.sops.secrets."litellm/master-key".path}";
           models = [

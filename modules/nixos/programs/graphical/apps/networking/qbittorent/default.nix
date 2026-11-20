@@ -49,7 +49,7 @@ in
     };
 
     services.caddy.virtualHosts = {
-      "torrent.daftdaf.dev".extraConfig = ''
+      "torrent.${config.${namespace}.user.domain}".extraConfig = ''
         reverse_proxy http://0.0.0.0:${toString cfg.port}
         import cloudflare
       '';

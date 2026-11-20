@@ -29,7 +29,7 @@
         enable = mkEnableOption "system sendmail through the Brevo SMTP relay";
         from = mkOption {
           type = types.str;
-          default = "${host}@daftdaf.dev";
+          default = "${host}@${config.dafos.user.domain}";
           description = "Envelope and header sender; any address on the Brevo-authenticated domain.";
         };
       };
