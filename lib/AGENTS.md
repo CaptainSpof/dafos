@@ -11,6 +11,10 @@ module-specific logic with the module that needs it.
 - `deploy` — [deploy/default.nix](deploy/default.nix): `mkDeploy`, the deploy-rs
   wiring. It respects `dafos.security.doas.enable` and switches to `doas -u`
   when that is set.
+- `dms` — [dms/default.nix](dms/default.nix): `mkDmsShell`. It overrides the
+  upstream `vendorHash` because dux-shell's lags its `go.mod`. On a
+  `hash mismatch … dms-shell … go-modules` build error, paste the `got:` hash
+  into `vendorHash` there and rebuild; no agent needed.
 
 Do not mirror the full function inventory here; the source owns it.
 
