@@ -72,6 +72,8 @@ in
             {
               trigger = "@daf";
               replace = "@${domain}";
+              # Fire only on a standalone "@daf", not inside a typed x@daftdaf.dev.
+              word = true;
             }
             {
               trigger = "@gm";
