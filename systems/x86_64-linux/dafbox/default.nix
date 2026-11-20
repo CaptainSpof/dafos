@@ -146,6 +146,10 @@ in
     };
   };
 
+  # Zed is only wanted on this box (it talks to the local Ollama); enabled here
+  # rather than in a suite shared with the other hosts.
+  home-manager.users.daf.${namespace}.programs.graphical.editors.zed = enabled;
+
   services.ollama = {
     package = pkgs.ollama-rocm; # RX 7800 XT (gfx1101, natively supported)
     openFirewall = true; # no auth: anything on the LAN/tailnet can use it
