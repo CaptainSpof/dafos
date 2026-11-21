@@ -70,17 +70,16 @@ let
       picture = avatarUrl "daf";
       groups = [
         lldap.adminGroup
-        streaming.jellyfin.oidc.adminGroup
-
         "immich_admin"
-
         # No group-based admin access supported yet, just user-roles
         "home-assistant_user"
+        "litellm_user"
         bar-assistant.oidc.userGroup
-        grimmory.oidc.userGroup
+        bookorbit.oidc.userGroup
         donetick.oidc.userGroup
         excalidash.oidc.adminGroup
         excalidash.oidc.userGroup
+        grimmory.oidc.userGroup
         kaneo.oidc.userGroup
         karakeep.oidc.userGroup
         kitchenowl.oidc.userGroup
@@ -89,7 +88,7 @@ let
         qbittorrent.qui.oidc.userGroup
         securo.oidc.userGroup
         sparky-fitness.oidc.userGroup
-        bookorbit.oidc.userGroup
+        streaming.jellyfin.oidc.adminGroup
       ];
     };
     joaquim = {
