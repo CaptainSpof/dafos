@@ -56,7 +56,7 @@ in
       ++ lib.optionals cfg.lutris.enable [ lutris ]
       # unfree variant bundles 7-Zip with RAR support; many mods ship as .rar
       ++ lib.optionals cfg.nexusmods.enable [ nexusmods-app-unfree ]
-      ++ lib.optionals cfg.ryubing.enable [ ryubing ]
+      ++ lib.optionals cfg.ryubing.enable [ ryubing eden dolphin-emu ]
       ++ lib.optionals cfg.remote-play.enable [
         sunshine
         moonlight-qt
