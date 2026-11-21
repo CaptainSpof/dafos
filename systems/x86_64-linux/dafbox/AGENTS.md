@@ -67,7 +67,9 @@ What the data says: with flow control on, `rx_pause_frames` climbs while the NIC
 sends (the router pauses dafbox). With flow control off the NIC emits 123 MB/s
 of UDP, but the peer receives only ~12 MB/s: the loss is past the NIC, on the
 router port or the link to it, and a software link bounce does not clear it.
-Root cause unproven; no declarative fix was made.
+Resolved by moving the cable to another Freebox port (110 MB/s right after):
+the original router port (or its link) was the culprit. Nothing to fix in the
+config.
 
 Diagnose without root (ethtool: `nix build nixpkgs#ethtool`; use LAN IPs, since
 `dafoltop` resolves to its tailscale address):
@@ -76,5 +78,4 @@ Diagnose without root (ethtool: `nix build nixpkgs#ethtool`; use LAN IPs, since
 - UDP blast to `192.168.0.10:9` for 4 s, comparing dafbox `tx_bytes` with the
   peer's `rx_bytes` delta.
 
-Next steps if it recurs: replug into another router port, or put a small switch
-between dafbox and the router.
+If it recurs on the new port, put a small switch between dafbox and the router.
