@@ -157,10 +157,6 @@ in
     # ~/Downloads/mods (flake-modules/programs/nxm-handler.nix).
     programs.nxm-handler = enabled;
 
-    # Mod manager for Cyberpunk & co: update checks + manual archive import
-    # (flake-modules/programs/amethyst.nix). nxm:// stays with the handler above.
-    programs.amethyst = enabled;
-
     services.sops.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/daf@dafbox.pem" ];
 
     system.xdg = enabled;
