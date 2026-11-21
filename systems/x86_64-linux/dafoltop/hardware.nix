@@ -49,15 +49,7 @@ in
     # disk mid-scrub or mid-import is a real failure mode, not a theoretical
     # one, for a bus-powered-adjacent (dock-powered but bridge-negotiated)
     # device that's supposed to stay live.
-    #
-    # `0b95:1790:k` (USB_QUIRK_NO_LPM) for the dock's AX88179 ethernet chip: at
-    # boot its U1 link-power-management toggle sometimes fails and the
-    # ax88179_178a probe then aborts with -71, leaving the LAN (192.168.0.10)
-    # absent until the dock is replugged (2 of 3 boots, 2026-11-21).
-    kernelParams = [
-      "usbcore.autosuspend=-1"
-      "usbcore.quirks=0b95:1790:k"
-    ];
+    kernelParams = [ "usbcore.autosuspend=-1" ];
 
     initrd = {
       availableKernelModules = [
@@ -144,6 +136,40 @@ in
       PrivateTmp = false;
       Type = "oneshot";
     };
+  };
+
+  # The dock's AX88179 ethernet chip (0b95:1790, the LAN and 192.168.0.10)
+  # sometimes fails its driver probe at boot with -71 (EPROTO) and never gets
+  # a network interface; replugging the dock always fixed it (3 of 4 boots on
+  # 2026-11-21, kernel 7.3.5). USB_QUIRK_NO_LPM did not help. Cause unknown, so
+  # this does in software what the replug does: if the chip still has no net
+  # interface after a grace period, de-authorize and re-authorize it, which
+  # re-enumerates it and probes the driver afresh. Up to 3 tries.
+  systemd.services.ax88179-reprobe = {
+    description = "Re-enumerate the dock's AX88179 NIC if its driver probe failed";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-udevd.service" ];
+    path = [ pkgs.coreutils ];
+    environment.SYSFS = "/sys";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      TimeoutStartSec = "5min";
+    };
+    script = ''
+      # A probe that succeeds can take ~7 s (seen 2026-11-21): give it 30.
+      has_net() { for i in $(seq 30); do [ -e "$1:1.0/net" ] && return 0; sleep 1; done; return 1; }
+      for dev in "$SYSFS"/bus/usb/devices/*; do
+        [ "$(cat "$dev/idVendor" 2>/dev/null):$(cat "$dev/idProduct" 2>/dev/null)" = 0b95:1790 ] || continue
+        for try in 1 2 3; do
+          has_net "$dev" && { echo "$dev: net interface present"; break; }
+          echo "$dev: no net interface, re-enumerating (try $try)"
+          echo 0 > "$dev/authorized"
+          sleep 2
+          echo 1 > "$dev/authorized"
+        done
+      done
+    '';
   };
 
   swapDevices = [ ];
