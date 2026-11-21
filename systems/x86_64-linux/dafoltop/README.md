@@ -136,3 +136,7 @@ FIDECO dual-bay dock:
   authelia, lldap, crowdsec and socket-proxy, so pasta never exits. Then
   `systemctl --user start default.target sockets.target`. Check:
   `podman unshare --rootless-netns ip -br addr` shows `192.168.0.10`, no `tap0`.
+- **zigbee2mqtt waits for the address as well** (`blocky-wait-for-address`,
+  `default.nix`): its coordinator is on the LAN (`192.168.0.100:6638`), and
+  started before the lease it exited on `ENETUNREACH`, restarted 10 s later and
+  sent a false failure alert to the phones (2026-11-21).

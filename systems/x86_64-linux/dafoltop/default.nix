@@ -80,6 +80,15 @@ in
       ExecStart=${wait}
     '';
 
+  # zigbee2mqtt reaches its coordinator over the LAN (tcp://192.168.0.100:6638).
+  # Started before the lease it exits on ENETUNREACH, restarts 10 s later, and
+  # its OnFailure alert pages the phones for nothing (2026-11-21). `Wants`, not
+  # `Requires`: if the wait times out z2m still starts and retries as before.
+  systemd.services.zigbee2mqtt = {
+    wants = [ "blocky-wait-for-address.service" ];
+    after = [ "blocky-wait-for-address.service" ];
+  };
+
   system.activationScripts.setHomePermissions = ''
     chmod g+rx /home/daf
     # chgrp yahrr /home/daf
