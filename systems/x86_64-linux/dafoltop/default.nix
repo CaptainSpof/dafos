@@ -2,6 +2,7 @@
   config,
   lib,
   namespace,
+  pkgs,
   ...
 }:
 
@@ -46,6 +47,38 @@ in
     hibernate.enable = false;
     hybrid-sleep.enable = false;
   };
+
+  # Rootless podman's network helper (pasta) copies the host's addresses when
+  # the first container creates the rootless netns. If 192.168.0.10 is not up
+  # yet it falls back to a link-local tap0, `host.containers.internal` times
+  # out from every container, and Traefik answers 504 for every native service
+  # until the whole user stack is stopped (2026-11-21).
+  #
+  # Every quadlet unit already Wants/After `podman-user-wait-network-online`,
+  # but that waits for network-online.target, which is reached at once here
+  # because NetworkManager-wait-online is masked. Make it wait for the address
+  # blocky binds instead (same loop as blocky-wait-for-address; a user unit
+  # cannot order after a system one). A drop-in in the unit's own `.service.d`,
+  # so sd-switch sees it. The Traefik sockets activate podman-traefik.service,
+  # which carries the same ordering. On timeout (90 s, upstream) the containers
+  # still start, as before.
+  home-manager.users.${config.${namespace}.user.name}.xdg.configFile."systemd/user/podman-user-wait-network-online.service.d/60-wait-for-lan-address.conf".text =
+    let
+      address = config.dafos.services.blocky.hostAddress;
+      wait = pkgs.writeShellScript "podman-wait-for-lan-address" ''
+        until ${pkgs.iproute2}/bin/ip -4 -o addr show to ${address} | ${pkgs.gnugrep}/bin/grep -q .; do
+          ${pkgs.coreutils}/bin/sleep 0.5
+        done
+      '';
+    in
+    ''
+      [Unit]
+      Description=Wait for ${address} before rootless podman creates its network namespace
+
+      [Service]
+      ExecStart=
+      ExecStart=${wait}
+    '';
 
   system.activationScripts.setHomePermissions = ''
     chmod g+rx /home/daf

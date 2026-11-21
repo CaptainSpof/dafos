@@ -113,3 +113,17 @@ FIDECO dual-bay dock:
   new secret came out empty; `Wants=` runs the decryption first. Behind it, each
   container that reads a sops path checks its files in a first `ExecStartPre`
   (`wait-for-sops-secrets`, 60 s, then fails) rather than start with empty ones.
+- **Rootless containers wait for `192.168.0.10` too.** pasta copies the host's
+  addresses when the first container creates the rootless netns; started before
+  the lease (2026-11-21, 4 s early), it fell back to a link-local `tap0`,
+  `host.containers.internal` timed out everywhere and Traefik answered 504 for
+  every native service (Immich, Home Assistant). Every quadlet unit already
+  orders after `podman-user-wait-network-online`, which only waits for
+  `network-online.target` (instant here, wait-online is masked); a drop-in in
+  `default.nix` makes it poll for the address instead. To recover a bad netns by
+  hand, stop **sockets and services together**
+  (`systemctl --user stop 'podman-*.socket' 'podman-*.service'`): the
+  `podman-traefik-{80,443}.socket` units re-activate traefik, which pulls in
+  authelia, lldap, crowdsec and socket-proxy, so pasta never exits. Then
+  `systemctl --user start default.target sockets.target`. Check:
+  `podman unshare --rootless-netns ip -br addr` shows `192.168.0.10`, no `tap0`.

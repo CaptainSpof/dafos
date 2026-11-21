@@ -65,3 +65,6 @@ Full detail, history and recovery commands: [README.md](README.md). The rules:
   global resolver here.
 - Readiness of blocky and of the `podman-*` units (sops ordering) is subtle and
   has broken DNS before: read README, "Network identity", before changing it.
+- Rootless containers must not start before `192.168.0.10` exists (pasta falls
+  back to `tap0`, Traefik 504s); a bad netns only goes away once the
+  `podman-*.socket` units are stopped too (README, "Network identity").
