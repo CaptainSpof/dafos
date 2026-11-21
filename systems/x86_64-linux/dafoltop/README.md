@@ -79,6 +79,14 @@ FIDECO dual-bay dock:
 
 ## Network identity
 
+- **The dock's ethernet chip (ASIX AX88179, `0b95:1790`) can fail to probe at
+  boot**: `enable of device-initiated U1 failed`, then
+  `ax88179_178a … probe … failed with error -71`, and no `enp0s20f0u1u2` until
+  the dock is replugged (2 of 3 boots on 2026-11-21, kernel 7.3.5).
+  `usbcore.quirks=0b95:1790:k` in `hardware.nix` disables USB 3 link power
+  management for that chip only. Check after a boot:
+  `journalctl -b -k | grep ax88179` shows `register`, never `-71`.
+
 - The address `192.168.0.10` is keyed on the Freebox DHCP lease for the USB
   ethernet adapter's MAC. blocky binds it and dafbox uses it as its DNS server.
   `hardware.nix` clones that MAC onto whichever ethernet device NetworkManager

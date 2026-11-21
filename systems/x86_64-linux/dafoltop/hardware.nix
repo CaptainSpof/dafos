@@ -49,7 +49,15 @@ in
     # disk mid-scrub or mid-import is a real failure mode, not a theoretical
     # one, for a bus-powered-adjacent (dock-powered but bridge-negotiated)
     # device that's supposed to stay live.
-    kernelParams = [ "usbcore.autosuspend=-1" ];
+    #
+    # `0b95:1790:k` (USB_QUIRK_NO_LPM) for the dock's AX88179 ethernet chip: at
+    # boot its U1 link-power-management toggle sometimes fails and the
+    # ax88179_178a probe then aborts with -71, leaving the LAN (192.168.0.10)
+    # absent until the dock is replugged (2 of 3 boots, 2026-11-21).
+    kernelParams = [
+      "usbcore.autosuspend=-1"
+      "usbcore.quirks=0b95:1790:k"
+    ];
 
     initrd = {
       availableKernelModules = [
