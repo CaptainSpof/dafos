@@ -1,10 +1,13 @@
 [
   # Steam/Proton games (X11 via xwayland-satellite) otherwise open as tiled
   # windows: the bar stays visible and focus-follows-mouse steals keyboard
-  # input. Force them to true fullscreen on open.
+  # input. Force them to true fullscreen on open. They also open on the M27Q:
+  # the game warps the cursor to the LG at launch, focus follows it, and niri
+  # would otherwise open the window there.
   {
     matches = [ { app-id = "^steam_app_"; } ];
     open-fullscreen = true;
+    open-on-output = "GIGA-BYTE TECHNOLOGY CO., LTD. M27Q 23250B003842";
   }
   # Games drive VRR on outputs set to "on-demand"; the desktop stays at a
   # fixed refresh rate (VRR flickers the M27Q at idle frame rates).

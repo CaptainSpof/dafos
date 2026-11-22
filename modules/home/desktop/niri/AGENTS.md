@@ -23,3 +23,9 @@ Avahi runs with IPv6 disabled. Rotating IPv6 privacy addresses caused an endless
 `dafbox-2`, `dafbox-3`, … hostname-conflict rename loop, which left Sunshine's
 `_nvstream` record permanently undiscoverable. Restart sunshine after restarting
 avahi.
+
+## Game windows
+
+`^steam_app_` windows open on the Gigabyte M27Q (`open-on-output` in
+`window-rules.nix`): Proton games warp the cursor to the LG at launch and focus
+follows it, so niri would open them there.
