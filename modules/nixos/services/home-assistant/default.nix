@@ -510,6 +510,10 @@ in
 
           homeassistant = {
             name = "MaisonDaf";
+            # Default UI language; each user can still pick another. Only
+            # entities created from now on get French names and ids.
+            language = "fr";
+            country = "FR";
             unit_system = "metric";
             temperature_unit = "C";
           };

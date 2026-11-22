@@ -124,6 +124,19 @@ let
     values = jellyfinEncoding;
   };
 
+  # Server-wide UI and metadata language (system.xml), French by default; users
+  # can still pick their own display language.
+  pinJellyfinLanguage = mkXmlPin {
+    name = "pin-jellyfin-language";
+    file = "${config.nps.storageBaseDir}/streaming/jellyfin/system.xml";
+    root = "ServerConfiguration";
+    values = {
+      UICulture = "fr";
+      PreferredMetadataLanguage = "fr";
+      MetadataCountryCode = "FR";
+    };
+  };
+
   # Jellyfin Enhanced's admin settings, pinned the same way; the rest of the
   # file stays the plugin page's.
   #
@@ -163,6 +176,27 @@ let
       # file alone.
       crudini --ini-options=nospace --set "$f" BitTorrent 'Session\Interface' tun0
       crudini --ini-options=nospace --set "$f" BitTorrent 'Session\InterfaceName' tun0
+      # Web UI in French (the key sits in [Preferences]).
+      crudini --ini-options=nospace --set "$f" Preferences 'General\Locale' fr
+    '';
+  };
+
+  # Seerr's default display language (Settings > General); users can override
+  # it. The app rewrites settings.json, so this runs before each start.
+  seerrSettings = "${config.nps.storageBaseDir}/streaming/seerr/config/settings.json";
+
+  pinSeerrLocale = pkgs.writeShellApplication {
+    name = "pin-seerr-locale";
+    runtimeInputs = [ pkgs.jq ];
+    text = ''
+      f=${lib.escapeShellArg seerrSettings}
+      [ -e "$f" ] || exit 0
+      if [ "$(jq -r '.main.locale' "$f")" != fr ]; then
+        tmp=$(mktemp "$f.XXXXXX")
+        jq '.main.locale = "fr"' "$f" > "$tmp"
+        cat "$tmp" > "$f"
+        rm "$tmp"
+      fi
     '';
   };
 
@@ -273,6 +307,7 @@ in
               # Merges with nps' own ExecStartPre list (volume dirs, templates).
               extraConfig.Service.ExecStartPre = [
                 (lib.getExe pinJellyfinEncoding)
+                (lib.getExe pinJellyfinLanguage)
                 (lib.getExe pinJellyfinEnhanced)
               ];
 
@@ -318,6 +353,7 @@ in
                 }
               );
             };
+            seerr.extraConfig.Service.ExecStartPre = [ (lib.getExe pinSeerrLocale) ];
             sonarr = {
               volumes = lib.mkForce [
                 "/mnt/data/Shows:/media"
