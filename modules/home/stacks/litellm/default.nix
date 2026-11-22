@@ -37,7 +37,6 @@ in
 
     dbPasswordFile = secretFileOpt "the PostgreSQL password";
     masterKeyFile = secretFileOpt "the master key (`sk-…`), the API admin credential";
-    uiPasswordFile = secretFileOpt "the admin UI password (user `admin`)";
 
     settings = lib.mkOption {
       inherit (yaml) type;
@@ -65,8 +64,6 @@ in
         extraEnv = {
           DATABASE_URL.fromTemplate = "postgresql://${dbEnv.POSTGRES_USER}:{{ file.Read `${cfg.dbPasswordFile}` }}@${dbName}:5432/${dbEnv.POSTGRES_DB}";
           LITELLM_MASTER_KEY.fromFile = cfg.masterKeyFile;
-          UI_USERNAME = "admin";
-          UI_PASSWORD.fromFile = cfg.uiPasswordFile;
         };
 
         dependsOnContainer = [ dbName ];

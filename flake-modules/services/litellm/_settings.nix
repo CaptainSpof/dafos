@@ -33,6 +33,10 @@
   litellm_settings.request_timeout = 600;
 
   general_settings = {
+    # SSO only: no shared UI_USERNAME/UI_PASSWORD login. The master key still
+    # authenticates API calls.
+    disable_env_credential_login = true;
+
     # Full prompt and response in the UI's Logs page (which book: the X-Ray
     # prompt opens with "Livre : <title>").
     store_prompts_in_spend_logs = true;

@@ -37,7 +37,6 @@
             [
               "litellm/db-password"
               "litellm/master-key"
-              "litellm/ui-password"
             ]
             (_: {
               sopsFile = inputs.self + "/secrets/dafpi/litellm.yaml";
@@ -51,7 +50,6 @@
           enable = true;
           dbPasswordFile = secret "db-password";
           masterKeyFile = secret "master-key";
-          uiPasswordFile = secret "ui-password";
           # A new SSO user is an admin: the Authelia group is the gate and
           # the free tier caps SSO at 5 users. Applies at first login only.
           settings = lib.recursiveUpdate (import ./_settings.nix) {
@@ -105,8 +103,8 @@
         nps.stacks.lldap.bootstrap.groups.${userGroup} = { };
 
         # Generic SSO: the user id defaults to preferred_username (the lldap
-        # login), the scope to "openid email profile". UI_USERNAME and
-        # UI_PASSWORD keep working at /fallback/login.
+        # login), the scope to "openid email profile". The UI has no static
+        # login (disable_env_credential_login); the master key is API-only.
         services.podman.containers.litellm.extraEnv = {
           PROXY_BASE_URL = serviceUrl;
           GENERIC_CLIENT_ID = "litellm";

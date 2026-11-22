@@ -8,7 +8,6 @@
     enable = true;
     dbPasswordFile = dummySecretFile;
     masterKeyFile = pkgs.writeText "master-key" "sk-dummy";
-    uiPasswordFile = dummySecretFile;
     settings = import ../../../../flake-modules/services/litellm/_settings.nix;
   };
 }
