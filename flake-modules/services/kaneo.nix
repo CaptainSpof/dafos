@@ -30,12 +30,6 @@
               "kaneo/authelia/client-secret".sopsFile = inputs.self + "/secrets/dafoltop/kaneo.yaml";
             };
 
-            # Ahead of nps (2.49.0). Drop once nps ships >= 2.50.0 (Kaneo IA-133).
-            services.podman.containers = {
-              kaneo-api.image = lib.mkForce "ghcr.io/usekaneo/api:2.50.0";
-              kaneo-web.image = lib.mkForce "ghcr.io/usekaneo/web:2.50.0";
-            };
-
             nps.stacks.kaneo = {
               enable = true;
 

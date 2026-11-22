@@ -55,6 +55,11 @@ It comes from nix-podman-stacks, not from dafos, and cannot be fixed here.
 
 ## Running an image newer than nps ships
 
+nps owns image versions: a stack's image is never pinned here by default. The
+exception below is an escape hatch for a fix nps has not shipped yet, and each
+pin is dropped as soon as nps catches up (check at every `nix flake update
+nix-podman-stacks`).
+
 `services.podman.containers.<name>.image = lib.mkForce "<repo>:<tag>"`, with a
 comment naming nps's tag and a Kaneo task to drop it. nps never takes back
 control on its own: a forgotten mkForce blocks its later bumps, and once nps

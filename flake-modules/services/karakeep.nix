@@ -28,12 +28,6 @@
               (secret "authelia/client-secret")
             ];
 
-            # Ahead of nps (0.34.1). Drop once nps ships >= 0.35.0 (Kaneo IA-133).
-            services.podman.containers = {
-              karakeep.image = lib.mkForce "ghcr.io/karakeep-app/karakeep:0.35.0";
-              karakeep-chrome.image = lib.mkForce "ghcr.io/karakeep-app/karakeep-chrome:157.0.8103.78-r1";
-            };
-
             nps.stacks.karakeep = {
               enable = true;
 
