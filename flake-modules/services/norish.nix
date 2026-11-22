@@ -6,7 +6,12 @@
 { inputs, ... }:
 {
   flake.modules.homeManager.norish =
-    { config, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       inherit (lib)
         mkEnableOption
@@ -20,6 +25,27 @@
 
       cfg = config.dafos.services.norish;
       stack = config.nps.stacks.norish;
+      # The AI never sees a recipe's URL, so the HelloFresh tag and cookbook
+      # are kept in sync from it, in SQL, inside the norish-db container.
+      syncHellofresh = pkgs.writeShellApplication {
+        name = "norish-sync-hellofresh";
+        runtimeInputs = [ pkgs.podman ];
+        text = ''
+          podman exec -i norish-db psql -U norish -d norish -v ON_ERROR_STOP=1 <<'SQL'
+          insert into tags (name)
+            select 'hellofresh' where not exists (select 1 from tags where lower(name) = 'hellofresh');
+          insert into recipe_tags (recipe_id, tag_id)
+            select r.id, t.id from recipes r, tags t
+            where r.url ilike '%hellofresh%' and lower(t.name) = 'hellofresh'
+            on conflict do nothing;
+          insert into cookbook_recipes (cookbook_id, recipe_id)
+            select c.id, r.id from recipes r
+            join cookbooks c on c.user_id = r.user_id and lower(c.title) = 'hello fresh'
+            where r.url ilike '%hellofresh%'
+            on conflict do nothing;
+          SQL
+        '';
+      };
       secret = name: {
         "norish/${name}".sopsFile = inputs.self + "/secrets/dafoltop/norish.yaml";
       };
@@ -59,6 +85,22 @@
               (secret "authelia/client-secret")
               (secret "cdp-token")
             ];
+
+            systemd.user.services.norish-sync-hellofresh = {
+              Unit.Description = "Tag HelloFresh recipes and file them in their cookbook";
+              Service = {
+                Type = "oneshot";
+                ExecStart = lib.getExe syncHellofresh;
+              };
+            };
+            systemd.user.timers.norish-sync-hellofresh = {
+              Unit.Description = "Sync HelloFresh recipes every 10 minutes";
+              Timer = {
+                OnBootSec = "5min";
+                OnUnitActiveSec = "10min";
+              };
+              Install.WantedBy = [ "timers.target" ];
+            };
 
             # nps has no AI options, so the AI_* env is set on the container directly.
             #
