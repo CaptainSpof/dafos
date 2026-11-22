@@ -72,11 +72,7 @@
             #   podman exec norish-db psql -U norish -d norish \
             #     -c "delete from server_config where key = 'ai_config';"
             #   systemctl --user restart podman-norish.service
-            # Ahead of nps (v0.25.1-beta). Drop the image and the redirect URIs
-            # once nps ships >= v0.26.1-beta (Kaneo IA-133): left in place,
-            # this blocks nps's later bumps and can end in a downgrade.
-            services.podman.containers.norish.image = lib.mkForce "docker.io/norishapp/norish:v0.26.1-beta";
-            # 0.26 moved its OIDC callback; nps still registers the old one.
+            # 0.26 moved its OIDC callback; nps still registers the old one only.
             # Both stay listed so dafoltop's Authelia (authelia-peers) can be
             # deployed before or after dafpi.
             nps.stacks.authelia.oidc.clients.norish.redirect_uris = lib.mkForce [
