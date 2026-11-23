@@ -95,12 +95,13 @@ let
     '';
   };
   # One emacsclient frame (title "daf-pad") laid out by `daf-pad-setup` (doom config, section daf-pad): notes,
-  # clipboard history and a vterm. The clipboard buffer is refreshed on each show.
+  # clipboard history and a vterm. The clipboard buffer is refreshed on each show. It lives in its own daemon
+  # ("pad", started on first use by `-a ""`) so its dark theme is independent of the main Emacs.
   emacsPad = mkPad {
     name = "emacs";
     match = ''.title == "daf-pad"'';
-    start = "emacsclient -c -n -F '((name . \"daf-pad\"))' --eval '(progn (setq daf-pad-wl-copy \"${lib.getExe' pkgs.wl-clipboard "wl-copy"}\" daf-pad-clip-hide \"${lib.getExe clipboardHide}\") (if (fboundp (quote daf-pad-setup)) (daf-pad-setup) (message \"daf-pad: missing from the doom config\")))' >/dev/null 2>&1";
-    onShow = ''f=$(mktemp); ${lib.getExe clipboardHistory} >"$f" 2>/dev/null || true; emacsclient -e "(progn (setenv \"WAYLAND_DISPLAY\" \"$WAYLAND_DISPLAY\") (daf-pad-refresh-clipboard \"$f\"))" >/dev/null 2>&1 || true; rm -f "$f"'';
+    start = "emacsclient -s pad -a '' -c -n -F '((name . \"daf-pad\"))' --eval '(progn (setq daf-pad-wl-copy \"${lib.getExe' pkgs.wl-clipboard "wl-copy"}\" daf-pad-clip-hide \"${lib.getExe clipboardHide}\") (if (fboundp (quote daf-pad-setup)) (daf-pad-setup) (message \"daf-pad: missing from the doom config\")))' >/dev/null 2>&1";
+    onShow = ''f=$(mktemp); ${lib.getExe clipboardHistory} >"$f" 2>/dev/null || true; emacsclient -s pad -e "(progn (setenv \"WAYLAND_DISPLAY\" \"$WAYLAND_DISPLAY\") (daf-pad-refresh-clipboard \"$f\"))" >/dev/null 2>&1 || true; rm -f "$f"'';
     inputs = [ config.programs.emacs.finalPackage ];
   };
   dms-call = spawn "dms";
