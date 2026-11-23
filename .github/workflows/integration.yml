@@ -87,7 +87,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v32
         with:
           # nix-podman-stacks uses the `|>` operator
           extra_nix_config: "experimental-features = nix-command flakes pipe-operators"
