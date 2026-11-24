@@ -55,7 +55,7 @@ in
     services.podman.containers = {
       ${name} = {
         # renovate: versioning=semver
-        image = "ghcr.io/berriai/litellm:1.110.2";
+        image = "ghcr.io/berriai/litellm:1.110.3";
         exec = "--config /app/config.yaml --port 4000";
         port = 4000;
 
